@@ -5,7 +5,8 @@ public class PersonError
 {
     public static Error FirstNameRequired => Error.Validation("First_Name_Required" , "FirstNameRequired");
     public static Error LastNameRequired => Error.Validation("Last_Name_Required", "LastNameRequired");
-    public static Error DateOfBirthRequired => Error.Validation("Date_Of_Birth_Required", "DateOfBirthRequired");
+    public static Error InvalidDateOfBirth => Error.Validation("Invalid_Date_Of_Birth", "InvalidDateOfBirth");
     public static Error PhoneNumberRequired => Error.Validation("Phone_Number_Required", "PhoneNumberRequired");
     public static Error ImageRequired => Error.Validation("Image_Required", "ImageRequired");
+      
 }

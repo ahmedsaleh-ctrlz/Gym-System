@@ -2,7 +2,12 @@
 
 public abstract class Entity
 {
-    public int Id { get;}
+    protected Entity()
+    {
+
+    }
+
+    public int Id { get; protected set;}
 
     private readonly List<DomainEvents> _domainEvents = [];
 
