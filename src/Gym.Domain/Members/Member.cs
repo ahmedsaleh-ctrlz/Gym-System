@@ -8,8 +8,8 @@ public sealed class Member : AuditableEntity
 {
     public DateTime JoinDate { get; private set; }
     public string? Notes { get; private set; }
-    private bool IsDeleted { get; set; } = false;
-    private DateTime DeletedAt { get; set; }
+    public bool IsDeleted { get; private set; }
+    public DateTime? DeletedAt { get; private set; }
     public Person Person { get; private set; } = null!;
 
 
