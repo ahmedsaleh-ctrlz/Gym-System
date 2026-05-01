@@ -113,10 +113,6 @@ public sealed class Subscription : AuditableEntity
             return SubscriptionError.MemberRequired;
         }
 
-        if (member.IsDeleted)
-        {
-            return SubscriptionError.MemberDeleted;
-        }
 
         if (plan is null)
         {

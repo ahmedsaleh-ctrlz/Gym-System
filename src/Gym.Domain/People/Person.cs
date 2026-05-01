@@ -9,13 +9,14 @@ public class Person : AuditableEntity
     private Person() 
     { }
 
-    private Person(string firstName, string lastName, DateTime dateOfBirth, string phoneNumber, PersonImage image)
+    private Person(string firstName, string lastName, DateTime dateOfBirth, string phoneNumber, PersonImage image , int userId)
     {
         FirstName = firstName;
         LastName = lastName;
         DateOfBirth = dateOfBirth;
         PhoneNumber = phoneNumber;
         Image = image;
+        UserId = userId;
     }
 
     public string FirstName { get;private set; } = string.Empty;
@@ -24,7 +25,9 @@ public class Person : AuditableEntity
     public string PhoneNumber { get; private set; } = string.Empty;
     public PersonImage Image { get; private set; } = null!;
 
-    public static Result<Person> Create(string firstName, string lastName, DateTime dateOfBirth, string phoneNumber, string imageUrl)
+    public int UserId { get; private set; }
+
+    public static Result<Person> Create(string firstName, string lastName, DateTime dateOfBirth, string phoneNumber, string imageUrl, int userId)
     {
 
         var error = Validate(firstName, lastName, dateOfBirth, phoneNumber);
@@ -34,7 +37,7 @@ public class Person : AuditableEntity
         if (image.IsError)
             return image.TopError;
 
-        return new Person(firstName, lastName, dateOfBirth, phoneNumber, image.Value);
+        return new Person(firstName, lastName, dateOfBirth, phoneNumber, image.Value,userId);
     }
     public Result<Updated> UpdateInfo(string firstName, string lastName, DateTime dateOfBirth, string phoneNumber)
     {

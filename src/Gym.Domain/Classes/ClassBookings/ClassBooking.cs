@@ -59,11 +59,6 @@ public sealed class ClassBooking : AuditableEntity
             return ClassBookingError.MemberRequired;
         }
 
-        if (member.IsDeleted)
-        {
-            return ClassBookingError.MemberDeleted;
-        }
-
         if (!gymClass.Coach.IsActive)
         {
             return ClassBookingError.CoachInactive;

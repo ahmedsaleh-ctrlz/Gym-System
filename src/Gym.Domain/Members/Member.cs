@@ -8,8 +8,8 @@ public sealed class Member : AuditableEntity
 {
     public DateTime JoinDate { get; private set; }
     public string? Notes { get; private set; }
-    public bool IsDeleted { get; private set; }
-    public DateTime? DeletedAt { get; private set; }
+    private bool IsDeleted { get; set; }
+    private DateTime? DeletedAt { get; set; }
     public Person Person { get; private set; } = null!;
 
 
@@ -28,7 +28,7 @@ public sealed class Member : AuditableEntity
         string phoneNumber,
         string imageUrl,
         DateTime joinDate,
-        string? notes)
+        string? notes,int userId)
     {
 
         var error = Validate(joinDate);
@@ -37,7 +37,7 @@ public sealed class Member : AuditableEntity
             return error;
         }
 
-        var personResult = Person.Create(firstName, lastName, dateOfBirth, phoneNumber, imageUrl);
+        var personResult = Person.Create(firstName, lastName, dateOfBirth, phoneNumber, imageUrl,userId);
         if (personResult.IsError)
             return personResult.TopError;
         

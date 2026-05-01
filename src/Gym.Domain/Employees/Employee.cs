@@ -27,7 +27,7 @@ public sealed class Employee : AuditableEntity
         DateTime dateOfBirth,
         string phoneNumber,
         string imageUrl,
-        DateTime hireDate)
+        DateTime hireDate,int userId)
     {
         var error = Validate(hireDate);
         if (error is not null)
@@ -35,7 +35,7 @@ public sealed class Employee : AuditableEntity
             return error;
         }
 
-        var personResult = Person.Create(firstName, lastName, dateOfBirth, phoneNumber, imageUrl);
+        var personResult = Person.Create(firstName, lastName, dateOfBirth, phoneNumber, imageUrl,userId);
         if (personResult.IsError)
         {
             return personResult.TopError;
