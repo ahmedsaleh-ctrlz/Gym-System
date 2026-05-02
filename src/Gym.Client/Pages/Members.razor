@@ -1,0 +1,438 @@
+@page "/members"
+@inject MembersApiClient MembersApiClient
+@inject IJSRuntime JS
+
+<PageTitle>Members Workspace</PageTitle>
+
+<section class="workspace-head mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+        <div>
+            <span class="eyebrow">Members workspace</span>
+            <h1 class="display-6 fw-bold mt-2 mb-2">Review, create, and update gym members.</h1>
+            <p class="text-secondary-emphasis mb-0">Everything here is backed by the member controller and application flow.</p>
+        </div>
+        <div class="workspace-actions d-flex flex-wrap gap-2">
+            <button class="btn btn-light rounded-pill px-4" @onclick="ReloadAsync" disabled="@IsBusy">Refresh</button>
+            <button class="btn btn-outline-danger rounded-pill px-4" @onclick="ClearEditSelection">Clear edit</button>
+        </div>
+    </div>
+</section>
+
+@if (!string.IsNullOrWhiteSpace(StatusMessage))
+{
+    <div class="alert alert-success rounded-4">@StatusMessage</div>
+}
+
+@if (!string.IsNullOrWhiteSpace(ErrorMessage))
+{
+    <div class="alert alert-danger rounded-4">@ErrorMessage</div>
+}
+
+<section class="row g-4 align-items-start">
+    <div class="col-xl-8">
+        <div class="panel-card">
+            <div class="d-flex flex-column flex-lg-row gap-3 justify-content-between align-items-lg-center mb-4">
+                <div>
+                    <h2 class="h4 mb-1">Member directory</h2>
+                    <p class="text-secondary mb-0">@MembersPage.TotalCount member(s) found</p>
+                </div>
+                <div class="search-shell d-flex gap-2">
+                    <input class="form-control form-control-lg rounded-pill" placeholder="Search by name or phone..." @bind="SearchTerm" @bind:event="oninput" />
+                    <button class="btn btn-danger rounded-pill px-4" @onclick="SearchAsync" disabled="@IsBusy">Search</button>
+                </div>
+            </div>
+
+            @if (IsBusy && (MembersPage.Items?.Count ?? 0) == 0)
+            {
+                <div class="py-5 text-center text-secondary">Loading members...</div>
+            }
+            else if ((MembersPage.Items?.Count ?? 0) == 0)
+            {
+                <div class="empty-state">
+                    <h3 class="h5 mb-2">No members match this view</h3>
+                    <p class="text-secondary mb-0">Try a different search term or create a new member from the panel on the right.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table align-middle member-table">
+                        <thead>
+                            <tr>
+                                <th>Member</th>
+                                <th>Phone</th>
+                                <th>Joined</th>
+                                <th>Notes</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var member in MembersPage.Items!)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <img class="avatar-thumb" src="@member.ImageUrl" alt="@member.FirstName @member.LastName" />
+                                            <div>
+                                                <div class="fw-semibold">@member.FirstName @member.LastName</div>
+                                                <div class="text-secondary small">@member.DateOfBirth.ToString("dd MMM yyyy")</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>@member.PhoneNumber</td>
+                                    <td>@member.JoinDate.ToString("dd MMM yyyy")</td>
+                                    <td class="text-secondary">@(string.IsNullOrWhiteSpace(member.Notes) ? "No notes" : member.Notes)</td>
+                                    <td class="text-end">
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <button class="btn btn-sm btn-outline-dark rounded-pill px-3" @onclick="() => BeginEdit(member)">Edit</button>
+                                            <button class="btn btn-sm btn-outline-danger rounded-pill px-3" @onclick="() => DeleteAsync(member)">Delete</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mt-4">
+                    <div class="text-secondary small">Page @MembersPage.PageNumber of @TotalPages</div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-light rounded-pill px-4" @onclick="PreviousPageAsync" disabled="@(MembersPage.PageNumber <= 1 || IsBusy)">Previous</button>
+                        <button class="btn btn-outline-light rounded-pill px-4" @onclick="NextPageAsync" disabled="@(MembersPage.PageNumber >= TotalPages || IsBusy)">Next</button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="panel-card mb-4">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <h2 class="h4 mb-1">Create member</h2>
+                    <p class="text-secondary mb-0">This also creates the linked identity account.</p>
+                </div>
+                <span class="badge text-bg-danger rounded-pill">New</span>
+            </div>
+
+            <EditForm Model="@CreateModel" OnValidSubmit="CreateAsync">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="alert alert-warning rounded-4" />
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">First name</label>
+                        <InputText class="form-control rounded-4" @bind-Value="CreateModel.FirstName" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Last name</label>
+                        <InputText class="form-control rounded-4" @bind-Value="CreateModel.LastName" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Email</label>
+                        <InputText class="form-control rounded-4" @bind-Value="CreateModel.Email" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Password</label>
+                        <InputText class="form-control rounded-4" type="password" @bind-Value="CreateModel.Password" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Date of birth</label>
+                        <InputDate class="form-control rounded-4" @bind-Value="CreateModel.DateOfBirth" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Join date</label>
+                        <InputDate class="form-control rounded-4" @bind-Value="CreateModel.JoinDate" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Phone number</label>
+                        <InputText class="form-control rounded-4" @bind-Value="CreateModel.PhoneNumber" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Image URL</label>
+                        <InputText class="form-control rounded-4" @bind-Value="CreateModel.ImageUrl" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Notes</label>
+                        <InputTextArea class="form-control rounded-4" rows="3" @bind-Value="CreateModel.Notes" />
+                    </div>
+                    <div class="col-12">
+                        <button class="btn btn-danger w-100 rounded-pill py-3" type="submit" disabled="@IsBusy">Create member</button>
+                    </div>
+                </div>
+            </EditForm>
+        </div>
+
+        <div class="panel-card">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <h2 class="h4 mb-1">Edit member</h2>
+                    <p class="text-secondary mb-0">Select a row from the directory to load its profile.</p>
+                </div>
+                @if (EditingMemberId is not null)
+                {
+                    <span class="badge text-bg-light rounded-pill">ID @EditingMemberId</span>
+                }
+            </div>
+
+            @if (EditingMemberId is null)
+            {
+                <div class="empty-state compact">
+                    <h3 class="h6 mb-2">Nothing selected</h3>
+                    <p class="text-secondary mb-0">Choose a member from the table to edit their core profile and image.</p>
+                </div>
+            }
+            else
+            {
+                <EditForm Model="@EditModel" OnValidSubmit="SaveEditAsync">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="alert alert-warning rounded-4" />
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">First name</label>
+                            <InputText class="form-control rounded-4" @bind-Value="EditModel.FirstName" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Last name</label>
+                            <InputText class="form-control rounded-4" @bind-Value="EditModel.LastName" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date of birth</label>
+                            <InputDate class="form-control rounded-4" @bind-Value="EditModel.DateOfBirth" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Join date</label>
+                            <InputDate class="form-control rounded-4" @bind-Value="EditModel.JoinDate" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Phone number</label>
+                            <InputText class="form-control rounded-4" @bind-Value="EditModel.PhoneNumber" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Image URL</label>
+                            <InputText class="form-control rounded-4" @bind-Value="EditModel.ImageUrl" />
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(EditModel.ImageUrl))
+                        {
+                            <div class="col-12">
+                                <img class="preview-image rounded-4" src="@EditModel.ImageUrl" alt="Preview" />
+                            </div>
+                        }
+                        <div class="col-12">
+                            <label class="form-label">Notes</label>
+                            <InputTextArea class="form-control rounded-4" rows="3" @bind-Value="EditModel.Notes" />
+                        </div>
+                        <div class="col-12 d-flex gap-2">
+                            <button class="btn btn-dark flex-grow-1 rounded-pill py-3" type="submit" disabled="@IsBusy">Save changes</button>
+                            <button class="btn btn-outline-light rounded-pill px-4" type="button" @onclick="ClearEditSelection">Cancel</button>
+                        </div>
+                    </div>
+                </EditForm>
+            }
+        </div>
+    </div>
+</section>
+
+@code {
+    private readonly CreateMemberModel CreateModel = new()
+    {
+        JoinDate = DateTime.Today,
+        DateOfBirth = DateTime.Today.AddYears(-20)
+    };
+
+    private UpdateMemberModel EditModel = new()
+    {
+        JoinDate = DateTime.Today,
+        DateOfBirth = DateTime.Today.AddYears(-20)
+    };
+
+    private PaginatedList<MemberItem> MembersPage { get; set; } = new()
+    {
+        Items = []
+    };
+
+    private bool IsBusy;
+    private string? SearchTerm;
+    private string? ErrorMessage;
+    private string? StatusMessage;
+    private int? EditingMemberId;
+    private int TotalPages => MembersPage.PageSize <= 0
+        ? 1
+        : Math.Max(1, (int)Math.Ceiling((double)MembersPage.TotalCount / MembersPage.PageSize));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMembersAsync();
+    }
+
+    private async Task LoadMembersAsync(int? pageNumber = null)
+    {
+        IsBusy = true;
+        ErrorMessage = null;
+
+        try
+        {
+            MembersPage = await MembersApiClient.GetMembersAsync(
+                pageNumber ?? (MembersPage.PageNumber <= 0 ? 1 : MembersPage.PageNumber),
+                MembersPage.PageSize <= 0 ? 10 : MembersPage.PageSize,
+                SearchTerm,
+                "joindate",
+                "desc");
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private Task SearchAsync() => LoadMembersAsync(1);
+
+    private async Task ReloadAsync()
+    {
+        StatusMessage = null;
+        await LoadMembersAsync(MembersPage.PageNumber <= 0 ? 1 : MembersPage.PageNumber);
+    }
+
+    private async Task PreviousPageAsync()
+    {
+        if (MembersPage.PageNumber > 1)
+        {
+            await LoadMembersAsync(MembersPage.PageNumber - 1);
+        }
+    }
+
+    private async Task NextPageAsync()
+    {
+        if (MembersPage.PageNumber < TotalPages)
+        {
+            await LoadMembersAsync(MembersPage.PageNumber + 1);
+        }
+    }
+
+    private async Task CreateAsync()
+    {
+        IsBusy = true;
+        ErrorMessage = null;
+        StatusMessage = null;
+
+        try
+        {
+            await MembersApiClient.CreateMemberAsync(CreateModel);
+            StatusMessage = "Member created successfully.";
+
+            CreateModel.FirstName = string.Empty;
+            CreateModel.LastName = string.Empty;
+            CreateModel.PhoneNumber = string.Empty;
+            CreateModel.ImageUrl = string.Empty;
+            CreateModel.Notes = string.Empty;
+            CreateModel.Email = string.Empty;
+            CreateModel.Password = string.Empty;
+            CreateModel.JoinDate = DateTime.Today;
+            CreateModel.DateOfBirth = DateTime.Today.AddYears(-20);
+
+            await LoadMembersAsync(1);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private void BeginEdit(MemberItem member)
+    {
+        EditingMemberId = member.MemberId;
+        EditModel = new UpdateMemberModel
+        {
+            FirstName = member.FirstName ?? string.Empty,
+            LastName = member.LastName ?? string.Empty,
+            DateOfBirth = member.DateOfBirth,
+            PhoneNumber = member.PhoneNumber ?? string.Empty,
+            ImageUrl = member.ImageUrl ?? string.Empty,
+            JoinDate = member.JoinDate,
+            Notes = member.Notes
+        };
+
+        ErrorMessage = null;
+        StatusMessage = null;
+    }
+
+    private void ClearEditSelection()
+    {
+        EditingMemberId = null;
+        EditModel = new UpdateMemberModel
+        {
+            JoinDate = DateTime.Today,
+            DateOfBirth = DateTime.Today.AddYears(-20)
+        };
+    }
+
+    private async Task SaveEditAsync()
+    {
+        if (EditingMemberId is null)
+        {
+            return;
+        }
+
+        IsBusy = true;
+        ErrorMessage = null;
+        StatusMessage = null;
+
+        try
+        {
+            await MembersApiClient.UpdateMemberAsync(EditingMemberId.Value, EditModel);
+            await MembersApiClient.UpdateMemberImageAsync(EditingMemberId.Value, EditModel.ImageUrl);
+            StatusMessage = "Member updated successfully.";
+            await LoadMembersAsync(MembersPage.PageNumber <= 0 ? 1 : MembersPage.PageNumber);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task DeleteAsync(MemberItem member)
+    {
+        var confirmed = await JS.InvokeAsync<bool>("confirm", $"Delete member '{member.FirstName} {member.LastName}'?");
+        if (!confirmed)
+        {
+            return;
+        }
+
+        IsBusy = true;
+        ErrorMessage = null;
+        StatusMessage = null;
+
+        try
+        {
+            await MembersApiClient.DeleteMemberAsync(member.MemberId);
+            if (EditingMemberId == member.MemberId)
+            {
+                ClearEditSelection();
+            }
+
+            StatusMessage = "Member deleted successfully.";
+            await LoadMembersAsync(MembersPage.PageNumber <= 0 ? 1 : MembersPage.PageNumber);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+}

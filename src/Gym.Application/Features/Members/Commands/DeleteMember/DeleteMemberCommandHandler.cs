@@ -23,14 +23,14 @@ public sealed class DeleteMemberCommandHandler(IAppDbContext context,
             return ApplicationErrors.MemberNotFound;
         }
 
-        var isSubscribed = await context.Subscriptions.Include(s => s.Member).
-            AnyAsync(s => s.Member.Id == command.MemberId, cancellationToken);
+        //var isSubscribed = await context.Subscriptions.Include(s => s.Member).
+        //    AnyAsync(s => s.Member.Id == command.MemberId, cancellationToken);
 
-        if (isSubscribed)
-        {
-            logger.LogWarning("Cannot delete member with id {MemberId} because they are subscribed.", command.MemberId);
-            return ApplicationErrors.CannotDeleteSubscribedMember;
-        }
+        //if (isSubscribed)
+        //{
+        //    logger.LogWarning("Cannot delete member with id {MemberId} because they are subscribed.", command.MemberId);
+        //    return ApplicationErrors.CannotDeleteSubscribedMember;
+        //}
 
         var deleteResult = member!.Delete();
         if (deleteResult.IsError)
@@ -38,7 +38,7 @@ public sealed class DeleteMemberCommandHandler(IAppDbContext context,
             logger.LogError("Failed to delete member with id {MemberId}. Errors: {Errors}", command.MemberId, deleteResult.Errors);
             return deleteResult.Errors;
         }
-        await cache.RemoveByTagAsync("Mmember", cancellationToken);
+        await cache.RemoveByTagAsync("Member", cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
 
         logger.LogInformation("Member with id {MemberId} deleted successfully.", command.MemberId);

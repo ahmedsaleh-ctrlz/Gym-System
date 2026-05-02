@@ -17,8 +17,7 @@ public class GetMemberByIdQueryHandler(
     {
         var member = await context.Members
             .Where(m => m.Id == query.id)
-            .Select(m => m.ToDto()
-            )
+            .Select(m => m.ToDto())
             .FirstOrDefaultAsync(ct);
 
         if (member is null)

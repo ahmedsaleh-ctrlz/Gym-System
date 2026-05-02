@@ -12,12 +12,12 @@ public class LoggingBehavior<TRequest>(ILogger<LoggingBehavior<TRequest>> logger
     public async Task Process(TRequest request, CancellationToken cancellationToken)
     {
         var requestName = typeof(TRequest).Name;
-        int? userId = user.Id;
+        string? userId = user.Id;
         var userName = string.Empty;
 
-        if (userId is not null)
+        if (!string.IsNullOrWhiteSpace(userId))
         {
-            userName = await identityService.GetUserNameByIdAsync(userId.Value,cancellationToken);
+            userName = await identityService.GetUserNameByIdAsync(userId, cancellationToken) ?? string.Empty;
         }
 
         logger.LogInformation(

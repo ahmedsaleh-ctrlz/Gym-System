@@ -27,59 +27,68 @@ public class CreateMemberCommandHandler(IAppDbContext context,
 
         await using var transaction = await _context.Database.BeginTransactionAsync(ct);
 
-        int? userId = null;
+        string? userId = null;
 
         try
         {
-            var userResult = await _identityService.CreateUserAsync(
-            command.email, command.password, Role.Member, ct);
-
-            if (userResult.IsError)
-                return userResult.Errors;
-
-            userId = userResult.Value;
-
+            
             var memberResult = Member.Create(
-            command.firstName,
-            command.lastName,
-            command.dateOfBirth,
-            command.phoneNumber,
-            command.imageUrl,
-            command.joinDate,
-            command.notes,
-            userId.Value);
+                command.firstName,
+                command.lastName,
+                command.dateOfBirth,
+                command.phoneNumber,
+                command.imageUrl,
+                command.joinDate,
+                command.notes);
 
             if (memberResult.IsError)
                 return memberResult.Errors;
 
             var member = memberResult.Value;
 
+            
             await _context.Members.AddAsync(member, ct);
             await _context.SaveChangesAsync(ct);
+
+            var personId = member.Person.Id;
+
+            
+            var userResult = await _identityService.CreateUserAsync(
+                command.email,
+                command.password,
+                Role.Member,
+                personId,
+                ct);
+
+            if (userResult.IsError)
+            {
+                _logger.LogError("Failed to create user for Member with email: {Email}. Errors: {Errors}", command.email, userResult.Errors);   
+                await transaction.RollbackAsync(ct);
+                return userResult.Errors;
+            }
+
+            userId = userResult.Value;
+
+           
             await transaction.CommitAsync(ct);
 
             await _cache.RemoveByTagAsync("Member", ct);
 
-            _logger.LogInformation("Created member {MemberId} linked to user {UserId}",
-            member.Id, userId);
+            _logger.LogInformation("Successfully created Member with ID: {MemberId} and associated User ID: {UserId}", member.Id, userId);
 
             return member.ToDto();
-
         }
         catch (Exception ex)
         {
             await transaction.RollbackAsync(ct);
 
-            
             if (userId is not null)
             {
-                _logger.LogWarning("Compensating: deleting identity user {UserId} after DB failure", userId);
-                await _identityService.DeleteUserAsync(userId.Value, ct);
+                await _identityService.DeleteUserAsync(userId, ct);
             }
 
             _logger.LogError(ex, "Error creating member for {Email}", command.email);
             throw;
         }
-
     }
 }

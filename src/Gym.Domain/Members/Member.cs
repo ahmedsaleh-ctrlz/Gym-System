@@ -1,15 +1,15 @@
 ﻿using Gym.Domain.Common;
 using Gym.Domain.Common.Result;
 using Gym.Domain.People;
-using Gym.Domain.People.PersonImages;
 
 namespace Gym.Domain.Members;
 public sealed class Member : AuditableEntity
 {
     public DateTime JoinDate { get; private set; }
     public string? Notes { get; private set; }
-    private bool IsDeleted { get; set; }
-    private DateTime? DeletedAt { get; set; }
+    public bool IsDeleted { get; private set; }
+    public DateTime? DeletedAt { get; private set; }
+    public int PersonId { get; private set; }
     public Person Person { get; private set; } = null!;
 
 
@@ -28,7 +28,7 @@ public sealed class Member : AuditableEntity
         string phoneNumber,
         string imageUrl,
         DateTime joinDate,
-        string? notes,int userId)
+        string? notes)
     {
 
         var error = Validate(joinDate);
@@ -37,7 +37,7 @@ public sealed class Member : AuditableEntity
             return error;
         }
 
-        var personResult = Person.Create(firstName, lastName, dateOfBirth, phoneNumber, imageUrl,userId);
+        var personResult = Person.Create(firstName, lastName, dateOfBirth, phoneNumber, imageUrl);
         if (personResult.IsError)
             return personResult.TopError;
         
