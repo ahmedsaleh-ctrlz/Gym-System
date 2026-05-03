@@ -8,7 +8,7 @@ public sealed record GetMemberByIdQuery(int id) : ICachedQuery<Result<MemberResp
 {
     public string cacheKey => $"Member_{id}";
 
-    public string cacheTag => "Member";
+    public string[] cacheTag => ["Member"];
 
     public TimeSpan cacheDuration => TimeSpan.FromMinutes(10);
 }

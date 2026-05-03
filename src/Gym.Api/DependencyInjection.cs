@@ -1,13 +1,19 @@
 ﻿
 using Asp.Versioning;
+using Gym.Api.Infrastructure;
+using Gym.Api.OpenApi;
+using System.Runtime.CompilerServices;
 namespace Gym.Api;
 
 public static class DependencyInjection
 {
     public static IServiceCollection AddApi(this IServiceCollection services)
     {
-            services.AddCustomProblemDetails()
-            .AddCustomApiVersioning();
+        services.AddCustomProblemDetails()
+        .AddCustomApiVersioning()
+        .AddCustomerExceptionHandling()
+        .AddApiDocumentation();
+        
 
 
         return services;
@@ -41,4 +47,41 @@ public static class DependencyInjection
         });
         return services;
     }
+
+
+    public static IServiceCollection AddCustomerExceptionHandling(this IServiceCollection services)
+    {
+        services.AddExceptionHandler<GlobalExceptionHandler>();
+        return services;
+    }
+
+
+
+    public static IApplicationBuilder UseCoreMiddlewares(this IApplicationBuilder app) 
+    {
+        app.UseExceptionHandler();
+        app.UseStatusCodePages();
+        app.UseHttpsRedirection();
+       
+
+        return app;
+    }
+
+    public static IServiceCollection AddApiDocumentation(this IServiceCollection services) 
+    {
+        string[] versions = ["v1"];
+
+        foreach (var version in versions)
+        {
+            services.AddOpenApi(version, options =>
+            {
+                // Versioning config
+                options.AddDocumentTransformer<VersionInfoTransformer>();
+            });
+        }
+
+        return services;
+    }
+
+
 }

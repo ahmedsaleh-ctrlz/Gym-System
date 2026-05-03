@@ -11,9 +11,10 @@ namespace Gym.Application.Features.Members.Commands.DeleteMember;
 
 public sealed class DeleteMemberCommandHandler(IAppDbContext context,
     ILogger<DeleteMemberCommandHandler> logger,
+    IIdentityService identityService,
     HybridCache cache) : IRequestHandler<DeleteMemberCommand, Result<Deleted>>
 {
-    public async Task<Result<Deleted>> Handle(DeleteMemberCommand command, CancellationToken cancellationToken)
+    public async Task<Result<Deleted>> Handle(DeleteMemberCommand command , CancellationToken cancellationToken)
     {
         logger.LogTrace("Handling {CommandName} for MemberId: {MemberId}", nameof(DeleteMemberCommand), command.MemberId);
         var member = await context.Members.FindAsync([command.MemberId], cancellationToken);
@@ -38,8 +39,13 @@ public sealed class DeleteMemberCommandHandler(IAppDbContext context,
             logger.LogError("Failed to delete member with id {MemberId}. Errors: {Errors}", command.MemberId, deleteResult.Errors);
             return deleteResult.Errors;
         }
-        await cache.RemoveByTagAsync("Member", cancellationToken);
+
+        await identityService.DeleteUserAsync(member.PersonId,cancellationToken);
+
         await context.SaveChangesAsync(cancellationToken);
+
+        logger.LogInformation("Removing cache with tag: Member");
+        await cache.RemoveByTagAsync("Member", cancellationToken);
 
         logger.LogInformation("Member with id {MemberId} deleted successfully.", command.MemberId);
         return Result.Deleted;

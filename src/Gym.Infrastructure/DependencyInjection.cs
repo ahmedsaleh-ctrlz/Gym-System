@@ -49,7 +49,7 @@ public static class DependencyInjection
 
         services.AddHybridCache(options => options.DefaultEntryOptions = new HybridCacheEntryOptions
         {
-            Expiration = TimeSpan.FromMinutes(10), // L2, L3
+            Expiration = TimeSpan.FromMinutes(5), // L2, L3
             LocalCacheExpiration = TimeSpan.FromSeconds(30), // L1
         });
 

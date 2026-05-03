@@ -15,6 +15,6 @@ public sealed record GetMemberQuery(int PageNumber = 1,
     ) : ICachedQuery<Result<PaginatedList<MemberResponse>>>
 {
     public string cacheKey => $"Members:Page={PageNumber}:Size={PageSize}:Search={SearchTerm ?? "all"}:Sort={SortBy ?? "id"}:SortDirection={sortDirection}";    
-    public string cacheTag => "Member";
+    public string[] cacheTag => ["Member"];
     public TimeSpan cacheDuration => TimeSpan.FromMinutes(10);
 }

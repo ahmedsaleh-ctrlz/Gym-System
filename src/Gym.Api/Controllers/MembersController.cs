@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Gym.Api.Contracts.Members;
 using Gym.Application.Features.Members.Commands.CreateMember;
 using Gym.Application.Features.Members.Commands.DeleteMember;
@@ -6,8 +7,10 @@ using Gym.Application.Features.Members.Dtos;
 using Gym.Application.Features.Members.Queries.GetMemberById;
 using Gym.Application.Features.Members.Queries.GetMembers;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+
 namespace Gym.Api.Controllers;
 
 [ApiController]
@@ -23,15 +26,16 @@ public sealed class MembersController(ISender sender) : ApiController
     [EndpointName("GetMembers")]
     [MapToApiVersion("1.0")]
     [ProducesDefaultResponseType]
-    [OutputCache(Duration = 60)]
+
     public async Task<IActionResult> GetMembers(
+        CancellationToken ct,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] string? searchTerm = null,
         [FromQuery] string? sortBy = null,
-        [FromQuery] string? sortDirection = "asc")
+        [FromQuery] string? sortDirection = "asc" )
     {
-        var result = await sender.Send(new GetMemberQuery(pageNumber, pageSize, searchTerm, sortBy, sortDirection));
+        var result = await sender.Send(new GetMemberQuery(pageNumber, pageSize, searchTerm, sortBy, sortDirection), ct);
 
         return result.Match(
             response => Ok(response),
@@ -59,6 +63,13 @@ public sealed class MembersController(ISender sender) : ApiController
     }
 
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [EndpointSummary("Add member.")]
+    [EndpointDescription("Add member and return the new route.")]
+    [EndpointName("AddMember")]
+    [MapToApiVersion("1.0")]
     public async Task<IActionResult> Create([FromBody] CreateMemberRequest request)
     {
         var result = await sender.Send(new CreateMemberCommand(
@@ -73,15 +84,20 @@ public sealed class MembersController(ISender sender) : ApiController
             request.Password));
 
         return result.Match(
-           response => CreatedAtRoute(
-                routeName: "GetMemberById",
-                routeValues: new { memberId = response.MemberId },
-                value: response),
-            Problem); 
+           _ => Created()
+                ,Problem); 
     }
 
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdateMemberRequest request)
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [EndpointSummary("Update a member Information.")]
+    [EndpointDescription("Update a member Information.")]
+    [EndpointName("UpdateMember")]
+    [MapToApiVersion("1.0")]
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateMemberRequest request , CancellationToken ct)
     {
         var result = await sender.Send(new UpdateMemberCommand(
             id,
@@ -90,30 +106,82 @@ public sealed class MembersController(ISender sender) : ApiController
             request.DateOfBirth,
             request.PhoneNumber,
             request.JoinDate,
-            request.Notes));
+            request.Notes),ct);
 
-        return result.Match(
-            response => Ok(response),
-            Problem);
-    }
-
-    [HttpPut("{id:int}/image")]
-    public async Task<IActionResult> UpdateImage(int id, [FromBody] UpdateMemberImageRequest request)
-    {
-        var result = await sender.Send(new UpdateMemberImageCommand(id, request.ImageUrl));
-        return result.Match(
-            response => Ok(response),
-            Problem);
-    }
-
-    [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var result = await sender.Send(new DeleteMemberCommand(id));
         return result.Match(
             _ => NoContent(),
             Problem);
     }
 
-    
+    [HttpPut("{id:int}/image")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [EndpointSummary("Update a memberImage Information.")]
+    [EndpointDescription("Update a memberImage Information.")]
+    [EndpointName("UpdateMemberImage")]
+    [MapToApiVersion("1.0")]
+
+    public async Task<IActionResult> UpdateImage(int id, [FromBody] UpdateMemberImageRequest request ,CancellationToken ct)
+    {
+        var result = await sender.Send(new UpdateMemberImageCommand(id, request.ImageUrl),ct);
+        return result.Match(
+            _ => NoContent(),
+            Problem);
+    }
+
+    [HttpDelete("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [EndpointSummary("Removes a member.")]
+    [EndpointDescription("Deletes the specified member from the system.")]
+    [EndpointName("RemoveMember")]
+    [MapToApiVersion("1.0")]
+
+    public async Task<IActionResult> Delete(int id , CancellationToken ct)
+    {
+        var result = await sender.Send(new DeleteMemberCommand(id) ,ct);
+        return result.Match(
+            _ => NoContent(),
+            Problem);
+    }
+
+
+    [HttpPost("UploadImage")]
+    public async Task<IActionResult> Upload(IFormFile file , CancellationToken ct) 
+    {
+        return await HandleImage(file,ct);
+    }
+
+
+    private async Task<IActionResult> HandleImage(IFormFile file,CancellationToken ct) 
+    {
+        if (file is null || file.Length == 0)
+            return BadRequest("No file");
+
+        var Dir = @"D:\Uploads";
+
+
+
+        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+
+        var path = Path.Combine(Dir, fileName);
+
+        if (!Directory.Exists(Dir)) 
+        {
+            Directory.CreateDirectory(Dir);
+        }
+
+        using var stream = new FileStream(path, FileMode.Create);
+        await file.CopyToAsync(stream,ct);
+
+        
+
+        return Ok(new { path });
+    }
+
+
+
 }

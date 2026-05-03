@@ -38,9 +38,9 @@ public sealed class UpdateMemberCommandHandler(IAppDbContext context,
             return updateResult.Errors;
         }
 
-        await _cache.RemoveByTagAsync("Member", ct);
-
         await _context.SaveChangesAsync(ct);
+
+        await _cache.RemoveByTagAsync("Member", ct);
 
         _logger.LogInformation("Successfully updated Member with ID {MemberId}.", command.MemberId);
 
@@ -72,9 +72,9 @@ public sealed class UpdateMemberCommandHandler(IAppDbContext context,
                 return updateResult.Errors;
             }
 
-            await cache.RemoveByTagAsync("Member", ct);
-
             await context.SaveChangesAsync(ct);
+
+            await cache.RemoveByTagAsync("Member", ct);
 
             logger.LogInformation("Successfully updated image for Member ID {MemberId}.", command.memberId);
 

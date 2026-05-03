@@ -15,10 +15,8 @@ public class GetMemberByIdQueryHandler(
 {
     public async Task<Result<MemberResponse>> Handle(GetMemberByIdQuery query, CancellationToken ct)
     {
-        var member = await context.Members
-            .Where(m => m.Id == query.id)
-            .Select(m => m.ToDto())
-            .FirstOrDefaultAsync(ct);
+        var member = await context.Members.Include(m=> m.Person).ThenInclude(p=> p.Image)
+            .FirstOrDefaultAsync(m => m.Id == query.id,ct);
 
         if (member is null)
         {
@@ -26,7 +24,7 @@ public class GetMemberByIdQueryHandler(
             return ApplicationErrors.MemberNotFound;
         }
 
-        return member;
+        return member.ToDto();
     }
 
 

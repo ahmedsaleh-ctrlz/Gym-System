@@ -2,6 +2,7 @@
 using Gym.Domain.Common.Constants.Enums;
 using Gym.Domain.Common.Result;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Gym.Infrastructure.Identity;
 
@@ -51,13 +52,13 @@ public class IdentityService(UserManager<AppUser> userManager) : IIdentityServic
         return user.Id;
     }
 
-    public async Task<Result<Deleted>> DeleteUserAsync(string userId, CancellationToken ct)
+    public async Task<Result<Deleted>> DeleteUserAsync(int PersonId, CancellationToken ct)
     {
-        var user = await userManager.FindByIdAsync(userId);
+        var user = await userManager.Users.FirstOrDefaultAsync(u => u.PersonId == PersonId);
 
         if (user is null)
         {
-            return Error.NotFound("UserNotFound", $"User with ID '{userId}' not found.");
+            return Error.NotFound("UserNotFound", $"User with ID '{PersonId}' not found.");
         }
 
         var deleteResult = await userManager.DeleteAsync(user);

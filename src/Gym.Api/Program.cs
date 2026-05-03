@@ -1,35 +1,43 @@
+using Gym.Api;
+using Gym.Application;
 using Gym.Application.Common.Behaviors;
 using Gym.Application.Features.Members.Commands.CreateMember;
 using Gym.Infrastructure;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("Client", policy =>
-    {
-        policy.AllowAnyOrigin()
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
-});
-builder.Services.AddHybridCache();
-builder.Services.AddMediatR(cfg =>
-{
-    cfg.RegisterServicesFromAssembly(typeof(CreateMemberCommand).Assembly);
-    cfg.AddOpenBehavior(typeof(CachingBehavior<,>));
-    cfg.AddOpenBehavior(typeof(PerformanceBehaviour<,>));
-});
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddApi()
+    .AddApplicaiton()
+    .AddInfrastructure(builder.Configuration);
+
 
 var app = builder.Build();
 
-await app.Services.InitialiseInfrastructureAsync();
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
 
-app.UseHttpsRedirection();
-app.UseCors("Client");
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/openapi/v1.json", "Gym API V1");
+        options.EnableDeepLinking();
+        options.DisplayRequestDuration();
+        options.EnableFilter();
+    });
+
+    app.MapScalarApiReference();
+}
+else
+{
+    app.UseHsts();
+}
+
+app.UseCoreMiddlewares();
+
 app.MapControllers();
-app.MapGet("/", () => Results.Ok("Gym API is running."));
+
+app.MapGet("/", () => "Api Is Running");
+
 
 app.Run();

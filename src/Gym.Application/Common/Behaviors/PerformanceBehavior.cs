@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Gym.Application.Common.Behaviors;
 
-public class PerformanceBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+public class PerformanceBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
     private readonly Stopwatch _timer;
@@ -13,7 +13,7 @@ public class PerformanceBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequ
     private readonly IUser _user;
     private readonly IIdentityService _identityService;
 
-    public PerformanceBehaviour(
+    public PerformanceBehavior(
         ILogger<TRequest> logger,
         IUser user,
         IIdentityService identityService)

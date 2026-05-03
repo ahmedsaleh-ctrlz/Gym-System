@@ -6,7 +6,7 @@ namespace Gym.Application.Common.Interfaces;
 public interface ICachedQuery
 {
     public string cacheKey { get; }
-    public string cacheTag { get; }
+    public string[] cacheTag { get; }
 
     public TimeSpan cacheDuration { get; }
 

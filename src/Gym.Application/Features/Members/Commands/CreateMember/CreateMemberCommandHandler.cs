@@ -28,6 +28,7 @@ public class CreateMemberCommandHandler(IAppDbContext context,
         await using var transaction = await _context.Database.BeginTransactionAsync(ct);
 
         string? userId = null;
+        int? personId = null;  
 
         try
         {
@@ -50,14 +51,14 @@ public class CreateMemberCommandHandler(IAppDbContext context,
             await _context.Members.AddAsync(member, ct);
             await _context.SaveChangesAsync(ct);
 
-            var personId = member.Person.Id;
+            personId = member.Person.Id;
 
             
             var userResult = await _identityService.CreateUserAsync(
                 command.email,
                 command.password,
                 Role.Member,
-                personId,
+                personId.Value,
                 ct);
 
             if (userResult.IsError)
@@ -84,7 +85,7 @@ public class CreateMemberCommandHandler(IAppDbContext context,
 
             if (userId is not null)
             {
-                await _identityService.DeleteUserAsync(userId, ct);
+                await _identityService.DeleteUserAsync(personId.Value, ct);
             }
 
             _logger.LogError(ex, "Error creating member for {Email}", command.email);
