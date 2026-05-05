@@ -1,4 +1,5 @@
 ﻿using Gym.Application.Common.Errors;
+using Gym.Application.Common.Helpers;
 using Gym.Application.Common.Interfaces;
 using Gym.Application.Features.Members.Commands.CreateMember;
 using Gym.Domain.Common.Result;
@@ -17,7 +18,7 @@ public sealed class DeleteMemberCommandHandler(IAppDbContext context,
     public async Task<Result<Deleted>> Handle(DeleteMemberCommand command , CancellationToken cancellationToken)
     {
         logger.LogTrace("Handling {CommandName} for MemberId: {MemberId}", nameof(DeleteMemberCommand), command.MemberId);
-        var member = await context.Members.FindAsync([command.MemberId], cancellationToken);
+        var member = await context.Members.Include(m=>m.Person).ThenInclude(p=> p.Image).FirstOrDefaultAsync(m=>m.Id==command.MemberId, cancellationToken);
         if (member is null)
         {
             logger.LogWarning("Member with id {MemberId} not found.", command.MemberId);
@@ -41,8 +42,14 @@ public sealed class DeleteMemberCommandHandler(IAppDbContext context,
         }
 
         await identityService.DeleteUserAsync(member.PersonId,cancellationToken);
-
+        
         await context.SaveChangesAsync(cancellationToken);
+
+        if (!string.IsNullOrEmpty(member.Person?.Image?.ImageUrl))
+        {
+            await Utility.DeleteImage(member.Person.Image.ImageUrl);
+        }
+
 
         logger.LogInformation("Removing cache with tag: Member");
         await cache.RemoveByTagAsync("Member", cancellationToken);

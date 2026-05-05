@@ -7,7 +7,7 @@ using Gym.Domain.Common.Result;
 
 namespace Gym.Application.Features.Members.Queries.GetMembers;
 
-public sealed record GetMemberQuery(int PageNumber = 1,
+public sealed record GetMembersQuery(int PageNumber = 1,
     int PageSize = 10,
     string? SearchTerm = null,
     string? SortBy = null,

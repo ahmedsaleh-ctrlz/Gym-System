@@ -1,29 +1,29 @@
 ﻿using Gym.Application.Common.Interfaces;
-using Gym.Application.Features.Members.Dtos;
-using Gym.Application.Features.Members.Mappers;
+using Gym.Application.Features.Coaches.Dtos;
+using Gym.Application.Features.Coaches.Mappers;
 using Gym.Domain.Common.Constants.Enums;
 using Gym.Domain.Common.Result;
-using Gym.Domain.Members;
+using Gym.Domain.Coachs;
 using MediatR;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 
-namespace Gym.Application.Features.Members.Commands.CreateMember;
+namespace Gym.Application.Features.Coaches.Commands.CreateCoach;
 
-public class CreateMemberCommandHandler(IAppDbContext context,
-    ILogger<CreateMemberCommandHandler> logger,
+public class CreateCoachCommandHandler(IAppDbContext context,
+    ILogger<CreateCoachCommandHandler> logger,
     HybridCache cache,
-    IIdentityService identityService) : IRequestHandler<CreateMemberCommand, Result<MemberResponse>>
+    IIdentityService identityService) : IRequestHandler<CreateCoachCommand, Result<CoachResponse>>
 
 {
     private readonly IAppDbContext _context = context;
-    private readonly ILogger<CreateMemberCommandHandler> _logger = logger;
+    private readonly ILogger<CreateCoachCommandHandler> _logger = logger;
     private readonly HybridCache _cache = cache;
     private readonly IIdentityService _identityService = identityService;
 
-    public async Task<Result<MemberResponse>> Handle(CreateMemberCommand command, CancellationToken ct)
+    public async Task<Result<CoachResponse>> Handle(CreateCoachCommand command, CancellationToken ct)
     {
-        _logger.LogTrace("Creating Member for email: {Email}", command.email);
+        _logger.LogTrace("Creating Coach for email: {Email}", command.email);
 
         await using var transaction = await _context.Database.BeginTransactionAsync(ct);
 
@@ -33,37 +33,36 @@ public class CreateMemberCommandHandler(IAppDbContext context,
         try
         {
             
-            var memberResult = Member.Create(
+            var CoachResult = Coach.Create(
                 command.firstName,
                 command.lastName,
                 command.dateOfBirth,
                 command.phoneNumber,
                 command.imageUrl,
-                command.joinDate,
-                command.notes);
+                command.HireDate);
 
-            if (memberResult.IsError)
-                return memberResult.Errors;
+            if (CoachResult.IsError)
+                return CoachResult.Errors;
 
-            var member = memberResult.Value;
+            var coach = CoachResult.Value;
 
             
-            await _context.Members.AddAsync(member, ct);
+            await _context.Coaches.AddAsync(coach, ct);
             await _context.SaveChangesAsync(ct);
 
-            personId = member.Person.Id;
+            personId = coach.Person.Id;
 
             
             var userResult = await _identityService.CreateUserAsync(
                 command.email,
                 command.password,
-                Role.Member,
+                Role.Coach,
                 personId.Value,
                 ct);
 
             if (userResult.IsError)
             {
-                _logger.LogError("Failed to create user for Member with email: {Email}. Errors: {Errors}", command.email, userResult.Errors);   
+                _logger.LogError("Failed to create user for Coach with email: {Email}. Errors: {Errors}", command.email, userResult.Errors);   
                 await transaction.RollbackAsync(ct);
                 return userResult.Errors;
             }
@@ -73,11 +72,11 @@ public class CreateMemberCommandHandler(IAppDbContext context,
            
             await transaction.CommitAsync(ct);
 
-            await _cache.RemoveByTagAsync("Member", ct);
+            await _cache.RemoveByTagAsync("Coach", ct);
 
-            _logger.LogInformation("Successfully created Member with ID: {MemberId} and associated User ID: {UserId}", member.Id, userId);
+            _logger.LogInformation("Successfully created Coach with ID: {CoachId} and associated User ID: {UserId}", coach.Id, userId);
 
-            return member.ToDto();
+            return coach.ToDto();
         }
         catch (Exception ex)
         {
@@ -88,7 +87,7 @@ public class CreateMemberCommandHandler(IAppDbContext context,
                 await _identityService.DeleteUserAsync(personId!.Value, ct);
             }
 
-            _logger.LogError(ex, "Error creating member for {Email}", command.email);
+            _logger.LogError(ex, "Error creating Coach for {Email}", command.email);
             throw;
         }
     }

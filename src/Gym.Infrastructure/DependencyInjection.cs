@@ -23,6 +23,8 @@ public static class DependencyInjection
         services.AddScoped<ISaveChangesInterceptor,AuditableEntityInterceptor>();
         services.AddSingleton(TimeProvider.System);
 
+        services.AddScoped<AppDbContextInitailiser>();
+
         services.AddDbContext<AppDbContext>((sp, options) =>
         {
             options.AddInterceptors(sp.GetService<ISaveChangesInterceptor>()!);
@@ -56,21 +58,4 @@ public static class DependencyInjection
         return services;
     }
 
-    public static async Task InitialiseInfrastructureAsync(this IServiceProvider services)
-    {
-        using var scope = services.CreateScope();
-
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-
-        await dbContext.Database.MigrateAsync();
-
-        foreach (var role in Enum.GetNames<Role>().Where(r => r != nameof(Role.None)))
-        {
-            if (!await roleManager.RoleExistsAsync(role))
-            {
-                await roleManager.CreateAsync(new IdentityRole(role));
-            }
-        }
-    }
 }

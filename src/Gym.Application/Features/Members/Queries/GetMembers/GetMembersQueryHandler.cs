@@ -10,9 +10,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Gym.Application.Features.Members.Queries.GetMembers;
 
-public class GetMemberQueryHandler(IAppDbContext context) : IRequestHandler<GetMemberQuery, Result<PaginatedList<MemberResponse>>>
+public class GetMembersQueryHandler(IAppDbContext context) : IRequestHandler<GetMembersQuery, Result<PaginatedList<MemberResponse>>>
 {
-    public async Task<Result<PaginatedList<MemberResponse>>> Handle(GetMemberQuery query, CancellationToken ct)        
+    public async Task<Result<PaginatedList<MemberResponse>>> Handle(GetMembersQuery query, CancellationToken ct)        
     {
         var membersQuery = context.Members.AsNoTracking().AsQueryable();
         var memberQuery = ApplyFilters(membersQuery, query.SearchTerm);

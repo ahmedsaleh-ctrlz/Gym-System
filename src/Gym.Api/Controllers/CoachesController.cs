@@ -1,42 +1,41 @@
-using Asp.Versioning;
-using Gym.Api.Contracts.Members;
-using Gym.Application.Features.Members.Commands.CreateMember;
-using Gym.Application.Features.Members.Commands.DeleteMember;
-using Gym.Application.Features.Members.Commands.UpdateMember;
-using Gym.Application.Features.Members.Dtos;
-using Gym.Application.Features.Members.Queries.GetMemberById;
-using Gym.Application.Features.Members.Queries.GetMembers;
+﻿using Asp.Versioning;
+using Gym.Api.Contracts.Coaches;
+using Gym.Application.Features.Coaches.Commands.CreateCoach;
+using Gym.Application.Features.Coaches.Commands.DeleteCoach;
+using Gym.Application.Features.Coaches.Commands.UpdateCoach;
+using Gym.Application.Features.Coaches.Dtos;
+using Gym.Application.Features.Coaches.Queries.GetCoachById;
+using Gym.Application.Features.Coaches.Queries.GetCoaches;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 
 namespace Gym.Api.Controllers;
 
-[ApiController]
-[Route("api/v{version:apiVersion}/members")]
-[ApiVersion("1.0")]
 
-public sealed class MembersController(ISender sender) : ApiController
+[ApiController]
+[Route("api/v{version:apiVersion}/coaches")]
+[ApiVersion("1.0")]
+public sealed class CoachesController(ISender sender) : ApiController
 {
     [HttpGet]
-    [ProducesResponseType(typeof(List<MemberResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(List<CoachResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    [EndpointSummary("Retrieves a list of members.")]
-    [EndpointDescription("Returns Paged members.")]
-    [EndpointName("GetMembers")]
+    [EndpointSummary("Retrieves a list of Coachs.")]
+    [EndpointDescription("Returns Paged Coachs.")]
+    [EndpointName("GetCoachs")]
     [MapToApiVersion("1.0")]
     [ProducesDefaultResponseType]
 
-    public async Task<IActionResult> GetMembers(
+    public async Task<IActionResult> GetCoachs(
         CancellationToken ct,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] string? searchTerm = null,
         [FromQuery] string? sortBy = null,
-        [FromQuery] string? sortDirection = "asc" )
+        [FromQuery] string? sortDirection = "asc")
     {
-        var result = await sender.Send(new GetMembersQuery(pageNumber, pageSize, searchTerm, sortBy, sortDirection), ct);
+        var result = await sender.Send(new GetCoachesQuery(pageNumber, pageSize, searchTerm, sortBy, sortDirection), ct);
 
         return result.Match(
             response => Ok(response),
@@ -44,19 +43,19 @@ public sealed class MembersController(ISender sender) : ApiController
     }
 
     [HttpGet("{id:int}")]
-    [ProducesResponseType(typeof(MemberResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CoachResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    [EndpointSummary("Retrieves a member by ID.")]
-    [EndpointDescription("Returns detailed information about the specified member if found.")]
-    [EndpointName("GetMemberById")]
+    [EndpointSummary("Retrieves a Coach by ID.")]
+    [EndpointDescription("Returns detailed information about the specified Coach if found.")]
+    [EndpointName("GetCoachById")]
     [MapToApiVersion("1.0")]
     [OutputCache(Duration = 60)]
 
-    public async Task<IActionResult> GetMemberById(int id , CancellationToken ct)
+    public async Task<IActionResult> GetCoachById(int id, CancellationToken ct)
     {
-        var result = await sender.Send(new GetMemberByIdQuery(id), ct);
+        var result = await sender.Send(new GetCoachByIdQuery(id), ct);
 
         return result.Match(
             response => Ok(response),
@@ -67,26 +66,25 @@ public sealed class MembersController(ISender sender) : ApiController
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    [EndpointSummary("Add member.")]
-    [EndpointDescription("Add member and return the new route.")]
-    [EndpointName("AddMember")]
+    [EndpointSummary("Add Coach.")]
+    [EndpointDescription("Add Coach and return the new route.")]
+    [EndpointName("AddCoach")]
     [MapToApiVersion("1.0")]
-    public async Task<IActionResult> Create([FromBody] CreateMemberRequest request)
+    public async Task<IActionResult> Create([FromBody] CreateCoachRequest request)
     {
-        var result = await sender.Send(new CreateMemberCommand(
+        var result = await sender.Send(new CreateCoachCommand(
             request.FirstName,
             request.LastName,
             request.DateOfBirth,
             request.PhoneNumber,
             request.ImageUrl,
-            request.JoinDate,
-            request.Notes,
+            request.HireDate,
             request.Email,
             request.Password));
 
         return result.Match(
            _ => Created()
-                ,Problem); 
+                , Problem);
     }
 
     [HttpPut("{id:int}")]
@@ -94,20 +92,19 @@ public sealed class MembersController(ISender sender) : ApiController
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    [EndpointSummary("Update a member Information.")]
-    [EndpointDescription("Update a member Information.")]
-    [EndpointName("UpdateMember")]
+    [EndpointSummary("Update a Coach Information.")]
+    [EndpointDescription("Update a Coach Information.")]
+    [EndpointName("UpdateCoach")]
     [MapToApiVersion("1.0")]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdateMemberRequest request , CancellationToken ct)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateCoachRequest request, CancellationToken ct)
     {
-        var result = await sender.Send(new UpdateMemberCommand(
+        var result = await sender.Send(new UpdateCoachCommand(
             id,
             request.FirstName,
             request.LastName,
             request.DateOfBirth,
             request.PhoneNumber,
-            request.JoinDate,
-            request.Notes),ct);
+            request.HireDate), ct);
 
         return result.Match(
             _ => NoContent(),
@@ -119,14 +116,14 @@ public sealed class MembersController(ISender sender) : ApiController
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    [EndpointSummary("Update a memberImage Information.")]
-    [EndpointDescription("Update a memberImage Information.")]
-    [EndpointName("UpdateMemberImage")]
+    [EndpointSummary("Update a CoachImage Information.")]
+    [EndpointDescription("Update a CoachImage Information.")]
+    [EndpointName("UpdateCoachImage")]
     [MapToApiVersion("1.0")]
 
-    public async Task<IActionResult> UpdateImage(int id, [FromBody] UpdateMemberImageRequest request ,CancellationToken ct)
+    public async Task<IActionResult> UpdateImage(int id, [FromBody] UpdateCoachImageRequest request, CancellationToken ct)
     {
-        var result = await sender.Send(new UpdateMemberImageCommand(id, request.ImageUrl),ct);
+        var result = await sender.Send(new UpdateCoachImageCommand(id, request.ImageUrl), ct);
         return result.Match(
             _ => NoContent(),
             Problem);
@@ -136,20 +133,16 @@ public sealed class MembersController(ISender sender) : ApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    [EndpointSummary("Removes a member.")]
-    [EndpointDescription("Deletes the specified member from the system.")]
-    [EndpointName("RemoveMember")]
+    [EndpointSummary("Removes a Coach.")]
+    [EndpointDescription("Deletes the specified Coach from the system.")]
+    [EndpointName("RemoveCoach")]
     [MapToApiVersion("1.0")]
 
-    public async Task<IActionResult> Delete(int id , CancellationToken ct)
+    public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
-        var result = await sender.Send(new DeleteMemberCommand(id) ,ct);
+        var result = await sender.Send(new DeleteCoachCommand(id), ct);
         return result.Match(
             _ => NoContent(),
             Problem);
     }
-
-
- 
-
 }

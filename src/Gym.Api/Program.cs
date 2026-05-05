@@ -3,6 +3,7 @@ using Gym.Application;
 using Gym.Application.Common.Behaviors;
 using Gym.Application.Features.Members.Commands.CreateMember;
 using Gym.Infrastructure;
+using Gym.Infrastructure.Data;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,6 +28,7 @@ if (app.Environment.IsDevelopment())
     });
 
     app.MapScalarApiReference();
+    await app.InitialiseDatabaseAsync();
 }
 else
 {

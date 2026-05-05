@@ -16,7 +16,7 @@ namespace Gym.Application.Common.Behaviors
             catch (Exception ex) 
             {
                 var requestName = typeof(TRequest).Name;
-                logger.LogError(ex, "Request: Unhandled Exception for Request {Name} {@Request}", requestName, request);
+                logger.LogError(ex, "Request: Unhandled Exception for Request {Name} ", requestName);
 
                 throw;
             }
