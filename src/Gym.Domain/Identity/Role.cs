@@ -1,5 +1,4 @@
-﻿
-namespace Gym.Domain.Common.Constants.Enums;
+﻿namespace Gym.Domain.Identity;
 
 public enum Role
 {

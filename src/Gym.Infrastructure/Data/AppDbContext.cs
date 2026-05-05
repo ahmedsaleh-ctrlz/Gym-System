@@ -1,6 +1,7 @@
 ﻿
 using Gym.Application.Common.Interfaces;
 using Gym.Domain.Coachs;
+using Gym.Domain.Identity;
 using Gym.Domain.Members;
 using Gym.Domain.People;
 using Gym.Domain.People.PersonImages;
@@ -18,6 +19,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Coach> Coaches => Set<Coach>();
     public DbSet<Person> People => Set<Person>();
     public DbSet<PersonImage> PersonImages => Set<PersonImage>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

@@ -1,6 +1,8 @@
-﻿using Gym.Application.Common.Interfaces;
-using Gym.Domain.Common.Constants.Enums;
+﻿using Gym.Application.Common.Helpers;
+using Gym.Application.Common.Interfaces;
+using Gym.Application.Features.Identity.Dtos;
 using Gym.Domain.Common.Result;
+using Gym.Domain.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,7 +16,7 @@ public class IdentityService(UserManager<AppUser> userManager) : IIdentityServic
 
         if (existingUser is not null)
         {
-            return Error.Conflict("UserAlreadyExists", $"A user with the email '{email}' already exists.");
+            return Error.Conflict("UserAlreadyExists", $"A user with the email '{Utility.MaskEmail(email)}' already exists.");
         }
 
 
@@ -73,9 +75,39 @@ public class IdentityService(UserManager<AppUser> userManager) : IIdentityServic
         return Result.Deleted;
     }
 
+    public async Task<Result<AppUserDto>> FindUserById(string userId)
+    {
+        var user = await userManager.FindByIdAsync(userId);
+
+        if ()
+        {
+            
+        }
+
+        return new AppUserDto(userId ,user.)
+    }
+
     public async Task<string?> GetUserNameByIdAsync(string userId, CancellationToken ct)
     {
         var user = await userManager.FindByIdAsync(userId);
         return user?.UserName;
+    }
+
+    public async Task<Result<AppUserDto>> AuthenticateAsync(string email, string passsword, CancellationToken ct)
+    {
+        var user = await userManager.FindByEmailAsync(email);
+
+        if (user is null) 
+        {
+            return Error.NotFound("User_Not_Found", $"User with email {Utility.MaskEmail(email)} not found");
+        }
+
+        if (!await userManager.CheckPasswordAsync(user, passsword))
+        {
+            return Error.Conflict("Invalid_Login_Attempt", "Email / Password are incorrect");
+        }
+
+        return new AppUserDto(user.Id,user.Email!, await userManager.GetRolesAsync(user), await userManager.GetClaimsAsync(user));
+
     }
 }

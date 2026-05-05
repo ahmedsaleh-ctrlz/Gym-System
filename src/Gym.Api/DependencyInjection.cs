@@ -2,6 +2,8 @@
 using Asp.Versioning;
 using Gym.Api.Infrastructure;
 using Gym.Api.OpenApi;
+using Gym.Api.Services;
+using Gym.Application.Common.Interfaces;
 using System.Runtime.CompilerServices;
 namespace Gym.Api;
 
@@ -12,7 +14,8 @@ public static class DependencyInjection
         services.AddCustomProblemDetails()
         .AddCustomApiVersioning()
         .AddCustomerExceptionHandling()
-        .AddApiDocumentation();
+        .AddApiDocumentation()
+        .AddIdentityInfrastructure();
         
 
 
@@ -55,7 +58,12 @@ public static class DependencyInjection
         return services;
     }
 
-
+    public static IServiceCollection AddIdentityInfrastructure(this IServiceCollection services)
+    {
+        services.AddScoped<IUser, CurrentUser>();
+        services.AddHttpContextAccessor();
+        return services;
+    }
 
     public static IApplicationBuilder UseCoreMiddlewares(this IApplicationBuilder app) 
     {

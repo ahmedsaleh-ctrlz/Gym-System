@@ -1,5 +1,5 @@
 ﻿using Gym.Domain.Coachs;
-using Gym.Domain.Common.Constants.Enums;
+using Gym.Domain.Identity;
 using Gym.Domain.Members;
 using Gym.Domain.People;
 using Gym.Infrastructure.Identity;

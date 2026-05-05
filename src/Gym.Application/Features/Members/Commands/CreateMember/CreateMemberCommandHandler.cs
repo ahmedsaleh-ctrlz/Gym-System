@@ -1,8 +1,8 @@
 ﻿using Gym.Application.Common.Interfaces;
 using Gym.Application.Features.Members.Dtos;
 using Gym.Application.Features.Members.Mappers;
-using Gym.Domain.Common.Constants.Enums;
 using Gym.Domain.Common.Result;
+using Gym.Domain.Identity;
 using Gym.Domain.Members;
 using MediatR;
 using Microsoft.Extensions.Caching.Hybrid;

@@ -1,5 +1,4 @@
 using Gym.Application.Common.Interfaces;
-using Gym.Domain.Common.Constants.Enums;
 using Gym.Infrastructure.Data;
 using Gym.Infrastructure.Data.Interceptors;
 using Gym.Infrastructure.Identity;
@@ -19,7 +18,6 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("DefaultConnection");
 
         services.AddHttpContextAccessor();
-        services.AddScoped<IUser, CurrentUser>();
         services.AddScoped<ISaveChangesInterceptor,AuditableEntityInterceptor>();
         services.AddSingleton(TimeProvider.System);
 
@@ -32,6 +30,9 @@ public static class DependencyInjection
         });
 
         services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
+
+        services.AddScoped<ITokenProvider, TokenProvider>();
+       
 
         services.AddIdentityCore<AppUser>(options =>
             {

@@ -18,10 +18,21 @@ namespace Gym.Application.Common.Helpers
                 File.Delete(imagePath);
                 return Result.Deleted;
             }
-            catch (IOException ex)
+            catch (IOException)
             {
                 return Error.Failure("Delete failed");
             }
+        }
+
+        public static string MaskEmail(string email)
+        {
+            int atIndex = email.IndexOf('@');
+            if (atIndex <= 1)
+            {
+                return $"****{email.AsSpan(atIndex)}";
+            }
+
+            return email[0] + "****" + email[atIndex - 1] + email[atIndex..];
         }
     }
 }

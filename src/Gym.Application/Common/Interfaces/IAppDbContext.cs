@@ -1,4 +1,5 @@
 ﻿using Gym.Domain.Coachs;
+using Gym.Domain.Identity;
 using Gym.Domain.Members;
 
 using Microsoft.EntityFrameworkCore;
@@ -13,9 +14,7 @@ public interface IAppDbContext
     public DbSet<Coach> Coaches { get;}
 
     public DatabaseFacade Database { get; }
-
+    public DbSet<RefreshToken> RefreshTokens { get;}
    
-
-
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }
