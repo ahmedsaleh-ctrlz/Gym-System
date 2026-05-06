@@ -8,7 +8,7 @@ using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddApi()
+builder.Services.AddApi(builder.Configuration)
     .AddApplicaiton()
     .AddInfrastructure(builder.Configuration);
 
@@ -35,7 +35,7 @@ else
     app.UseHsts();
 }
 
-app.UseCoreMiddlewares();
+app.UseCoreMiddlewares(builder.Configuration);
 
 app.MapControllers();
 

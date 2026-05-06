@@ -75,6 +75,12 @@ public class TokenProvider(IConfiguration configuration , IAppDbContext context)
             new (JwtRegisteredClaimNames.Email , user.Email!)
         };
 
+        if (user.PersonId > 0)
+        {
+            claims.Add(new("person_id", user.PersonId.ToString()));
+        }
+
+    
         foreach (var role in user.Roles)
         {
             claims.Add(new(ClaimTypes.Role,role));

@@ -2,12 +2,17 @@ using Gym.Application.Common.Interfaces;
 using Gym.Infrastructure.Data;
 using Gym.Infrastructure.Data.Interceptors;
 using Gym.Infrastructure.Identity;
+using Gym.Infrastructure.Identity.Policies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Gym.Infrastructure;
 
@@ -32,7 +37,8 @@ public static class DependencyInjection
         services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
 
         services.AddScoped<ITokenProvider, TokenProvider>();
-       
+
+        services.AddScoped<IAuthorizationHandler, SameCoachHandler>();
 
         services.AddIdentityCore<AppUser>(options =>
             {
@@ -54,6 +60,34 @@ public static class DependencyInjection
         {
             Expiration = TimeSpan.FromMinutes(5), // L2, L3
             LocalCacheExpiration = TimeSpan.FromSeconds(30), // L1
+        });
+
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+        }).AddJwtBearer(options =>
+        {
+            var jwtSettings = configuration.GetSection("JwtSettings");
+
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtSettings["Issuer"],
+                ValidAudience = jwtSettings["Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtSettings["Secret"]!)),
+            };
+        });
+
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy(Policies.SameCoach, policy => policy.AddRequirements(new SameCoachRequirement()));
         });
 
         return services;

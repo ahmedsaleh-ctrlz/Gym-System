@@ -22,7 +22,7 @@ namespace Gym.Api.Controllers
         [EndpointDescription("Authenticates a user using provided credentials and returns a JWT token pair.")]
         [EndpointName("GenerateToken")]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult<TokenResponse>> GenerateToken(GenerateTokenRequest request, CancellationToken ct)
+        public async Task<ActionResult<TokenResponse>> GenerateToken([FromBody] GenerateTokenRequest request, CancellationToken ct)
         {
             var result = await sender.Send(new GenerateTokenQuery(request.email, request.password), ct);
 

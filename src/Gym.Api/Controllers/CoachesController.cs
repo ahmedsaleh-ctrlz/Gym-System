@@ -6,9 +6,13 @@ using Gym.Application.Features.Coaches.Commands.UpdateCoach;
 using Gym.Application.Features.Coaches.Dtos;
 using Gym.Application.Features.Coaches.Queries.GetCoachById;
 using Gym.Application.Features.Coaches.Queries.GetCoaches;
+using Gym.Domain.Identity;
+using Gym.Infrastructure.Identity.Policies;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using System.Security.Cryptography;
 
 namespace Gym.Api.Controllers;
 
@@ -16,6 +20,7 @@ namespace Gym.Api.Controllers;
 [ApiController]
 [Route("api/v{version:apiVersion}/coaches")]
 [ApiVersion("1.0")]
+[Authorize]
 public sealed class CoachesController(ISender sender) : ApiController
 {
     [HttpGet]
@@ -26,7 +31,7 @@ public sealed class CoachesController(ISender sender) : ApiController
     [EndpointName("GetCoachs")]
     [MapToApiVersion("1.0")]
     [ProducesDefaultResponseType]
-
+    [AllowAnonymous]
     public async Task<IActionResult> GetCoachs(
         CancellationToken ct,
         [FromQuery] int pageNumber = 1,
@@ -51,7 +56,7 @@ public sealed class CoachesController(ISender sender) : ApiController
     [EndpointDescription("Returns detailed information about the specified Coach if found.")]
     [EndpointName("GetCoachById")]
     [MapToApiVersion("1.0")]
-    [OutputCache(Duration = 60)]
+    [Authorize(Policy = Policies.SameCoach)]
 
     public async Task<IActionResult> GetCoachById(int id, CancellationToken ct)
     {

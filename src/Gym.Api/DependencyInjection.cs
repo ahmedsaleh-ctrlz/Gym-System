@@ -4,20 +4,40 @@ using Gym.Api.Infrastructure;
 using Gym.Api.OpenApi;
 using Gym.Api.Services;
 using Gym.Application.Common.Interfaces;
+using Gym.Infrastructure.Settings;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 namespace Gym.Api;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddApi(this IServiceCollection services)
+    public static IServiceCollection AddApi(this IServiceCollection services ,IConfiguration configuration)
     {
-        services.AddCustomProblemDetails()
+        services
+        .AddControllerWithJsonConfiguration()
+        .AddConfiguredCors(configuration)
+        .AddCustomProblemDetails()
         .AddCustomApiVersioning()
         .AddCustomerExceptionHandling()
         .AddApiDocumentation()
         .AddIdentityInfrastructure();
         
 
+
+        return services;
+    }
+
+    public static IServiceCollection AddConfiguredCors(this IServiceCollection services, IConfiguration configuration)
+    {
+        var appSettings = configuration.GetSection("AppSettings").Get<AppSettings>()!;
+
+        services.AddCors(options => options.AddPolicy(
+            appSettings.CorsPolicyName,
+            policy => policy
+                .WithOrigins(appSettings.AllowedOrigins!)
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials()));
 
         return services;
     }
@@ -51,6 +71,14 @@ public static class DependencyInjection
         return services;
     }
 
+    public static IServiceCollection AddControllerWithJsonConfiguration(this IServiceCollection services)
+    {
+        services.AddControllers().AddJsonOptions(options => options
+            .JsonSerializerOptions
+            .DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull);
+
+        return services;
+    }
 
     public static IServiceCollection AddCustomerExceptionHandling(this IServiceCollection services)
     {
@@ -65,12 +93,14 @@ public static class DependencyInjection
         return services;
     }
 
-    public static IApplicationBuilder UseCoreMiddlewares(this IApplicationBuilder app) 
+    public static IApplicationBuilder UseCoreMiddlewares(this IApplicationBuilder app ,IConfiguration configuration) 
     {
         app.UseExceptionHandler();
         app.UseStatusCodePages();
         app.UseHttpsRedirection();
-       
+        app.UseCors(configuration["AppSettings:CorsPolicyName"]!);
+        app.UseAuthentication();
+        app.UseAuthorization();
 
         return app;
     }
@@ -85,6 +115,7 @@ public static class DependencyInjection
             {
                 // Versioning config
                 options.AddDocumentTransformer<VersionInfoTransformer>();
+                options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
             });
         }
 

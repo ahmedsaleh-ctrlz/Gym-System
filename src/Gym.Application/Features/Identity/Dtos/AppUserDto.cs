@@ -5,4 +5,4 @@ using System.Text;
 
 namespace Gym.Application.Features.Identity.Dtos;
 
-public sealed record AppUserDto(string UserId, string Email, IList<string> Roles, IList<Claim> Claims);
+public sealed record AppUserDto(string UserId,int? PersonId,string Email, IList<string> Roles, IList<Claim> Claims);

@@ -83,7 +83,7 @@ public class IdentityService(UserManager<AppUser> userManager) : IIdentityServic
 
         var claims = await userManager.GetClaimsAsync(user);
 
-        return new AppUserDto(user.Id, user.Email!, roles, claims);
+        return new AppUserDto(user.Id,user.PersonId,user.Email!, roles, claims);
     }
 
     public async Task<string?> GetUserNameByIdAsync(string userId, CancellationToken ct)
@@ -106,7 +106,7 @@ public class IdentityService(UserManager<AppUser> userManager) : IIdentityServic
             return Error.Conflict("Invalid_Login_Attempt", "Email / Password are incorrect");
         }
 
-        return new AppUserDto(user.Id,user.Email!, await userManager.GetRolesAsync(user), await userManager.GetClaimsAsync(user));
+        return new AppUserDto(user.Id,user.PersonId,user.Email!, await userManager.GetRolesAsync(user), await userManager.GetClaimsAsync(user));
 
     }
 }
