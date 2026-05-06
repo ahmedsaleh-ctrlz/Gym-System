@@ -1,6 +1,6 @@
 ﻿using Gym.Application.Common.Errors;
 using Gym.Application.Common.Interfaces;
-using Gym.Domain.Coachs;
+using Gym.Domain.Coaches;
 using Gym.Domain.Common.Result;
 using MediatR;
 using Microsoft.EntityFrameworkCore;

@@ -18,7 +18,7 @@ public class Result<TValue> : IResult
     public bool IsSuccess { get; }
     public bool IsError => !IsSuccess;
     public TValue Value => IsSuccess ? _value! : default!;
-    public List<Error> Errors => IsError ? _errors! : new List<Error>();
+    public List<Error> Errors => IsError ? _errors! : [];
     public Error TopError => (_errors?.Count > 0) ? _errors[0] : default;
     
 
@@ -27,7 +27,7 @@ public class Result<TValue> : IResult
         if (isSuccess)
         {
             _value = value ?? throw new ArgumentNullException(nameof(value));
-            _errors = new List<Error>();
+            _errors = [];
             IsSuccess = true;
         }
         else
@@ -46,7 +46,7 @@ public class Result<TValue> : IResult
     }
     private Result(Error error)
     {
-        _errors = new List<Error> { error };
+        _errors = [error];
     }
     private Result(List<Error> errors)
     {

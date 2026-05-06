@@ -1,5 +1,6 @@
 ﻿using Gym.Application.Features.Identity.Dtos;
 using Gym.Domain.Common.Result;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -11,5 +12,6 @@ public interface ITokenProvider
     Task<Result<TokenResponse>> GenerateJwtTokenAsync(AppUserDto user, CancellationToken ct = default);
 
 
-    List<Claim> GetClaimsFromExpiredToken(string ExpiredToken);
+    ClaimsPrincipal? GetPrincipalFromExpiredToken(string token);
+    
 }

@@ -2,7 +2,7 @@
 using Gym.Application.Common.Interfaces;
 using Gym.Application.Common.Models;
 using Gym.Application.Features.Coaches.Dtos;
-using Gym.Domain.Coachs;
+using Gym.Domain.Coaches;
 using Gym.Domain.Common.Result;
 using MediatR;
 using Microsoft.EntityFrameworkCore;

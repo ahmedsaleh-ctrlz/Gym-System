@@ -2,7 +2,7 @@
 using Gym.Application.Features.Coaches.Dtos;
 using Gym.Application.Features.Coaches.Mappers;
 using Gym.Domain.Common.Result;
-using Gym.Domain.Coachs;
+using Gym.Domain.Coaches;
 using MediatR;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;

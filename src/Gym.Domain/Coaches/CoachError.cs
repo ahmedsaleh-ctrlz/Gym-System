@@ -1,6 +1,6 @@
 ﻿using Gym.Domain.Common.Result;
 
-namespace Gym.Domain.Coachs;
+namespace Gym.Domain.Coaches;
 
 public static class CoachError
 {

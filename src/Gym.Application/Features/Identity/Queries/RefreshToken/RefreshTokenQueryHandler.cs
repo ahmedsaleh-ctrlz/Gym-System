@@ -4,6 +4,7 @@ using Gym.Application.Features.Identity.Dtos;
 using Gym.Domain.Common.Result;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.JsonWebTokens;
 using System.Security.Claims;
 
 namespace Gym.Application.Features.Identity.Queries.RefreshToken;
@@ -16,6 +17,7 @@ public sealed class RefreshTokenQueryHandler(
 {
     public async Task<Result<TokenResponse>> Handle(RefreshTokenQuery request, CancellationToken ct)
     {
+
         // Get principal From ExpiredToken
         var principal = tokenProvider.GetPrincipalFromExpiredToken(request.ExpiredAccessToken);
 

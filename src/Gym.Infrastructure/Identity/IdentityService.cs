@@ -56,7 +56,7 @@ public class IdentityService(UserManager<AppUser> userManager) : IIdentityServic
 
     public async Task<Result<Deleted>> DeleteUserAsync(int PersonId, CancellationToken ct)
     {
-        var user = await userManager.Users.FirstOrDefaultAsync(u => u.PersonId == PersonId);
+        var user = await userManager.Users.FirstOrDefaultAsync(u => u.PersonId == PersonId,ct);
 
         if (user is null)
         {
@@ -75,16 +75,15 @@ public class IdentityService(UserManager<AppUser> userManager) : IIdentityServic
         return Result.Deleted;
     }
 
-    public async Task<Result<AppUserDto>> FindUserById(string userId)
+    public async Task<Result<AppUserDto>> GetUserByIdAsync(string userId)
     {
-        var user = await userManager.FindByIdAsync(userId);
+        var user = await userManager.FindByIdAsync(userId) ?? throw new InvalidOperationException(nameof(userId));
 
-        if ()
-        {
-            
-        }
+        var roles = await userManager.GetRolesAsync(user);
 
-        return new AppUserDto(userId ,user.)
+        var claims = await userManager.GetClaimsAsync(user);
+
+        return new AppUserDto(user.Id, user.Email!, roles, claims);
     }
 
     public async Task<string?> GetUserNameByIdAsync(string userId, CancellationToken ct)

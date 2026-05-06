@@ -1,5 +1,5 @@
 ﻿
-using Gym.Domain.Coachs;
+using Gym.Domain.Coaches;
 using Gym.Application.Features.Coaches.Dtos;
 
 namespace Gym.Application.Features.Coaches.Mappers

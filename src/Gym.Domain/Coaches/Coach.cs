@@ -3,7 +3,7 @@ using Gym.Domain.Common;
 using Gym.Domain.Common.Result;
 using Gym.Domain.People;
 
-namespace Gym.Domain.Coachs;
+namespace Gym.Domain.Coaches;
 public sealed class Coach : AuditableEntity
 {
     public DateTime HireDate { get; private set; }

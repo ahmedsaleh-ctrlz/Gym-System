@@ -1,4 +1,4 @@
-﻿using Gym.Domain.Coachs;
+﻿using Gym.Domain.Coaches;
 using Gym.Domain.Identity;
 using Gym.Domain.Members;
 

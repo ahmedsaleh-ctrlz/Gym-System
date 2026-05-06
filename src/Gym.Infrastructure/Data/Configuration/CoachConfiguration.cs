@@ -1,4 +1,4 @@
-﻿using Gym.Domain.Coachs;
+﻿using Gym.Domain.Coaches;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Gym.Infrastructure.Data.Configuration

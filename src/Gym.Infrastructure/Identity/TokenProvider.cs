@@ -16,7 +16,7 @@ public class TokenProvider(IConfiguration configuration , IAppDbContext context)
 {
     public async Task<Result<TokenResponse>> GenerateJwtTokenAsync(AppUserDto user, CancellationToken ct = default)
     {
-        var tokenResult = await _CreateAsync(user, ct);
+        var tokenResult = await CreateAsync(user, ct);
 
         if (tokenResult.IsError)
         {
@@ -26,17 +26,40 @@ public class TokenProvider(IConfiguration configuration , IAppDbContext context)
         return tokenResult.Value;
     }
 
-    public IEnumerable<Claim> GetClaimsFromExpiredToken(string ExpiredToken)
+    public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
     {
-        var tokenHelper = new JwtSecurityTokenHandler();
+        var tokenHandler = new JwtSecurityTokenHandler();
 
-        var token = tokenHelper.ReadJwtToken(ExpiredToken);
+        if (!tokenHandler.CanReadToken(token))
+        {
+            throw new SecurityTokenException("Invalid token.");
+        }
 
-        return token.Claims;
+        var tokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSettings:Secret"]!)),
+            ValidateIssuer = true,
+            ValidIssuer = configuration["JwtSettings:Issuer"],
+            ValidateAudience = true,
+            ValidAudience = configuration["JwtSettings:Audience"],
+            ValidateLifetime = false, // Ignore token expiration
+            ClockSkew = TimeSpan.Zero
+        };
 
+        
+        var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
+
+        if (securityToken is not JwtSecurityToken jwtSecurityToken ||
+            !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+        {
+            throw new SecurityTokenException("Invalid token.");
+        }
+
+        return principal;
     }
 
-    private async Task<Result<TokenResponse>> _CreateAsync(AppUserDto user, CancellationToken ct)
+    private async Task<Result<TokenResponse>> CreateAsync(AppUserDto user, CancellationToken ct)
     {
         var jwtSettings = configuration.GetSection("JwtSettings");
 
@@ -94,7 +117,7 @@ public class TokenProvider(IConfiguration configuration , IAppDbContext context)
         };
     }
 
-    private string GenerateRefreshToken()
+    private static string GenerateRefreshToken()
     {
         return Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
     }
