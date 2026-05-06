@@ -31,7 +31,7 @@ public sealed class CoachesController(ISender sender) : ApiController
     [EndpointName("GetCoachs")]
     [MapToApiVersion("1.0")]
     [ProducesDefaultResponseType]
-    [AllowAnonymous]
+    
     public async Task<IActionResult> GetCoachs(
         CancellationToken ct,
         [FromQuery] int pageNumber = 1,
@@ -75,6 +75,7 @@ public sealed class CoachesController(ISender sender) : ApiController
     [EndpointDescription("Add Coach and return the new route.")]
     [EndpointName("AddCoach")]
     [MapToApiVersion("1.0")]
+    [Authorize(Roles = nameof(Role.Admin))]
     public async Task<IActionResult> Create([FromBody] CreateCoachRequest request)
     {
         var result = await sender.Send(new CreateCoachCommand(
@@ -101,6 +102,7 @@ public sealed class CoachesController(ISender sender) : ApiController
     [EndpointDescription("Update a Coach Information.")]
     [EndpointName("UpdateCoach")]
     [MapToApiVersion("1.0")]
+    [Authorize(Policy = Policies.SameCoach)]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateCoachRequest request, CancellationToken ct)
     {
         var result = await sender.Send(new UpdateCoachCommand(
@@ -125,6 +127,7 @@ public sealed class CoachesController(ISender sender) : ApiController
     [EndpointDescription("Update a CoachImage Information.")]
     [EndpointName("UpdateCoachImage")]
     [MapToApiVersion("1.0")]
+    [Authorize(Policy = Policies.SameCoach)]
 
     public async Task<IActionResult> UpdateImage(int id, [FromBody] UpdateCoachImageRequest request, CancellationToken ct)
     {
@@ -142,6 +145,7 @@ public sealed class CoachesController(ISender sender) : ApiController
     [EndpointDescription("Deletes the specified Coach from the system.")]
     [EndpointName("RemoveCoach")]
     [MapToApiVersion("1.0")]
+    [Authorize(Roles =nameof(Role.Admin))]
 
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
