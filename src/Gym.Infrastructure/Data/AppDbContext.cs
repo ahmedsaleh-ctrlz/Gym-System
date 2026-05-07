@@ -5,6 +5,7 @@ using Gym.Domain.Identity;
 using Gym.Domain.Members;
 using Gym.Domain.People;
 using Gym.Domain.People.PersonImages;
+using Gym.Domain.Plans;
 using Gym.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Person> People => Set<Person>();
     public DbSet<PersonImage> PersonImages => Set<PersonImage>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
+    public DbSet<Plan> Plans => Set<Plan>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
