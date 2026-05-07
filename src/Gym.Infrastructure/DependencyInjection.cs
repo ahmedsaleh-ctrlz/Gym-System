@@ -39,6 +39,8 @@ public static class DependencyInjection
         services.AddScoped<ITokenProvider, TokenProvider>();
 
         services.AddScoped<IAuthorizationHandler, SameCoachHandler>();
+        services.AddScoped<IAuthorizationHandler, SameMemberOrAdminRequirementHandler>();
+        services.AddScoped<IAuthorizationHandler, SameMemberOrCoachOrAdminRequirementHandler>();
 
         services.AddIdentityCore<AppUser>(options =>
             {
@@ -88,6 +90,9 @@ public static class DependencyInjection
         services.AddAuthorization(options =>
         {
             options.AddPolicy(Policies.SameCoach, policy => policy.AddRequirements(new SameCoachRequirement()));
+            options.AddPolicy(Policies.SameMemberOrAdmin, policy => policy.AddRequirements(new SameMemberOrAdminRequirement()));
+            options.AddPolicy(Policies.SameMemberOrCoachOrAdmin, policy => policy.AddRequirements(new SameMemberOrCoachOrAdminRequirement()));
+
         });
 
         return services;

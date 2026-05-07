@@ -19,6 +19,12 @@ public class SameCoachHandler(IHttpContextAccessor httpContext,IAppDbContext dbC
             return ;
         }
 
+        if (!context.User.IsInRole(nameof(Role.Coach)))
+        {
+            context.Fail();
+            return ;
+        }
+
         var routeValue = httpContext.HttpContext!.Request.RouteValues["id"]?.ToString();
 
         if (!int.TryParse(routeValue, out int requestedCoachId))
@@ -27,16 +33,16 @@ public class SameCoachHandler(IHttpContextAccessor httpContext,IAppDbContext dbC
             return ;
         }
 
-        var persronId = context.User.FindFirst("person_id")?.Value;
+        var personId = context.User.FindFirst("person_id")?.Value;
 
-        if (string.IsNullOrWhiteSpace(persronId))
+        if (string.IsNullOrWhiteSpace(personId))
         {
             context.Fail();
             return;
         }
 
         var isSameCoach = await dbContext.Coaches.AnyAsync
-            (c => c.Id == requestedCoachId && c.PersonId == Convert.ToInt32(persronId));
+            (c => c.Id == requestedCoachId && c.PersonId == Convert.ToInt32(personId));
         if (isSameCoach) 
         {
             context.Succeed(requirement);

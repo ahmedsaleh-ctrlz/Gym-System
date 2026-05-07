@@ -6,6 +6,8 @@ using Gym.Application.Features.Members.Commands.UpdateMember;
 using Gym.Application.Features.Members.Dtos;
 using Gym.Application.Features.Members.Queries.GetMemberById;
 using Gym.Application.Features.Members.Queries.GetMembers;
+using Gym.Domain.Identity;
+using Gym.Infrastructure.Identity.Policies;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +18,7 @@ namespace Gym.Api.Controllers;
 [ApiController]
 [Route("api/v{version:apiVersion}/members")]
 [ApiVersion("1.0")]
+[Authorize]
 
 public sealed class MembersController(ISender sender) : ApiController
 {
@@ -27,6 +30,7 @@ public sealed class MembersController(ISender sender) : ApiController
     [EndpointName("GetMembers")]
     [MapToApiVersion("1.0")]
     [ProducesDefaultResponseType]
+    [Authorize(Roles = $"{nameof(Role.Admin)},{nameof(Role.Coach)}")]
 
     public async Task<IActionResult> GetMembers(
         CancellationToken ct,
@@ -52,6 +56,7 @@ public sealed class MembersController(ISender sender) : ApiController
     [EndpointDescription("Returns detailed information about the specified member if found.")]
     [EndpointName("GetMemberById")]
     [MapToApiVersion("1.0")]
+    [Authorize(Policy = Policies.SameMemberOrCoachOrAdmin)]
     
 
     public async Task<IActionResult> GetMemberById(int id , CancellationToken ct)
@@ -71,6 +76,7 @@ public sealed class MembersController(ISender sender) : ApiController
     [EndpointDescription("Add member and return the new route.")]
     [EndpointName("AddMember")]
     [MapToApiVersion("1.0")]
+    [Authorize(Roles = nameof(Role.Admin))]
     public async Task<IActionResult> Create([FromBody] CreateMemberRequest request)
     {
         var result = await sender.Send(new CreateMemberCommand(
@@ -98,6 +104,7 @@ public sealed class MembersController(ISender sender) : ApiController
     [EndpointDescription("Update a member Information.")]
     [EndpointName("UpdateMember")]
     [MapToApiVersion("1.0")]
+    [Authorize(Policy = Policies.SameMemberOrAdmin)]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateMemberRequest request , CancellationToken ct)
     {
         var result = await sender.Send(new UpdateMemberCommand(
@@ -123,6 +130,7 @@ public sealed class MembersController(ISender sender) : ApiController
     [EndpointDescription("Update a memberImage Information.")]
     [EndpointName("UpdateMemberImage")]
     [MapToApiVersion("1.0")]
+    [Authorize(Policy = Policies.SameMemberOrAdmin)]
 
     public async Task<IActionResult> UpdateImage(int id, [FromBody] UpdateMemberImageRequest request ,CancellationToken ct)
     {
@@ -140,6 +148,7 @@ public sealed class MembersController(ISender sender) : ApiController
     [EndpointDescription("Deletes the specified member from the system.")]
     [EndpointName("RemoveMember")]
     [MapToApiVersion("1.0")]
+    [Authorize(Roles = nameof(Role.Admin))]
 
     public async Task<IActionResult> Delete(int id , CancellationToken ct)
     {
