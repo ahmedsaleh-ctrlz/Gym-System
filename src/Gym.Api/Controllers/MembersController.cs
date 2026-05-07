@@ -52,7 +52,7 @@ public sealed class MembersController(ISender sender) : ApiController
     [EndpointDescription("Returns detailed information about the specified member if found.")]
     [EndpointName("GetMemberById")]
     [MapToApiVersion("1.0")]
-    [OutputCache(Duration = 60)]
+    
 
     public async Task<IActionResult> GetMemberById(int id , CancellationToken ct)
     {
