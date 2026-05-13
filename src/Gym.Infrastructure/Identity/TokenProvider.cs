@@ -77,7 +77,7 @@ public class TokenProvider(IConfiguration configuration , IAppDbContext context)
 
         if (user.PersonId > 0)
         {
-            claims.Add(new("person_id", user.PersonId.ToString()));
+            claims.Add(new("person_id", user.PersonId.ToString()!));
         }
 
     

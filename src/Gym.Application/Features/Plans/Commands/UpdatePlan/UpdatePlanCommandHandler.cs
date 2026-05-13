@@ -24,7 +24,7 @@ public sealed class UpdatePlanCommandHandler(
             return ApplicationErrors.PlanNotFound;
         }
 
-        var updateResult = plan.UpdateInfo(command.Title, command.Description, command.Cost, command.DurationInDays);
+        var updateResult = plan.UpdateInfo(command.Title, command.Description, command.Cost, command.DurationInDays,command.AllowedFreezeCount, command.MaxTotalFreezeDays);
         if (updateResult.IsError)
         {
             logger.LogWarning("Failed to update plan with ID {PlanId}. Errors: {Errors}", command.PlanId, updateResult.Errors);

@@ -7,4 +7,4 @@ using System.Text;
 
 namespace Gym.Application.Features.Plans.Commands.CreatePlan;
 
-public sealed record CreatePlanCommand(string title, string? description, decimal cost, int durationInDays) : IRequest<Result<Created>>;
+public sealed record CreatePlanCommand(string title, string? description, decimal cost, int durationInDays, int allowedFreezeCount, int maxTotalFreezeDays) : IRequest<Result<Created>>;

@@ -16,7 +16,7 @@ public sealed class CreatePlanCommandHandler(
     public async Task<Result<Created>> Handle(CreatePlanCommand request, CancellationToken ct)
     {
         logger.LogTrace("Handling New Plan Creation");
-        var planResult = Plan.Create(request.title,request.description,request.cost,request.durationInDays);
+        var planResult = Plan.Create(request.title,request.description,request.cost,request.durationInDays,request.allowedFreezeCount,request.maxTotalFreezeDays);
 
         if (planResult.IsError)
         {

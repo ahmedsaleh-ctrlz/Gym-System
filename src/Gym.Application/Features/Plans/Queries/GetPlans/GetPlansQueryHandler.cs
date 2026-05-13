@@ -30,7 +30,9 @@ public sealed class GetPlansQueryHandler(IAppDbContext context)
                 Description = p.Description,
                 Cost = p.Cost,
                 DurationInDays = p.DurationInDays,
-                IsActive = p.IsActive
+                IsActive = p.IsActive,
+                AllowedFreezeCount = p.AllowedFreezeCount,  
+                MaxTotalFreezeDays = p.MaxTotalFreezeDays
             })
             .ToListAsync(ct);
 

@@ -21,6 +21,14 @@ public class PlanConfiguration : IEntityTypeConfiguration<Plan>
         builder.Property(x => x.Description)
             .HasMaxLength(200);
 
-        builder.HasQueryFilter(x => x.IsActive);
+        builder.Property(x => x.Cost)
+            .HasPrecision(18, 2)
+            .IsRequired();
+
+        builder.Property(x => x.AllowedFreezeCount)
+            .IsRequired();
+
+        builder.Property(x => x.MaxTotalFreezeDays)
+            .IsRequired();
     }
 }

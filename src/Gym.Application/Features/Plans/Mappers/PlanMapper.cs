@@ -16,7 +16,9 @@ public static class PlanMapper
             Description = plan.Description,
             Cost = plan.Cost,
             DurationInDays = plan.DurationInDays,
-            IsActive = plan.IsActive
+            IsActive = plan.IsActive,
+            AllowedFreezeCount = plan.AllowedFreezeCount,
+            MaxTotalFreezeDays = plan.MaxTotalFreezeDays,
         };
     }
 }

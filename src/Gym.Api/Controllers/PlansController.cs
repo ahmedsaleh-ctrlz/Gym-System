@@ -77,14 +77,15 @@ public sealed class PlansController(ISender sender) : ApiController
     [EndpointName("AddPlan")]
     [MapToApiVersion("1.0")]
     [Authorize(Roles = nameof(Role.Admin))]
-    public async Task<IActionResult> Create([FromBody] CreatePlanRequest request)
+    public async Task<IActionResult> Create([FromBody] CreatePlanRequest request, CancellationToken ct)
     {
         var result = await sender.Send(new CreatePlanCommand(
             request.Title,
             request.Description,
             request.Cost,
-            request.DurationInDays));
-
+            request.DurationInDays,
+            request.AllowedFreezeCount,
+            request.MaxTotalFreezeDays), ct);
         return result.Match(
             _ => Created(),
             Problem);
@@ -107,7 +108,9 @@ public sealed class PlansController(ISender sender) : ApiController
             request.Title,
             request.Description,
             request.Cost,
-            request.DurationInDays), ct);
+            request.DurationInDays,
+            request.AllowedFreezeCount,
+            request.MaxTotalFreezeDays), ct);
 
         return result.Match(
             _ => NoContent(),

@@ -8,4 +8,6 @@ public sealed record UpdatePlanCommand(
     string Title,
     string? Description,
     decimal Cost,
-    int DurationInDays) : IRequest<Result<Updated>>;
+    int DurationInDays,
+    int AllowedFreezeCount,
+    int MaxTotalFreezeDays) : IRequest<Result<Updated>>;

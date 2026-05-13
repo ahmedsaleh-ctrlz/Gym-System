@@ -11,37 +11,43 @@ public sealed class Plan : AuditableEntity
     public int DurationInDays  {  get; private set; }
     public bool IsActive { get; private set; } = true;
 
+    // Freeze related properties
+    public int AllowedFreezeCount { get; private set; }
+    public int MaxTotalFreezeDays { get; private set; }
+
     private Plan()
     {
     }
 
-    private Plan(string title, string? description, decimal cost , int durationInDays)
+    private Plan(string title, string? description, decimal cost , int durationInDays, int allowedFreezeCount, int maxTotalFreezeDays)
     {
         Title = title;
         Description = description;
         Cost = cost;
         DurationInDays  = durationInDays;
+        AllowedFreezeCount = allowedFreezeCount;
+        MaxTotalFreezeDays = maxTotalFreezeDays;
     }
 
-    public static Result<Plan> Create(string title, string? description, decimal cost, int durationInDays)
+    public static Result<Plan> Create(string title, string? description, decimal cost, int durationInDays, int allowedFreezeCount, int maxTotalFreezeDays)
     {
-        var error = Validate(title, cost, durationInDays);
+        var error = Validate(title, cost, durationInDays, allowedFreezeCount, maxTotalFreezeDays);
         if (error is not null)
         {
             return error;
         }
 
-        return new Plan(title, description, cost, durationInDays);
+        return new Plan(title, description, cost, durationInDays, allowedFreezeCount, maxTotalFreezeDays);
     }
 
-    public Result<Updated> UpdateInfo(string title, string? description, decimal cost, int durationInDays )
+    public Result<Updated> UpdateInfo(string title, string? description, decimal cost, int durationInDays, int allowedFreezeCount, int maxTotalFreezeDays)
     {
         if (!IsActive)
         {
             return PlanError.CannotUpdateInactivePlan;
         }
 
-        var error = Validate(title, cost, durationInDays);
+        var error = Validate(title, cost, durationInDays, allowedFreezeCount, maxTotalFreezeDays);
         if (error is not null)
         {
             return error;
@@ -51,6 +57,8 @@ public sealed class Plan : AuditableEntity
         Description = description;
         Cost = cost;
         DurationInDays = durationInDays;
+        AllowedFreezeCount = allowedFreezeCount;
+        MaxTotalFreezeDays = maxTotalFreezeDays;    
 
         return Result.Updated;
     }
@@ -77,7 +85,7 @@ public sealed class Plan : AuditableEntity
         return Result.Updated;
     }
 
-    private static Error? Validate(string title, decimal cost ,int durationInDays)
+    private static Error? Validate(string title, decimal cost ,int durationInDays, int allowedFreezeCount, int maxTotalFreezeDays)
     {
         if (string.IsNullOrWhiteSpace(title))
         {
@@ -93,6 +101,17 @@ public sealed class Plan : AuditableEntity
         {
             return PlanError.InvaildDuration;
         }
+
+        if (allowedFreezeCount < 0)
+        {
+            return PlanError.InvalidAllowedFreezeCount;
+        }
+
+        if (maxTotalFreezeDays < 0)
+        {
+            return PlanError.InvalidMaxTotalFreezeDays;
+        }
+
 
         return null;
     }

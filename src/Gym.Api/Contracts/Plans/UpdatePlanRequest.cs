@@ -4,4 +4,6 @@ public sealed record UpdatePlanRequest(
     string Title,
     string? Description,
     decimal Cost,
-    int DurationInDays);
+    int DurationInDays,
+    int AllowedFreezeCount,
+    int MaxTotalFreezeDays);

@@ -8,4 +8,6 @@ public sealed record PlanDetailsResponse
     public decimal Cost { get; set; }
     public int DurationInDays { get; set; }
     public bool IsActive { get; set; }
+    public int AllowedFreezeCount { get; set; }
+    public int MaxTotalFreezeDays { get; set; }
 }
