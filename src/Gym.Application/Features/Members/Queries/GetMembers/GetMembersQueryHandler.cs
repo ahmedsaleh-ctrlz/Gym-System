@@ -7,7 +7,6 @@ using Gym.Domain.Members;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-
 namespace Gym.Application.Features.Members.Queries.GetMembers;
 
 public class GetMembersQueryHandler(IAppDbContext context) : IRequestHandler<GetMembersQuery, Result<PaginatedList<MemberResponse>>>

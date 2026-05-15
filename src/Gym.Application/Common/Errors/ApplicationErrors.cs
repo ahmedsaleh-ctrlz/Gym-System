@@ -9,6 +9,8 @@ public class ApplicationErrors
     public static Error CoachNotFound => Error.NotFound("CoachNotFound", "Coach with the specified ID was not found.");
     public static Error PlanNotFound => Error.NotFound("PlanNotFound", "Plan with the specified ID was not found.");
 
+    public static Error SubscriptionNotFound => Error.NotFound("SubscriptionNotFound", "Subscription with the specified ID was not found.");
+
     public static readonly Error ExpiredAccessTokenInvalid = Error.Conflict(
         code: "Auth.ExpiredAccessToken.Invalid",
         description: "Expired access token is not valid.");

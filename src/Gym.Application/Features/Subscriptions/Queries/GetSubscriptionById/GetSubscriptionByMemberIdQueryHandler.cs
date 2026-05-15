@@ -1,0 +1,24 @@
+﻿using Gym.Application.Common.Errors;
+using Gym.Application.Common.Interfaces;
+using Gym.Application.Features.Subscriptions.Dtos;
+using Gym.Application.Features.Subscriptions.Mappers;
+using Gym.Domain.Common.Result;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+
+namespace Gym.Application.Features.Subscriptions.Queries.GetSubscriptionById;
+
+public class GetSubscriptionByMemberIdQueryHandler(IAppDbContext dbContext) : IRequestHandler<GetSubscriptionByMemberIdQuery, Result<SubscriptionResponse>>
+{
+    public async Task<Result<SubscriptionResponse>> Handle(GetSubscriptionByMemberIdQuery request, CancellationToken cancellationToken)
+    {
+        var subscription = await dbContext.Subscriptions.LastOrDefaultAsync(s=> s.MemberId == request.memberId, cancellationToken);
+        if (subscription is null)
+        {
+            return ApplicationErrors.SubscriptionNotFound;
+        }
+
+        return subscription.ToDto();
+
+    }
+}

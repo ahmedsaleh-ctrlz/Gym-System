@@ -1,5 +1,6 @@
 ﻿using Gym.Domain.Common;
 using Gym.Domain.Common.Result;
+using Gym.Domain.Members;
 using Gym.Domain.Plans;
 using Gym.Domain.Subscriptions.Enums;
 
@@ -9,8 +10,9 @@ public class Subscription : AuditableEntity
 {
 
     public int MemberId { get; private set; }
+    public Member Member { get; private set; }
     public int PlanId { get; private set; }
-    public Plan Plan { get; private set; } 
+    public Plan? Plan { get; private set; } 
     public DateOnly StartDate { get; private set; }
     public DateOnly EndDate { get; private set; }
     public SubscriptionStatus Status { get; private set; }
@@ -18,9 +20,12 @@ public class Subscription : AuditableEntity
     public int TotalFreezeDaysUsed { get; private set; }
     private DateOnly? FreezeEndDate { get; set; }
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     private Subscription() { }
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     private Subscription(int memberId, Plan plan, DateOnly startDate)
+
     {
         MemberId = memberId;
         Plan = plan;
@@ -60,6 +65,14 @@ public class Subscription : AuditableEntity
         TotalFreezeDaysUsed += FreezeDays;
         EndDate = EndDate.AddDays(FreezeDays);
         FreezeEndDate = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(FreezeDays); 
+        return Result.Updated;
+    }
+
+    public Result<Updated> Cancel()
+    {
+        if (Status != SubscriptionStatus.Active)
+            return SubscriptionErrors.OnlyActiveSubscriptionsCanBeCancelled;
+        Status = SubscriptionStatus.Cancelled;
         return Result.Updated;
     }
     public Result<Updated> Unfreeze()

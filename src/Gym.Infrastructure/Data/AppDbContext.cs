@@ -6,6 +6,7 @@ using Gym.Domain.Members;
 using Gym.Domain.People;
 using Gym.Domain.People.PersonImages;
 using Gym.Domain.Plans;
+using Gym.Domain.Subscriptions;
 using Gym.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     public DbSet<Plan> Plans => Set<Plan>();
+    public DbSet<Subscription> Subscriptions => Set<Subscription>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
