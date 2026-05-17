@@ -2,6 +2,7 @@
 using Gym.Application.Common.Interfaces;
 using Gym.Domain.Common.Result;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 
@@ -16,7 +17,7 @@ public class FreezeSubscriptionCommandHandler(IAppDbContext context,
     public async Task<Result<Updated>> Handle(FreezeSubscriptionCommand request, CancellationToken cancellationToken)
     {
         logger.LogTrace("handle Freezing subscription with id {subscriptionId} for {FreezeDays} days", request.subscriptionId, request.FreezeDays);
-        var subscription = await context.Subscriptions.FindAsync([request.subscriptionId], cancellationToken);
+        var subscription = await context.Subscriptions.Include(s=> s.Plan).FirstOrDefaultAsync(s => s.Id == request.subscriptionId, cancellationToken);
         if(subscription is null)
             return ApplicationErrors.SubscriptionNotFound;
         var FreezeResult = subscription.Freeze(request.FreezeDays);

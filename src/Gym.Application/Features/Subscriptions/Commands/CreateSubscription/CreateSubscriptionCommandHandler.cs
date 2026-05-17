@@ -1,4 +1,5 @@
-﻿using Gym.Application.Common.Interfaces;
+﻿using Gym.Application.Common.Errors;
+using Gym.Application.Common.Interfaces;
 using Gym.Domain.Common.Result;
 using Gym.Domain.Subscriptions;
 using MediatR;
@@ -16,6 +17,12 @@ public sealed class CreateSubscriptionCommandHandler(ILogger<Result<Subscription
         {
             logger.LogWarning("Plan with id {PlanId} not found for subscription creation.", request.planId);
             return Gym.Application.Common.Errors.ApplicationErrors.PlanNotFound;
+        }
+
+        if (!plan.IsActive) 
+        {
+            logger.LogError("Plan with id {PlanId} is not active for subscription creation.", request.planId);
+            return ApplicationErrors.PlanNotActive;
         }
 
         logger.LogTrace("Handling CreateSubscriptionCommand for member {MemberId} with plan {PlanId} starting on {StartDate}", request.memberId, request.planId, request.startDate);

@@ -73,7 +73,7 @@ public sealed class SubscriptionsController(ISender sender) : ApiController
             Problem);
     }
 
-    [HttpGet("member/{memberId:int}")]
+    [HttpGet("member/{id:int}")]
     [ProducesResponseType(typeof(SubscriptionResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -83,9 +83,9 @@ public sealed class SubscriptionsController(ISender sender) : ApiController
     [EndpointName("GetSubscriptionByMemberId")]
     [MapToApiVersion("1.0")]
     [Authorize(Policy = Policies.SameMemberOrCoachOrAdmin)]
-    public async Task<IActionResult> GetSubscriptionByMemberId(int memberId, CancellationToken ct)
+    public async Task<IActionResult> GetSubscriptionByMemberId(int id, CancellationToken ct)
     {
-        var result = await sender.Send(new GetSubscriptionByMemberIdQuery(memberId), ct);
+        var result = await sender.Send(new GetSubscriptionByMemberIdQuery(id), ct);
 
         return result.Match(
             response => Ok(response),
@@ -112,23 +112,44 @@ public sealed class SubscriptionsController(ISender sender) : ApiController
             Problem);
     }
 
-    [HttpPut("{subscriptionId:int}/status")]
+    [HttpPut("{subscriptionId:int}/activate")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    [EndpointSummary("Update a subscription status.")]
-    [EndpointDescription("Updates the status of a subscription.")]
-    [EndpointName("UpdateSubscriptionStatus")]
+    [EndpointSummary("Activate a subscription.")]
+    [EndpointDescription("Activates a subscription.")]
+    [EndpointName("ActivateSubscription")]
     [MapToApiVersion("1.0")]
     [Authorize(Roles = nameof(Role.Admin))]
-    public async Task<IActionResult> UpdateStatus(
+    public async Task<IActionResult> Activate(
         int subscriptionId,
-        [FromBody] UpdateSubscriptionStatusRequest request,
         CancellationToken ct)
     {
         var result = await sender.Send(
-            new UpdateSubscriptionStatusCommand(subscriptionId, request.NewStatus),
+            new UpdateSubscriptionStatusCommand(subscriptionId, SubscriptionStatus.Active),
+            ct);
+
+        return result.Match(
+            _ => NoContent(),
+            Problem);
+    }
+    [HttpPut("{subscriptionId:int}/cancel")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [EndpointSummary("Cancel a subscription.")]
+    [EndpointDescription("Cancels a subscription.")]
+    [EndpointName("CancelSubscription")]
+    [MapToApiVersion("1.0")]
+    [Authorize(Roles = nameof(Role.Admin))]
+    public async Task<IActionResult> Cancel(
+        int subscriptionId,
+        CancellationToken ct)
+    {
+        var result = await sender.Send(
+            new UpdateSubscriptionStatusCommand(subscriptionId, SubscriptionStatus.Cancelled),
             ct);
 
         return result.Match(

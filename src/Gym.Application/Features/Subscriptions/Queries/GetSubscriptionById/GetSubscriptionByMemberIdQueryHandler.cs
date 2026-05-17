@@ -12,7 +12,7 @@ public class GetSubscriptionByMemberIdQueryHandler(IAppDbContext dbContext) : IR
 {
     public async Task<Result<SubscriptionResponse>> Handle(GetSubscriptionByMemberIdQuery request, CancellationToken cancellationToken)
     {
-        var subscription = await dbContext.Subscriptions.LastOrDefaultAsync(s=> s.MemberId == request.memberId, cancellationToken);
+        var subscription = await dbContext.Subscriptions.Include(s=> s.Member).ThenInclude(m=>m.Person).OrderByDescending(s => s.Id).Include(s=>s.Plan).FirstOrDefaultAsync(s => s.MemberId == request.memberId, cancellationToken);
         if (subscription is null)
         {
             return ApplicationErrors.SubscriptionNotFound;

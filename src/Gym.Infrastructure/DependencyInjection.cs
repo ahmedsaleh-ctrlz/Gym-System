@@ -23,7 +23,7 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("DefaultConnection");
 
         services.AddHttpContextAccessor();
-        services.AddScoped<ISaveChangesInterceptor,AuditableEntityInterceptor>();
+        services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
         services.AddSingleton(TimeProvider.System);
 
         services.AddScoped<AppDbContextInitailiser>();
@@ -43,13 +43,13 @@ public static class DependencyInjection
         services.AddScoped<IAuthorizationHandler, SameMemberOrCoachOrAdminRequirementHandler>();
 
         services.AddIdentityCore<AppUser>(options =>
-            {
-                options.Password.RequireDigit = false;
-                options.Password.RequireLowercase = false;
-                options.Password.RequireUppercase = false;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequiredLength = 6;
-            })
+        {
+            options.Password.RequireDigit = false;
+            options.Password.RequireLowercase = false;
+            options.Password.RequireUppercase = false;
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequiredLength = 6;
+        })
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();

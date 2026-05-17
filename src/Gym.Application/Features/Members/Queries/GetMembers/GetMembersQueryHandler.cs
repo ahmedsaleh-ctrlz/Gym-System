@@ -19,7 +19,7 @@ public class GetMembersQueryHandler(IAppDbContext context) : IRequestHandler<Get
         memberQuery = ApplySorting(memberQuery, query.SortBy, query.sortDirection);
 
         var count = await memberQuery.CountAsync(ct);
-
+        
         var items = await memberQuery
             .Skip((query.PageNumber - 1) * query.PageSize)
             .Take(query.PageSize)

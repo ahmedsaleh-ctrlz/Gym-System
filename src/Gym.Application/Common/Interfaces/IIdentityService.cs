@@ -17,5 +17,7 @@ public interface IIdentityService
 
     Task<Result<AppUserDto>> GetUserByIdAsync(string userId);
 
+    Task<Result<string>> GetEmailByPersonIdAsync(int personId, CancellationToken ct);
+
 
 }

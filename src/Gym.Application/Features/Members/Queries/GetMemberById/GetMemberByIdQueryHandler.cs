@@ -11,20 +11,23 @@ using Microsoft.Extensions.Logging;
 namespace Gym.Application.Features.Members.Queries.GetMemberById;
 
 public class GetMemberByIdQueryHandler(
-    IAppDbContext context, ILogger<GetMemberByIdQueryHandler> logger) : IRequestHandler<GetMemberByIdQuery, Result<MemberResponse>>
+    IAppDbContext context, ILogger<GetMemberByIdQueryHandler> logger ,IIdentityService identityService) : IRequestHandler<GetMemberByIdQuery, Result<MemberResponse>>
 {
     public async Task<Result<MemberResponse>> Handle(GetMemberByIdQuery query, CancellationToken ct)
     {
         var member = await context.Members.Include(m=> m.Person).ThenInclude(p=> p.Image)
             .FirstOrDefaultAsync(m => m.Id == query.id,ct);
 
+        var email = await identityService.GetEmailByPersonIdAsync(member.PersonId,ct);
+
         if (member is null)
         {
             logger.LogWarning("Member with id {MemberId} not found.", query.id);
             return ApplicationErrors.MemberNotFound;
         }
-
-        return member.ToDto();
+        var response = member.ToDto();  
+        response.Email = email.Value;
+        return response;
     }
 
 

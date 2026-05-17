@@ -8,9 +8,9 @@ namespace Gym.Infrastructure.Identity.Policies;
 
 public sealed record SameMemberOrCoachOrAdminRequirement : IAuthorizationRequirement;
 
-public sealed class SameMemberOrCoachOrAdminRequirementHandler(IAppDbContext dbContext, IHttpContextAccessor httpContext) : AuthorizationHandler<SameMemberOrAdminRequirement>
+public sealed class SameMemberOrCoachOrAdminRequirementHandler(IAppDbContext dbContext, IHttpContextAccessor httpContext) : AuthorizationHandler<SameMemberOrCoachOrAdminRequirement>
 {
-    protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, SameMemberOrAdminRequirement requirement)
+    protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, SameMemberOrCoachOrAdminRequirement requirement)
     {
         // Admin Bypass And Coach
         if (context.User.IsInRole(nameof(Role.Admin)) || context.User.IsInRole(nameof(Role.Coach)))

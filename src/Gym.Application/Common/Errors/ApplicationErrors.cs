@@ -1,4 +1,5 @@
 ﻿using Gym.Domain.Common.Result;
+using Gym.Domain.Subscriptions;
 
 namespace Gym.Application.Common.Errors;
 
@@ -10,6 +11,8 @@ public class ApplicationErrors
     public static Error PlanNotFound => Error.NotFound("PlanNotFound", "Plan with the specified ID was not found.");
 
     public static Error SubscriptionNotFound => Error.NotFound("SubscriptionNotFound", "Subscription with the specified ID was not found.");
+
+    public static Error PlanNotActive => Error.Conflict("PlanNotActive", "The selected plan is not active and cannot be subscribed to.");
 
     public static readonly Error ExpiredAccessTokenInvalid = Error.Conflict(
         code: "Auth.ExpiredAccessToken.Invalid",

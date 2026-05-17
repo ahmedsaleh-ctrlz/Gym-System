@@ -4,6 +4,7 @@ namespace Gym.Application.Features.Subscriptions.Dtos;
 
 public sealed record SubscriptionResponse
 {
+    public int SuccriptionId { get; set; }
     public int MemberId { get; set; }
     public string MemberName { get; set; } = string.Empty;
     public string PlanName { get; set; } = string.Empty;

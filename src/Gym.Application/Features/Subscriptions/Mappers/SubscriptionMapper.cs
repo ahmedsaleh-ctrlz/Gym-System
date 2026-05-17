@@ -12,6 +12,7 @@ namespace Gym.Application.Features.Subscriptions.Mappers
             {
                 return new SubscriptionResponse
                 {
+                    SuccriptionId = subscription.Id,
                     MemberId = subscription.MemberId,
                     MemberName = $"{subscription.Member.Person.FirstName} {subscription.Member.Person.LastName}",
                     PlanName = subscription.Plan!.Title,

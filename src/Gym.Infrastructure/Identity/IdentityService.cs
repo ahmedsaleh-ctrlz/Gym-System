@@ -109,4 +109,14 @@ public class IdentityService(UserManager<AppUser> userManager) : IIdentityServic
         return new AppUserDto(user.Id,user.PersonId,user.Email!, await userManager.GetRolesAsync(user), await userManager.GetClaimsAsync(user));
 
     }
+
+    public async Task<Result<string>> GetEmailByPersonIdAsync(int personId, CancellationToken ct)
+    {
+        var user = await userManager.Users.Select(u => new { u.PersonId, u.Email }).FirstOrDefaultAsync(u => u.PersonId == personId, ct);
+        if(user is null) 
+        {
+            return Error.NotFound("User_Not_Found", $"User with PersonId {personId} not found");
+        }
+        return user.Email!;
+    }
 }
