@@ -53,6 +53,13 @@ public class Subscription : AuditableEntity
         Status = SubscriptionStatus.Active;
         return Result.Updated;
     }
+    public Result<Updated> Scheduled()
+    {
+        if (Status != SubscriptionStatus.Pending)
+            return SubscriptionErrors.OnlyPendingSubscriptionsCanBeScheduled;
+        Status = SubscriptionStatus.Scheduled;
+        return Result.Updated;
+    }
 
     public Result<Updated> Freeze(int FreezeDays)
     {
@@ -103,8 +110,7 @@ public class Subscription : AuditableEntity
             return SubscriptionErrors.SubscriptionShouldAssignToPlan;
         if(startDate < DateOnly.FromDateTime(DateTime.UtcNow))
             return SubscriptionErrors.SubscriptionStartDateCannotBeInThePast;
-        if (startDate > DateOnly.FromDateTime(DateTime.UtcNow.AddDays(14)))
-            return SubscriptionErrors.InvalidStartDate;
+        
         return null;
     }
     private Error? ValidFreezeErrorResult(int FreezeDays)

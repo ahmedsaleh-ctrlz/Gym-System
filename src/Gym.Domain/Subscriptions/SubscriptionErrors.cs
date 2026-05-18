@@ -12,6 +12,7 @@ public static class SubscriptionErrors
     public static Error InvalidStartDate => Error.Conflict("Invalid_StartDate", "Start date must be at least 14 days from today");
 
     public static Error OnlyPendingSubscriptionsCanBeActivated => Error.Conflict("Invalid_Subscription_Status", "Only pending subscriptions can be activated.");
+    public static Error OnlyPendingSubscriptionsCanBeScheduled => Error.Conflict("Invalid_Subscription_Status", "Only pending subscriptions can be scheduled.");
 
     public static Error OnlyActiveSubscriptionsCanBeFrozen => Error.Conflict("Invalid_Subscription_Status", "Only active subscriptions can be frozen.");
     public static Error CannotFreezeMoreThanAllowedFreezeCount => Error.Conflict("Invalid_Subscription_Status", "Cannot freeze more than allowed freeze count.");

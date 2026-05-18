@@ -3,6 +3,7 @@ using Gym.Api.Contracts.Subscriptions;
 using Gym.Application.Common.Models;
 using Gym.Application.Features.Subscriptions.Commands.CreateSubscription;
 using Gym.Application.Features.Subscriptions.Commands.FreezeSubscription;
+using Gym.Application.Features.Subscriptions.Commands.RenewSubscription;
 using Gym.Application.Features.Subscriptions.Commands.UpdateSubscriptionStatus;
 using Gym.Application.Features.Subscriptions.Dtos;
 using Gym.Application.Features.Subscriptions.Queries.GetSubscriptionById;
@@ -112,6 +113,29 @@ public sealed class SubscriptionsController(ISender sender) : ApiController
             Problem);
     }
 
+    [HttpPost("renew")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [EndpointSummary("Renew subscription.")]
+    [EndpointDescription("Renew subscription and return the new route.")]
+    [EndpointName("RenewSubscription")]
+    [MapToApiVersion("1.0")]
+    [Authorize(Roles = nameof(Role.Admin))]
+
+    public async Task<IActionResult> Renew([FromBody] RenewSubscriptionRequest request, CancellationToken ct)
+    {
+        var result = await sender.Send(
+            new RenewSubscriptionCommand(request.MemberId, request.PlanId),  
+            ct);
+
+        return result.Match(
+            _ => Created(),
+            Problem);
+    }
+
+
+
     [HttpPut("{subscriptionId:int}/activate")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -134,6 +158,31 @@ public sealed class SubscriptionsController(ISender sender) : ApiController
             _ => NoContent(),
             Problem);
     }
+
+    [HttpPut("{subscriptionId:int}/schedule")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [EndpointSummary("Schedule a subscription.")]
+    [EndpointDescription("Schedules a subscription.")]
+    [EndpointName("ScheduleSubscription")]
+    [MapToApiVersion("1.0")]
+    [Authorize(Roles = nameof(Role.Admin))]
+    public async Task<IActionResult> Schedule(
+        int subscriptionId,
+        CancellationToken ct)
+    {
+        var result = await sender.Send(
+            new UpdateSubscriptionStatusCommand(subscriptionId, SubscriptionStatus.Scheduled),
+            ct);
+
+        return result.Match(
+            _ => NoContent(),
+            Problem);
+    }
+
+
     [HttpPut("{subscriptionId:int}/cancel")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

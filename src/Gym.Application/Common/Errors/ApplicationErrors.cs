@@ -14,6 +14,16 @@ public class ApplicationErrors
 
     public static Error PlanNotActive => Error.Conflict("PlanNotActive", "The selected plan is not active and cannot be subscribed to.");
 
+    public static Error InvalidSubscriptionStartDate => Error.Conflict("Invalid_StartDate", "Start date must be at least 14 days from today");
+
+    public static Error CannotCreateSubscriptionForMemberWithActiveOrFrozenSubscription => Error.Conflict("CannotCreateSubscriptionForMemberWithActiveOrFrozenSubscription", "Cannot create a subscription for a member who already has an active or frozen subscription.");
+
+    public static Error InvalidCheckInTime =>
+        Error.Validation("Attendance.InvalidCheckInTime", "Attendance timestamp cannot be in the future.");
+
+    public static Error MemberCannotCheckInWithoutActiveSubscription =>
+        Error.Conflict("Attendance.SubscriptionInactive", "Member cannot check-in without an active subscription.");
+
     public static readonly Error ExpiredAccessTokenInvalid = Error.Conflict(
         code: "Auth.ExpiredAccessToken.Invalid",
         description: "Expired access token is not valid.");

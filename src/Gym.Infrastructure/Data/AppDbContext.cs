@@ -1,5 +1,6 @@
 ﻿
 using Gym.Application.Common.Interfaces;
+using Gym.Domain.Attendance;
 using Gym.Domain.Coaches;
 using Gym.Domain.Identity;
 using Gym.Domain.Members;
@@ -25,6 +26,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<Plan> Plans => Set<Plan>();
     public DbSet<Subscription> Subscriptions => Set<Subscription>();
+    public DbSet<Attendance> Attendances => Set<Attendance>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

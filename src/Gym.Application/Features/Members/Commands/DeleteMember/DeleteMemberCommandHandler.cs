@@ -3,6 +3,7 @@ using Gym.Application.Common.Helpers;
 using Gym.Application.Common.Interfaces;
 using Gym.Application.Features.Members.Commands.CreateMember;
 using Gym.Domain.Common.Result;
+using Gym.Domain.Subscriptions.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
@@ -25,14 +26,15 @@ public sealed class DeleteMemberCommandHandler(IAppDbContext context,
             return ApplicationErrors.MemberNotFound;
         }
 
-        //var isSubscribed = await context.Subscriptions.Include(s => s.Member).
-        //    AnyAsync(s => s.Member.Id == command.MemberId, cancellationToken);
-
-        //if (isSubscribed)
-        //{
-        //    logger.LogWarning("Cannot delete member with id {MemberId} because they are subscribed.", command.MemberId);
-        //    return ApplicationErrors.CannotDeleteSubscribedMember;
-        //}
+        if (await context.Subscriptions.AnyAsync(s=> s.MemberId == command.MemberId && (
+             s.Status == SubscriptionStatus.Active
+             || s.Status == SubscriptionStatus.Frozen
+             || s.Status == SubscriptionStatus.Scheduled
+             || s.Status == SubscriptionStatus.Pending), cancellationToken))
+        {
+            logger.LogWarning("Cannot delete member with id {MemberId} because they are subscribed.", command.MemberId);
+            return ApplicationErrors.CannotDeleteSubscribedMember;
+        }
 
         var deleteResult = member!.Delete();
         if (deleteResult.IsError)
