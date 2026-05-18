@@ -1,8 +1,10 @@
 using Gym.Application.Common.Interfaces;
+using Gym.Infrastructure.BackgroundJobs;
 using Gym.Infrastructure.Data;
 using Gym.Infrastructure.Data.Interceptors;
 using Gym.Infrastructure.Identity;
 using Gym.Infrastructure.Identity.Policies;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -94,6 +96,10 @@ public static class DependencyInjection
             options.AddPolicy(Policies.SameMemberOrCoachOrAdmin, policy => policy.AddRequirements(new SameMemberOrCoachOrAdminRequirement()));
 
         });
+
+        services.AddHangfire(options => options.UseSqlServerStorage(connectionString));
+        services.AddHangfireServer();
+        services.AddScoped<SubscriptionJobs>();
 
         return services;
     }

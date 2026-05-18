@@ -24,4 +24,6 @@ public static class SubscriptionErrors
     public static Error FreezeEndDateNotNow => Error.Conflict("Invalid_Unfreeze_Time", "Cannot unfreeze before freeze end date.");
 
     public static Error OnlyActiveSubscriptionsCanBeCancelled => Error.Conflict("Invalid_Subscription_Status", "Only active subscriptions can be cancelled.");
+
+    public static Error OnlyActiveSubscriptionsCanBeExpired => Error.Conflict("Invalid_Subscription_Status", "Only active subscriptions can be expired.");
 }

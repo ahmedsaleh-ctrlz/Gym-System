@@ -60,6 +60,13 @@ public class Subscription : AuditableEntity
         Status = SubscriptionStatus.Scheduled;
         return Result.Updated;
     }
+    public Result<Updated> Expire()
+    {
+        if (Status != SubscriptionStatus.Active)
+            return SubscriptionErrors.OnlyActiveSubscriptionsCanBeExpired;
+        Status = SubscriptionStatus.Expired;
+        return Result.Updated;
+    }
 
     public Result<Updated> Freeze(int FreezeDays)
     {

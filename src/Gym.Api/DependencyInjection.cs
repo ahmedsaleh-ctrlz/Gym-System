@@ -4,7 +4,9 @@ using Gym.Api.Infrastructure;
 using Gym.Api.OpenApi;
 using Gym.Api.Services;
 using Gym.Application.Common.Interfaces;
+using Gym.Infrastructure.BackgroundJobs;
 using Gym.Infrastructure.Settings;
+using Hangfire;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 namespace Gym.Api;
@@ -101,6 +103,8 @@ public static class DependencyInjection
         app.UseCors(configuration["AppSettings:CorsPolicyName"]!);
         app.UseAuthentication();
         app.UseAuthorization();
+        app.UseBackgroundJobs();
+        app.UseHangfireDashboard();
 
         return app;
     }
@@ -122,5 +126,20 @@ public static class DependencyInjection
         return services;
     }
 
+
+    public static IApplicationBuilder UseBackgroundJobs(
+    this IApplicationBuilder app)
+    {
+        using var scope = app.ApplicationServices.CreateScope();
+
+        var recurringJobManager =
+            scope.ServiceProvider
+                .GetRequiredService<IRecurringJobManager>();
+
+        JobScheduler.RegisterRecurringJobs(
+            recurringJobManager);
+
+        return app;
+    }
 
 }
