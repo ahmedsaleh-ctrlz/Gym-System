@@ -75,10 +75,12 @@ public static class DependencyInjection
 
     public static IServiceCollection AddControllerWithJsonConfiguration(this IServiceCollection services)
     {
-        services.AddControllers().AddJsonOptions(options => options
-            .JsonSerializerOptions
-            .DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull);
-
+        services.AddControllers().AddJsonOptions(options =>
+        { 
+            options.JsonSerializerOptions
+                .DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());    
+        });
         return services;
     }
 

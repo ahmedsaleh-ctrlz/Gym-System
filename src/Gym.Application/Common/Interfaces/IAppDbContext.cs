@@ -1,6 +1,7 @@
 ﻿using Gym.Domain.Coaches;
 using Gym.Domain.Identity;
 using Gym.Domain.Members;
+using Gym.Domain.Payments;
 using Gym.Domain.Plans;
 using Gym.Domain.Subscriptions;
 using Gym.Domain.Attendance;
@@ -23,6 +24,8 @@ public interface IAppDbContext
     public DbSet<Subscription> Subscriptions { get; }
 
     public DbSet<Attendance> Attendances { get; }
+
+    public DbSet<Payment> Payments { get; }
 
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

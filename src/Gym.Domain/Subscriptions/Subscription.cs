@@ -13,6 +13,7 @@ public class Subscription : AuditableEntity
     public Member Member { get; private set; }
     public int PlanId { get; private set; }
     public Plan? Plan { get; private set; } 
+    public decimal PriceSnapshot { get; private set; }
     public DateOnly StartDate { get; private set; }
     public DateOnly EndDate { get; private set; }
     public SubscriptionStatus Status { get; private set; }
@@ -30,6 +31,7 @@ public class Subscription : AuditableEntity
         MemberId = memberId;
         Plan = plan;
         PlanId = plan.Id;
+        PriceSnapshot = plan.Cost;
         StartDate = startDate;
         EndDate = StartDate.AddDays(Plan!.DurationInDays);
         Status = SubscriptionStatus.Pending;

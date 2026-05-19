@@ -11,6 +11,7 @@ public class ApplicationErrors
     public static Error PlanNotFound => Error.NotFound("PlanNotFound", "Plan with the specified ID was not found.");
 
     public static Error SubscriptionNotFound => Error.NotFound("SubscriptionNotFound", "Subscription with the specified ID was not found.");
+    public static Error PaymentNotFound => Error.NotFound("PaymentNotFound", "Payment with the specified ID was not found.");
 
     public static Error PlanNotActive => Error.Conflict("PlanNotActive", "The selected plan is not active and cannot be subscribed to.");
 

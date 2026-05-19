@@ -16,6 +16,7 @@ namespace Gym.Application.Features.Subscriptions.Mappers
                     MemberId = subscription.MemberId,
                     MemberName = $"{subscription.Member.Person.FirstName} {subscription.Member.Person.LastName}",
                     PlanName = subscription.Plan!.Title,
+                    PriceSnapshot = subscription.PriceSnapshot,
                     StartDate = subscription.StartDate,
                     EndDate = subscription.EndDate,
                     Status = subscription.Status.ToString(),

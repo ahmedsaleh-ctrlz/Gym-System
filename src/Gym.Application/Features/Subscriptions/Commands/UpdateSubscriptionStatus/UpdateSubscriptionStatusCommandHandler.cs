@@ -34,6 +34,15 @@ public sealed class UpdateSubscriptionStatusCommandHandler(ILogger<Result<Update
                 }
                 break;
 
+            case SubscriptionStatus.Scheduled:
+                var scheduleResult = subscription.Scheduled();
+                if (scheduleResult.IsError)
+                {
+                    logger.LogWarning("Failed to schedule subscription with Id {SubscriptionId}: {Errors}", request.subscriptionId, scheduleResult.Errors);
+                    return scheduleResult.Errors;
+                }
+                break;
+
             case SubscriptionStatus.Cancelled:
                 var cancelResult = subscription.Cancel();
                 if(cancelResult.IsError)

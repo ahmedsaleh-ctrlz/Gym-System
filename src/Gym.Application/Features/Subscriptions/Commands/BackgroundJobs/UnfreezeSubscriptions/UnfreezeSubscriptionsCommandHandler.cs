@@ -9,8 +9,16 @@ public sealed class UnfreezeSubscriptionsCommandHandler(IAppDbContext dbContext)
 {
     public async Task Handle(UnfreezeSubscriptionsCommand request, CancellationToken cancellationToken)
     {
-        await dbContext.Subscriptions.Where(s => s.Status == SubscriptionStatus.Frozen && s.CanUnFreeze())
-            .ForEachAsync(s => s.Unfreeze(), cancellationToken);
+        var frozenSubscriptions = await dbContext.Subscriptions.Where(s => s.Status == SubscriptionStatus.Frozen)
+            .ToListAsync(cancellationToken);
+
+        foreach (var subscription in frozenSubscriptions)
+        {
+            if(subscription.CanUnFreeze())
+            {
+                subscription.Unfreeze();   
+            }
+        }
 
         await dbContext.SaveChangesAsync(cancellationToken);
     }
