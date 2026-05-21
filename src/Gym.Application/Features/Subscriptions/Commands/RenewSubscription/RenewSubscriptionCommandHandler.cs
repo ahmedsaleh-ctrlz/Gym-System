@@ -54,6 +54,7 @@ public sealed class RenewSubscriptionCommandHandler(ILogger<Result<Created>> log
         }
 
         await dbContext.Subscriptions.AddAsync(subscriptionResult.Value, ct);
+        await cache.RemoveByTagAsync("AdminDashboard", ct);
         await cache.RemoveByTagAsync("Subscriptions", ct);
         await dbContext.SaveChangesAsync(ct);
 

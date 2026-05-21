@@ -72,7 +72,7 @@ public class CreateMemberCommandHandler(IAppDbContext context,
 
            
             await transaction.CommitAsync(ct);
-
+            await _cache.RemoveByTagAsync("AdminDashboard", ct);
             await _cache.RemoveByTagAsync("Member", ct);
 
             _logger.LogInformation("Successfully created Member with ID: {MemberId} and associated User ID: {UserId}", member.Id, userId);

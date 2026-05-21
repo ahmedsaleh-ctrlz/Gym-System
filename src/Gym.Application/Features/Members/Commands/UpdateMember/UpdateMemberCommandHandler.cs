@@ -39,7 +39,7 @@ public sealed class UpdateMemberCommandHandler(IAppDbContext context,
         }
 
         await _context.SaveChangesAsync(ct);
-
+        await cache.RemoveByTagAsync("AdminDashboard", ct);
         await _cache.RemoveByTagAsync("Member", ct);
 
         _logger.LogInformation("Successfully updated Member with ID {MemberId}.", command.MemberId);

@@ -55,6 +55,7 @@ public sealed class UpdateSubscriptionStatusCommandHandler(ILogger<Result<Update
         
         logger.LogInformation("Subscription with Id {SubscriptionId} status updated to {NewStatus}", request.subscriptionId, request.newStatus);
         await cache.RemoveByTagAsync("Subscriptions",ct);
+        await cache.RemoveByTagAsync("AdminDashboard", ct);
         await context.SaveChangesAsync(ct);
 
         return Result.Updated;

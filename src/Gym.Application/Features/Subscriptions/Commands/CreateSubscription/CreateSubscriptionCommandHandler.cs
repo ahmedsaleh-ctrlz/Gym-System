@@ -71,6 +71,7 @@ public sealed class CreateSubscriptionCommandHandler(ILogger<Result<Subscription
         await dbContext.Payments.AddAsync(paymentResult.Value, ct);
         await cache.RemoveByTagAsync("Subscriptions", ct);
         await cache.RemoveByTagAsync("Payments", ct);
+        await cache.RemoveByTagAsync("AdminDashboard",ct);
         await dbContext.SaveChangesAsync(ct);
 
         logger.LogInformation("Successfully created subscription with id {SubscriptionId} for member {MemberId} with plan {PlanId}.", subscriptionResult.Value.Id, request.memberId, request.planId);

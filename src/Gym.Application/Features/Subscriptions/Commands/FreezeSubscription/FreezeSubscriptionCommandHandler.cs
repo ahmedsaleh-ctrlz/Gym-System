@@ -27,7 +27,9 @@ public class FreezeSubscriptionCommandHandler(IAppDbContext context,
         }
         logger.LogInformation("Subscription with id {subscriptionId} frozen for {FreezeDays} days successfully", request.subscriptionId, request.FreezeDays);
         await cache.RemoveByTagAsync($"Subscriptions", cancellationToken);
+        await cache.RemoveByTagAsync("AdminDashboard", cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
+
         return Result.Updated;
     }
 

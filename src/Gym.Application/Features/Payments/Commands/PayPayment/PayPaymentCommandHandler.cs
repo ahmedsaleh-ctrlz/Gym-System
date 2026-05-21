@@ -39,6 +39,7 @@ public sealed class PayPaymentCommandHandler(IAppDbContext dbContext, ILogger<Pa
         logger.LogInformation("Payment with id {PaymentId} paid successfully and subscription updated", request.PaymentId);
 
         await cache.RemoveByTagAsync("Subscriptions", ct);
+        await cache.RemoveByTagAsync("AdminDashboard", ct);
         await cache.RemoveByTagAsync("Payments", ct);
         await dbContext.SaveChangesAsync(ct);
         return Result.Updated;
