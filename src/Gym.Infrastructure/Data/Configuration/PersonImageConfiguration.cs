@@ -11,7 +11,6 @@ public class PersonImageConfiguration : IEntityTypeConfiguration<PersonImage>
         builder.HasKey(i => i.Id);
 
         builder.Property(i => i.ImageUrl)
-            .IsRequired()
             .HasMaxLength(2048);
     }
 }

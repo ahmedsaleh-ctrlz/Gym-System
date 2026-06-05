@@ -23,5 +23,19 @@ namespace Gym.Application.Features.Members.Mappers
                 Notes = member.Notes
             };
         }
+
+        public static List<ActiveMemberResponse> ToActiveMemberDtos(
+                    this IEnumerable<Member> members)
+        {
+            return members.Select(m => new ActiveMemberResponse
+            {
+                MemberId = m.Id,
+                FirstName = m.Person.FirstName,
+                LastName = m.Person.LastName,
+                PhoneNumber = m.Person.PhoneNumber,
+                ImageUrl = m.Person.Image.ImageUrl
+            }).ToList();
+
+        }
     }
 }

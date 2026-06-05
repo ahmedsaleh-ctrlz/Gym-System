@@ -15,6 +15,7 @@ public class GetSubscriptionsQueryHandler(IAppDbContext dbContext) : IRequestHan
     public async Task<Result<PaginatedList<SubscriptionResponse>>> Handle(GetSubscriptionsQuery request, CancellationToken cancellationToken)
     {
         var query = dbContext.Subscriptions
+            .IgnoreQueryFilters()
             .AsNoTracking()
             .Include(s => s.Member)
                 .ThenInclude(m => m.Person)

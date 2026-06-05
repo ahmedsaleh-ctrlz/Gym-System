@@ -1,0 +1,343 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+
+  background: #0f0f0f;
+
+  color: white;
+}
+
+.dashboard {
+  display: flex;
+
+  min-height: 100vh;
+}
+
+.nav-links a {
+  text-decoration: none;
+
+  color: white;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  width: 100%;
+}
+
+/* Sidebar */
+
+.sidebar {
+  width: 260px;
+  background: #151515;
+
+  border-right: 1px solid #252525;
+
+  padding: 30px 20px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.logo {
+  margin-bottom: 40px;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.nav-links {
+  list-style: none;
+  padding: 0;
+}
+
+.nav-links li {
+  padding: 14px 16px;
+
+  border-radius: 12px;
+
+  margin-bottom: 10px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  cursor: pointer;
+
+  transition: 0.3s;
+}
+
+.nav-links li:hover,
+.nav-links .active {
+  background: #ff3c3c;
+}
+
+.logout-btn {
+  border: none;
+
+  background: #ff3c3c;
+
+  color: white;
+
+  padding: 14px;
+
+  border-radius: 12px;
+
+  font-weight: bold;
+}
+
+/* Main */
+
+.main-content {
+  flex: 1;
+
+  padding: 30px;
+}
+
+/* Topbar */
+
+.topbar {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin-bottom: 30px;
+}
+
+.topbar p {
+  color: #888;
+}
+
+/* Buttons */
+
+.add-btn {
+  background: #ff3c3c;
+
+  border: none;
+
+  color: white;
+
+  padding: 12px 20px;
+
+  border-radius: 12px;
+}
+
+/* Search */
+
+.search-box {
+  background: #181818;
+
+  border: 1px solid #252525;
+
+  border-radius: 14px;
+
+  padding: 14px 18px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  margin-bottom: 30px;
+}
+
+.search-box input {
+  background: transparent;
+
+  border: none;
+
+  outline: none;
+
+  color: white;
+
+  width: 100%;
+}
+
+.filters-grid .form-control,
+.filters-grid .form-select {
+  background: #181818;
+  border: 1px solid #252525;
+  color: white;
+  height: 48px;
+}
+
+.filters-grid .form-control:focus,
+.filters-grid .form-select:focus {
+  background: #181818;
+  color: white;
+  border-color: #ff3c3c;
+  box-shadow: none;
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-label {
+  color: #c9c9c9;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Plans Grid */
+
+.plans-grid {
+  display: grid;
+
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+
+  gap: 25px;
+}
+
+/* Plan Card */
+
+.plan-card {
+  background: #181818;
+
+  border: 1px solid #252525;
+
+  border-radius: 20px;
+
+  padding: 25px;
+
+  transition: 0.3s;
+}
+
+.plan-card:hover {
+  transform: translateY(-5px);
+}
+
+.plan-title {
+  font-size: 26px;
+
+  font-weight: bold;
+
+  margin-bottom: 10px;
+}
+
+.plan-description {
+  color: #999;
+
+  margin-bottom: 25px;
+}
+
+.plan-price {
+  font-size: 40px;
+
+  font-weight: bold;
+
+  color: #ff3c3c;
+
+  margin-bottom: 20px;
+}
+
+.plan-info {
+  display: flex;
+
+  justify-content: space-between;
+
+  margin-bottom: 14px;
+
+  color: #bbb;
+}
+
+.plan-actions {
+  display: flex;
+
+  gap: 12px;
+
+  margin-top: 25px;
+}
+
+.btn-action {
+  flex: 1;
+
+  border: none;
+
+  padding: 12px;
+
+  border-radius: 12px;
+
+  color: white;
+}
+
+.btn-edit {
+  background: #ffc107;
+}
+
+.btn-delete {
+  background: #dc3545;
+}
+
+/* Loading */
+
+.loading-container {
+  display: flex;
+
+  justify-content: center;
+
+  padding: 60px;
+}
+
+/* Empty */
+
+.empty-state {
+  background: #181818;
+
+  border: 1px solid #252525;
+
+  border-radius: 18px;
+
+  padding: 60px;
+
+  text-align: center;
+}
+
+.empty-state i {
+  font-size: 70px;
+
+  color: #444;
+}
+
+/* Modal */
+
+.dark-modal {
+  background: #181818;
+
+  color: white;
+}
+
+.dark-modal .form-control {
+  background: #101010;
+
+  border: 1px solid #333;
+
+  color: white;
+}
+
+.dark-modal .form-control:focus {
+  background: #101010;
+
+  color: white;
+
+  border-color: #ff3c3c;
+
+  box-shadow: none;
+}

@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Gym Admin Dashboard</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    />
+    <link rel="stylesheet" href="../shared/ui.css">
+    <link rel="stylesheet" href="dashboard.css" />
+  </head>
+
+  <body>
+    <div class="dashboard">
+      <!-- Sidebar -->
+
+      <aside class="sidebar">
+        <div>
+          <h2 class="logo">GYM SYSTEM</h2>
+
+          <ul class="nav-links">
+            <li class="active">
+              <i class="bi bi-grid-fill"></i>
+              Dashboard
+            </li>
+
+            <li>
+              <a href="../members/members.html">
+                <i class="bi bi-people-fill"></i>
+
+                Members
+              </a>
+            </li>
+
+            <li>
+              <a href="../coaches/coaches.html">
+                <i class="bi bi-person-workspace"></i>
+                Coaches
+              </a>
+            </li>
+
+            <li>
+              <a href="../plans/plans.html">
+                <i class="bi bi-box-fill"></i>
+
+                Plans
+              </a>
+            </li>
+
+            <li>
+              <a href="../subscriptions/subscriptions.html">
+                <i class="bi bi-calendar-check-fill"></i>
+
+                Subscriptions
+              </a>
+            </li>
+
+            <li>
+              <a href="../payments/payments.html">
+                <i class="bi bi-cash-stack"></i>
+                Payments
+              </a>
+            </li>
+
+            <li>
+              <a href="../attendance/attendance.html">
+                <i class="bi bi-activity"></i>
+                Attendance
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <button class="logout-btn" onclick="logout()">
+          <i class="bi bi-box-arrow-right"></i>
+          Logout
+        </button>
+      </aside>
+
+      <!-- Main -->
+
+      <main class="main-content">
+        <!-- Topbar -->
+
+        <div class="topbar">
+          <div>
+            <h1>Dashboard</h1>
+
+            <p>Welcome back admin</p>
+          </div>
+
+          <div class="admin-box">
+            <i class="bi bi-person-circle"></i>
+            Admin
+          </div>
+        </div>
+
+        <!-- Stats -->
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div>
+              <p>Total Members</p>
+              <h2 id="totalMembers">0</h2>
+            </div>
+
+            <i class="bi bi-people-fill"></i>
+          </div>
+
+          <div class="stat-card">
+            <div>
+              <p>Active Subs</p>
+              <h2 id="activeSubscriptions">0</h2>
+            </div>
+
+            <i class="bi bi-calendar-check-fill"></i>
+          </div>
+
+          <div class="stat-card">
+            <div>
+              <p>Today Revenue</p>
+              <h2 id="todayRevenue">0</h2>
+            </div>
+
+            <i class="bi bi-cash-stack"></i>
+          </div>
+
+          <div class="stat-card">
+            <div>
+              <p>Today Attendance</p>
+              <h2 id="todayAttendance">0</h2>
+            </div>
+
+            <i class="bi bi-activity"></i>
+          </div>
+        </div>
+
+        <!-- Charts -->
+
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h4>Revenue Overview</h4>
+
+            <canvas id="revenueChart"></canvas>
+          </div>
+
+          <div class="chart-card">
+            <h4>Attendance Overview</h4>
+
+            <canvas id="attendanceChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Bottom -->
+
+        <div class="bottom-grid">
+          <div class="info-card">
+            <h4>Subscription Stats</h4>
+
+            <div class="info-item">
+              <span>Frozen</span>
+              <strong id="frozenSubscriptions">0</strong>
+            </div>
+
+            <div class="info-item">
+              <span>Scheduled</span>
+              <strong id="scheduledSubscriptions">0</strong>
+            </div>
+
+            <div class="info-item">
+              <span>Expired</span>
+              <strong id="expiredSubscriptions">0</strong>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <h4>Payments</h4>
+
+            <div class="info-item">
+              <span>Paid</span>
+              <strong id="paidPayments">0</strong>
+            </div>
+
+            <div class="info-item">
+              <span>Pending</span>
+              <strong id="pendingPayments">0</strong>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <h4>Most Popular Plan</h4>
+
+            <div class="popular-plan">
+              <h2 id="popularPlan">Gold</h2>
+
+              <p id="popularPlanCount">0 subscriptions</p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../shared/ui.js"></script>
+    <script src="dashboard.js"></script>
+  </body>
+</html>
+

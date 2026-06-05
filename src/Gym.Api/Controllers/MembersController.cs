@@ -4,8 +4,10 @@ using Gym.Application.Features.Members.Commands.CreateMember;
 using Gym.Application.Features.Members.Commands.DeleteMember;
 using Gym.Application.Features.Members.Commands.UpdateMember;
 using Gym.Application.Features.Members.Dtos;
+using Gym.Application.Features.Members.Queries.GetCurrentMember;
 using Gym.Application.Features.Members.Queries.GetMemberById;
 using Gym.Application.Features.Members.Queries.GetMembers;
+using Gym.Application.Features.Members.Queries.GetMembersWithActiveSubscription;
 using Gym.Domain.Identity;
 using Gym.Infrastructure.Identity.Policies;
 using MediatR;
@@ -46,6 +48,45 @@ public sealed class MembersController(ISender sender) : ApiController
             response => Ok(response),
             Problem);
     }
+
+    [HttpGet("active")]
+    [ProducesResponseType(typeof(List<ActiveMemberResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [EndpointSummary("Retrieves a list of members with active subscriptions.")]
+    [EndpointDescription("Returns members with active subscriptions.")]
+    [EndpointName("GetMembersWithActiveSubscription")]
+    [MapToApiVersion("1.0")]
+    [ProducesDefaultResponseType]
+    [Authorize(Roles = $"{nameof(Role.Admin)},{nameof(Role.Coach)}")]
+
+    public async Task<IActionResult> GetMembersWithActiveSubscription(CancellationToken ct)
+        
+    {
+        var result = await sender.Send(new GetMembersWithActiveSubscriptionQuery(),ct);
+
+        return result.Match(
+            response => Ok(response),
+            Problem);
+    }
+
+    [HttpGet("me")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [EndpointSummary("Retrieves the current logged-in member.")]
+    [EndpointDescription("Returns detailed information about the current logged-in member.")]
+    [EndpointName("GetCurrentMember")]
+    [MapToApiVersion("1.0")]
+    [Authorize(Roles = nameof(Role.Member))]
+
+    public async Task<IActionResult> GetCurrentMember(CancellationToken ct)
+    {
+        var result = await sender.Send(new GetCurrentMemberQuery(), ct);
+        return result.Match(
+            response => Ok(response),
+            Problem);
+    }
+
 
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(MemberResponse), StatusCodes.Status200OK)]

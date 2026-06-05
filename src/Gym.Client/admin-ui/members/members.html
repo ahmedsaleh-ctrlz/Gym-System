@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Members</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    />
+
+    <link rel="stylesheet" href="../shared/ui.css" />
+
+    <link rel="stylesheet" href="members.css" />
+  </head>
+
+  <body>
+    <div class="dashboard">
+      <!-- Sidebar -->
+
+     <aside class="sidebar">
+        <div>
+          <h2 class="logo">GYM SYSTEM</h2>
+
+          <ul class="nav-links">
+            <li>
+              <a href="../dashboard/dashboard.html">
+                <i class="bi bi-grid-fill"></i>
+                Dashboard
+              </a>
+            </li>
+
+            <li class="active">
+              <a href="../members/members.html">
+                <i class="bi bi-people-fill"></i>
+
+                Members
+              </a>
+            </li>
+
+            <li>
+              <a href="../coaches/coaches.html">
+                <i class="bi bi-person-workspace"></i>
+                Coaches
+              </a>
+            </li>
+
+            <li>
+              <a href="../plans/plans.html">
+                <i class="bi bi-box-fill"></i>
+
+                Plans
+              </a>
+            </li>
+
+            <li>
+              <a href="../subscriptions/subscriptions.html">
+                <i class="bi bi-calendar-check-fill"></i>
+
+                Subscriptions
+              </a>
+            </li>
+
+            <li>
+              <a href="../payments/payments.html">
+                <i class="bi bi-cash-stack"></i>
+                Payments
+              </a>
+            </li>
+
+            <li>
+              <a href="../attendance/attendance.html">
+                <i class="bi bi-activity"></i>
+                Attendance
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <button class="logout-btn" onclick="logout()">
+          <i class="bi bi-box-arrow-right"></i>
+          Logout
+        </button>
+      </aside>
+
+      <!-- Main -->
+
+      <main class="main-content">
+        <!-- Topbar -->
+
+        <div class="topbar">
+          <div>
+            <h1>Members</h1>
+
+            <p>Manage gym members</p>
+          </div>
+
+          <button
+            class="btn add-btn"
+            data-bs-toggle="modal"
+            data-bs-target="#addMemberModal"
+          >
+            <i class="bi bi-plus-lg"></i>
+
+            Add Member
+          </button>
+        </div>
+
+        <!-- Search -->
+
+        <div class="search-box">
+          <i class="bi bi-search"></i>
+
+          <input type="text" id="searchInput" placeholder="Search member..." />
+        </div>
+
+        <div class="filters-grid">
+          <div class="filter-field">
+            <label for="sortByFilter" class="filter-label">Sort By</label>
+            <select id="sortByFilter" class="form-select">
+              <option value="">Default</option>
+              <option value="firstName">First Name</option>
+              <option value="lastName">Last Name</option>
+              <option value="joinDate">Join Date</option>
+            </select>
+          </div>
+          <div class="filter-field">
+            <label for="sortDirectionFilter" class="filter-label">Sort Direction</label>
+            <select id="sortDirectionFilter" class="form-select">
+              <option value="asc">Ascending</option>
+              <option value="desc">Descending</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Loading -->
+
+        <div id="loadingSpinner" class="loading-container d-none">
+          <div class="spinner-border text-danger"></div>
+        </div>
+
+        <!-- Empty -->
+
+        <div id="emptyState" class="empty-state d-none">
+          <i class="bi bi-people"></i>
+
+          <h3>No Members Found</h3>
+
+          <p>Try another search keyword</p>
+        </div>
+
+        <!-- Table -->
+
+        <div class="table-container" id="tableContainer">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Image</th>
+
+                <th>Name</th>
+
+                <th>Phone</th>
+
+                <th>Join Date</th>
+
+                <th class="actions-col">Subscription</th>
+
+                <th class="actions-col">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody id="membersTable"></tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+
+    <!-- Member Subscription Action Modal -->
+
+    <div class="modal fade" id="memberSubActionModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content dark-modal">
+          <div class="modal-header border-0">
+            <h5 class="modal-title" id="memberSubActionTitle">Add Subscription</h5>
+
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+
+          <div class="modal-body">
+            <form id="memberSubActionForm">
+              <input type="hidden" id="memberSubActionMemberId" />
+              <input type="hidden" id="memberSubActionMode" />
+
+              <div class="mb-3">
+                <label class="form-label">Plan</label>
+                <select id="memberSubPlanId" class="form-select" required></select>
+              </div>
+
+              <div class="mb-4" id="memberSubStartDateWrap">
+                <label class="form-label">Start Date</label>
+                <input type="date" id="memberSubStartDate" class="form-control" />
+              </div>
+
+              <button type="submit" class="btn add-btn w-100" id="memberSubActionSubmit">
+                Create Subscription
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Member Modal -->
+
+    <div class="modal fade" id="addMemberModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content dark-modal">
+          <div class="modal-header border-0">
+            <h5 class="modal-title">Add Member</h5>
+
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+
+          <div class="modal-body">
+            <form id="addMemberForm">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label"> First Name </label>
+
+                  <input
+                    type="text"
+                    id="firstName"
+                    class="form-control"
+                    required
+                  />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                  <label class="form-label"> Last Name </label>
+
+                  <input
+                    type="text"
+                    id="lastName"
+                    class="form-control"
+                    required
+                  />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                  <label class="form-label"> Email </label>
+
+                  <input
+                    type="email"
+                    id="email"
+                    class="form-control"
+                    required
+                  />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                  <label class="form-label"> Password </label>
+
+                  <input
+                    type="password"
+                    id="password"
+                    class="form-control"
+                    required
+                  />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                  <label class="form-label"> Phone Number </label>
+
+                  <input type="text" id="phoneNumber" class="form-control" />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                  <label class="form-label"> Date Of Birth </label>
+
+                  <input type="date" id="dateOfBirth" class="form-control" />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                  <label class="form-label"> Join Date </label>
+
+                  <input type="date" id="joinDate" class="form-control" />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                  <label class="form-label"> Image </label>
+
+                  <div class="upload-control">
+                    <input
+                      type="file"
+                      id="image"
+                      class="upload-input"
+                      accept="image/*"
+                    />
+                    <label for="image" class="upload-label">
+                      <span class="upload-btn-text">
+                        <i class="bi bi-upload"></i>
+                        Choose Photo
+                      </span>
+                      <span id="imageFileName" class="upload-file-name">No file chosen</span>
+                    </label>
+                    <img
+                      id="imagePreview"
+                      class="upload-preview d-none"
+                      alt="Selected member photo preview"
+                    />
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label"> Notes </label>
+
+                  <textarea id="notes" class="form-control"></textarea>
+                </div>
+              </div>
+
+              <button type="submit" class="btn add-btn mt-4 w-100">
+                Create Member
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- View Member Modal -->
+
+    <div class="modal fade" id="viewMemberModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content dark-modal">
+          <div class="modal-header border-0">
+            <h5 class="modal-title">Member Details</h5>
+
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+
+          <div class="modal-body">
+            <div class="text-center mb-4">
+              <img id="viewImage" class="details-image" />
+            </div>
+
+            <div class="details-item">
+              <span>Name</span>
+              <strong id="viewName"></strong>
+            </div>
+
+            <div class="details-item">
+              <span>Email</span>
+              <strong id="viewEmail"></strong>
+            </div>
+
+            <div class="details-item">
+              <span>Phone</span>
+              <strong id="viewPhone"></strong>
+            </div>
+
+            <div class="details-item">
+              <span>Date Of Birth</span>
+              <strong id="viewDob"></strong>
+            </div>
+
+            <div class="details-item">
+              <span>Join Date</span>
+              <strong id="viewJoinDate"></strong>
+            </div>
+
+            <div class="details-item">
+              <span>Notes</span>
+              <strong id="viewNotes"></strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Current Subscription Modal -->
+
+    <div class="modal fade" id="memberSubscriptionModal" tabindex="-1">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content dark-modal">
+          <div class="modal-header border-0">
+            <h5 class="modal-title">Current Subscription</h5>
+
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+
+          <div class="modal-body">
+            <div class="section-title">Current Subscription</div>
+            <div class="details-item">
+              <span>Plan</span>
+              <strong id="subPlanName">-</strong>
+            </div>
+
+            <div class="details-item">
+              <span>Status</span>
+              <strong id="subStatus">-</strong>
+            </div>
+
+            <div class="details-item">
+              <span>Start Date</span>
+              <strong id="subStartDate">-</strong>
+            </div>
+
+            <div class="details-item">
+              <span>End Date</span>
+              <strong id="subEndDate">-</strong>
+            </div>
+
+            <div class="details-item mb-0">
+              <span>Price</span>
+              <strong id="subPrice">-</strong>
+            </div>
+
+            <button id="cancelSubBtn" class="btn btn-danger w-100 mt-3 d-none">
+              Cancel Subscription
+            </button>
+
+            <hr class="modal-separator" />
+
+            <div class="section-title">Subscription History</div>
+            <div class="history-table-wrap">
+              <table class="table table-dark table-sm history-table mb-0">
+                <thead>
+                  <tr>
+                    <th>Plan</th>
+                    <th>Status</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Price</th>
+                  </tr>
+                </thead>
+                <tbody id="subscriptionHistoryTable"></tbody>
+              </table>
+              <p id="subscriptionHistoryEmpty" class="history-empty d-none">
+                No subscription history found.
+              </p>
+            </div>
+
+            <hr class="modal-separator" />
+
+            <div class="section-title">Payments History</div>
+            <div class="history-table-wrap">
+              <table class="table table-dark table-sm history-table mb-0">
+                <thead>
+                  <tr>
+                    <th>Plan</th>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Status</th>
+                    <th>Paid At</th>
+                  </tr>
+                </thead>
+                <tbody id="memberPaymentsTable"></tbody>
+              </table>
+              <p id="memberPaymentsEmpty" class="history-empty d-none">
+                No payments found.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Member Modal -->
+
+    <div class="modal fade" id="editMemberModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content dark-modal">
+          <div class="modal-header border-0">
+            <h5 class="modal-title">Edit Member</h5>
+
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+
+          <div class="modal-body">
+            <form id="editMemberForm">
+              <input type="hidden" id="editMemberId" />
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label"> First Name </label>
+
+                  <input type="text" id="editFirstName" class="form-control" />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                  <label class="form-label"> Last Name </label>
+
+                  <input type="text" id="editLastName" class="form-control" />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                  <label class="form-label"> Phone Number </label>
+
+                  <input
+                    type="text"
+                    id="editPhoneNumber"
+                    class="form-control"
+                  />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                  <label class="form-label"> Date Of Birth </label>
+
+                  <input
+                    type="date"
+                    id="editDateOfBirth"
+                    class="form-control"
+                  />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                  <label class="form-label"> Join Date </label>
+
+                  <input type="date" id="editJoinDate" class="form-control" />
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label"> Notes </label>
+
+                  <textarea id="editNotes" class="form-control"></textarea>
+                </div>
+              </div>
+
+              <button type="submit" class="btn add-btn mt-4 w-100">
+                Save Changes
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="../shared/ui.js"></script>
+    <script src="members.js"></script>
+  </body>
+</html>
+

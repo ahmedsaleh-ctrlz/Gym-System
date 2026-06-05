@@ -7,6 +7,7 @@ using Gym.Application.Common.Interfaces;
 using Gym.Infrastructure.BackgroundJobs;
 using Gym.Infrastructure.Settings;
 using Hangfire;
+using Microsoft.Extensions.FileProviders;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 namespace Gym.Api;
@@ -31,15 +32,16 @@ public static class DependencyInjection
 
     public static IServiceCollection AddConfiguredCors(this IServiceCollection services, IConfiguration configuration)
     {
-        var appSettings = configuration.GetSection("AppSettings").Get<AppSettings>()!;
-
-        services.AddCors(options => options.AddPolicy(
-            appSettings.CorsPolicyName,
-            policy => policy
-                .WithOrigins(appSettings.AllowedOrigins!)
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials()));
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAll", policy =>
+            {
+                policy
+                    .AllowAnyOrigin()
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+            });
+        });
 
         return services;
     }
@@ -102,10 +104,11 @@ public static class DependencyInjection
         app.UseExceptionHandler();
         app.UseStatusCodePages();
         app.UseHttpsRedirection();
-        app.UseCors(configuration["AppSettings:CorsPolicyName"]!);
+        app.UseCors("AllowAll");
         app.UseAuthentication();
         app.UseAuthorization();
         app.UseBackgroundJobs();
+        app.UseCustomStaticFiles();
         app.UseHangfireDashboard();
 
         return app;
@@ -140,6 +143,21 @@ public static class DependencyInjection
 
         JobScheduler.RegisterRecurringJobs(
             recurringJobManager);
+
+        return app;
+    }
+
+    public static IApplicationBuilder UseCustomStaticFiles(
+    this IApplicationBuilder app)
+    {
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            FileProvider = new PhysicalFileProvider(
+        @"D:\Uploads"
+    ),
+
+            RequestPath = "/Uploads"
+        });
 
         return app;
     }

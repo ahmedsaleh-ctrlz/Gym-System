@@ -21,29 +21,38 @@ public class ImagesController : ApiController
         return await HandleImage(file, ct);
     }
 
-    private async Task<IActionResult> HandleImage(IFormFile file, CancellationToken ct)
+    private async Task<IActionResult> HandleImage(
+    IFormFile file,
+    CancellationToken ct)
     {
         if (file is null || file.Length == 0)
             return BadRequest("No file");
 
-        var Dir = @"D:\Uploads";
+        var dir = @"D:\Uploads";
 
+        var fileName =
+            Guid.NewGuid() +
+            Path.GetExtension(file.FileName);
 
+        var fullPath =
+            Path.Combine(dir, fileName);
 
-        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-
-        var path = Path.Combine(Dir, fileName);
-
-        if (!Directory.Exists(Dir))
+        if (!Directory.Exists(dir))
         {
-            Directory.CreateDirectory(Dir);
+            Directory.CreateDirectory(dir);
         }
 
-        using var stream = new FileStream(path, FileMode.Create);
+        using var stream =
+            new FileStream(fullPath, FileMode.Create);
+
         await file.CopyToAsync(stream, ct);
 
+        var imageUrl =
+            $"{Request.Scheme}://{Request.Host}/Uploads/{fileName}";
 
-
-        return Ok(new { path });
+        return Ok(new
+        {
+            path = imageUrl
+        });
     }
 }

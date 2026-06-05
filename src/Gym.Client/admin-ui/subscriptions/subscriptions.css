@@ -1,0 +1,316 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+
+  background: #0f0f0f;
+
+  color: white;
+}
+
+.dashboard {
+  display: flex;
+
+  min-height: 100vh;
+}
+
+.nav-links a {
+  text-decoration: none;
+
+  color: white;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  width: 100%;
+}
+
+/* Sidebar */
+
+.sidebar {
+  width: 260px;
+  background: #151515;
+
+  border-right: 1px solid #252525;
+
+  padding: 30px 20px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.logo {
+  margin-bottom: 40px;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.nav-links {
+  list-style: none;
+  padding: 0;
+}
+
+.nav-links li {
+  padding: 14px 16px;
+
+  border-radius: 12px;
+
+  margin-bottom: 10px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  cursor: pointer;
+
+  transition: 0.3s;
+}
+
+.nav-links li:hover,
+.nav-links .active {
+  background: #ff3c3c;
+}
+
+.logout-btn {
+  border: none;
+
+  background: #ff3c3c;
+
+  color: white;
+
+  padding: 14px;
+
+  border-radius: 12px;
+
+  font-weight: bold;
+}
+
+/* Main */
+
+.main-content {
+  flex: 1;
+
+  padding: 30px;
+}
+
+/* Topbar */
+
+.topbar {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin-bottom: 30px;
+}
+
+.topbar p {
+  color: #888;
+}
+
+/* Buttons */
+
+.add-btn {
+  background: #ff3c3c;
+
+  border: none;
+
+  color: white;
+
+  padding: 12px 20px;
+
+  border-radius: 12px;
+}
+
+/* Filters */
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+
+  margin-bottom: 25px;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-label {
+  color: #c9c9c9;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.form-control,
+.form-select {
+  background: #181818;
+
+  border: 1px solid #252525;
+
+  color: white;
+
+  height: 50px;
+}
+
+.form-control:focus,
+.form-select:focus {
+  background: #181818;
+
+  color: white;
+
+  border-color: #ff3c3c;
+
+  box-shadow: none;
+}
+
+/* Table */
+
+.table-container {
+  background: #181818;
+
+  border: 1px solid #252525;
+
+  border-radius: 18px;
+
+  overflow: hidden;
+}
+
+.table {
+  margin: 0;
+
+  color: white;
+}
+
+.table thead {
+  background: #202020;
+}
+
+.table th,
+.table td {
+  padding: 18px;
+}
+
+.table tbody tr:hover {
+  background: #202020;
+}
+
+/* Status */
+
+.status {
+  padding: 8px 14px;
+
+  border-radius: 20px;
+
+  font-size: 14px;
+
+  font-weight: bold;
+}
+
+.Pending {
+  background: #ffc107;
+
+  color: black;
+}
+
+.Active {
+  background: #198754;
+}
+
+.Expired {
+  background: #dc3545;
+}
+
+.Frozen {
+  background: #0dcaf0;
+
+  color: black;
+}
+
+.Cancelled {
+  background: #6c757d;
+}
+
+.Scheduled {
+  background: #6610f2;
+}
+
+/* Actions */
+
+.action-buttons {
+  display: flex;
+
+  gap: 10px;
+}
+
+.btn-action {
+  border: none;
+
+  width: 38px;
+  height: 38px;
+
+  border-radius: 10px;
+
+  color: white;
+}
+
+.btn-freeze {
+  background: #0dcaf0;
+
+  color: black;
+}
+
+.btn-activate {
+  background: #198754;
+}
+
+.btn-cancel {
+  background: #dc3545;
+}
+
+/* Modal */
+
+.dark-modal {
+  background: #181818;
+
+  color: white;
+}
+
+.dark-modal .form-control,
+.dark-modal .form-select {
+  background: #101010;
+
+  border: 1px solid #333;
+
+  color: white;
+}
+
+.dark-modal .form-control:focus,
+.dark-modal .form-select:focus {
+  background: #101010;
+  color: white;
+  border-color: #ff3c3c;
+  box-shadow: none;
+}
+
+/* Loading */
+
+.loading-container {
+  display: flex;
+
+  justify-content: center;
+
+  padding: 60px;
+}

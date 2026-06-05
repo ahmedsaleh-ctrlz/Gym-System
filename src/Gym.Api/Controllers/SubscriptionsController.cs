@@ -6,6 +6,7 @@ using Gym.Application.Features.Subscriptions.Commands.FreezeSubscription;
 using Gym.Application.Features.Subscriptions.Commands.RenewSubscription;
 using Gym.Application.Features.Subscriptions.Commands.UpdateSubscriptionStatus;
 using Gym.Application.Features.Subscriptions.Dtos;
+using Gym.Application.Features.Subscriptions.Queries.GetMemberSubscriptions;
 using Gym.Application.Features.Subscriptions.Queries.GetSubscriptionById;
 using Gym.Application.Features.Subscriptions.Queries.GetSubscriptions;
 using Gym.Domain.Identity;
@@ -73,6 +74,27 @@ public sealed class SubscriptionsController(ISender sender) : ApiController
             response => Ok(response),
             Problem);
     }
+
+
+    [HttpGet("member/{id:int}/history")]
+    [ProducesResponseType(typeof(SubscriptionResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [EndpointSummary("Retrieves a subscription history by member ID.")]
+    [EndpointDescription("Returns all subscription for the specified member if found.")]
+    [EndpointName("GetSubscriptionHistoryByMember")]
+    [MapToApiVersion("1.0")]
+    [Authorize(Policy = Policies.SameMemberOrCoachOrAdmin)]
+    public async Task<IActionResult> GetSubscriptionHistroyByMemberId(int id, CancellationToken ct)
+    {
+        var result = await sender.Send(new GetMemberSubscriptionsQuery(id), ct);
+
+        return result.Match(
+            response => Ok(response),
+            Problem);
+    }
+
 
     [HttpGet("member/{id:int}")]
     [ProducesResponseType(typeof(SubscriptionResponse), StatusCodes.Status200OK)]

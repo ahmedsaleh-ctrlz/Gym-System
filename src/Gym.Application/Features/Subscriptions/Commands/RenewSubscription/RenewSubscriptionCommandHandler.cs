@@ -2,6 +2,7 @@
 using Gym.Application.Common.Errors;
 using Gym.Application.Common.Interfaces;
 using Gym.Domain.Common.Result;
+using Gym.Domain.Payments;
 using Gym.Domain.Subscriptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -53,10 +54,28 @@ public sealed class RenewSubscriptionCommandHandler(ILogger<Result<Created>> log
             return subscriptionResult.Errors;
         }
 
-        await dbContext.Subscriptions.AddAsync(subscriptionResult.Value, ct);
-        await cache.RemoveByTagAsync("AdminDashboard", ct);
+        var subscription = subscriptionResult.Value;
+
+       
+
+        #region CreatePayment
+        var paymentResult = Payment.Create(subscriptionResult.Value);
+        if (paymentResult.IsError)
+        {
+            logger.LogError("Failed to create payment for subscription of member {MemberId} with plan {PlanId}. Errors: {Errors}", request.memberId, request.planId, paymentResult.Errors);
+            return paymentResult.Errors;
+        }
+        #endregion
+
+
+        await dbContext.Subscriptions.AddAsync(subscription, ct);
+        await dbContext.Payments.AddAsync(paymentResult.Value, ct);
         await cache.RemoveByTagAsync("Subscriptions", ct);
+        await cache.RemoveByTagAsync("Payments", ct);
+        await cache.RemoveByTagAsync("AdminDashboard", ct);
         await dbContext.SaveChangesAsync(ct);
+
+        logger.LogInformation("Successfully renewed subscription with id {SubscriptionId} for member {MemberId} with plan {PlanId}.", subscription.Id, request.memberId, request.planId);
 
         return Result.Created;
     }

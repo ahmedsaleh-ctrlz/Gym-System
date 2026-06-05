@@ -50,8 +50,8 @@ public class Subscription : AuditableEntity
 
     public Result<Updated> Activate()
     {
-        if (Status != SubscriptionStatus.Pending)
-            return SubscriptionErrors.OnlyPendingSubscriptionsCanBeActivated;
+        if (Status != SubscriptionStatus.Pending && Status != SubscriptionStatus.Scheduled && Status !=SubscriptionStatus.Frozen)
+            return SubscriptionErrors.InvalidStatusCannotActivate;
         Status = SubscriptionStatus.Active;
         return Result.Updated;
     }
@@ -86,8 +86,7 @@ public class Subscription : AuditableEntity
 
     public Result<Updated> Cancel()
     {
-        if (Status != SubscriptionStatus.Active)
-            return SubscriptionErrors.OnlyActiveSubscriptionsCanBeCancelled;
+       
         Status = SubscriptionStatus.Cancelled;
         return Result.Updated;
     }
