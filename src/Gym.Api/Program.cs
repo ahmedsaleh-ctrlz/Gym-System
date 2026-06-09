@@ -5,13 +5,18 @@ using Gym.Application.Features.Members.Commands.CreateMember;
 using Gym.Infrastructure;
 using Gym.Infrastructure.Data;
 using Scalar.AspNetCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApi(builder.Configuration)
     .AddApplicaiton()
     .AddInfrastructure(builder.Configuration);
+builder.Host.UseSerilog((context,loggerConfigration) =>
+{
+    loggerConfigration.ReadFrom.Configuration(builder.Configuration);
 
+});
 
 var app = builder.Build();
 

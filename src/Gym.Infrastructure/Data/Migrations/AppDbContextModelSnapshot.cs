@@ -91,7 +91,7 @@ namespace Gym.Infrastructure.Data.Migrations
                     b.HasIndex("PersonId")
                         .IsUnique();
 
-                    b.ToTable("Coaches");
+                    b.ToTable("Coaches", (string)null);
                 });
 
             modelBuilder.Entity("Gym.Domain.Identity.RefreshToken", b =>
@@ -181,7 +181,7 @@ namespace Gym.Infrastructure.Data.Migrations
                     b.HasIndex("PersonId")
                         .IsUnique();
 
-                    b.ToTable("Members");
+                    b.ToTable("Members", (string)null);
                 });
 
             modelBuilder.Entity("Gym.Domain.Payments.Payment", b =>
@@ -267,7 +267,7 @@ namespace Gym.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("People");
+                    b.ToTable("People", (string)null);
                 });
 
             modelBuilder.Entity("Gym.Domain.People.PersonImages.PersonImage", b =>
@@ -282,6 +282,7 @@ namespace Gym.Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ImageUrl")
+                        .IsRequired()
                         .HasMaxLength(2048)
                         .HasColumnType("nvarchar(2048)");
 
@@ -293,7 +294,7 @@ namespace Gym.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PersonImages");
+                    b.ToTable("PersonImages", (string)null);
                 });
 
             modelBuilder.Entity("Gym.Domain.Plans.Plan", b =>

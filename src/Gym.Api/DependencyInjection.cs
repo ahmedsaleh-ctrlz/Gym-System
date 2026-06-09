@@ -8,6 +8,7 @@ using Gym.Infrastructure.BackgroundJobs;
 using Gym.Infrastructure.Settings;
 using Hangfire;
 using Microsoft.Extensions.FileProviders;
+using Serilog;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 namespace Gym.Api;
@@ -110,6 +111,7 @@ public static class DependencyInjection
         app.UseBackgroundJobs();
         app.UseCustomStaticFiles();
         app.UseHangfireDashboard();
+        app.UseSerilogRequestLogging();
 
         return app;
     }
@@ -131,7 +133,7 @@ public static class DependencyInjection
         return services;
     }
 
-
+ 
     public static IApplicationBuilder UseBackgroundJobs(
     this IApplicationBuilder app)
     {
