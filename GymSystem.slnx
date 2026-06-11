@@ -5,4 +5,11 @@
     <Project Path="src/Gym.Domain/Gym.Domain.csproj" />
     <Project Path="src/Gym.Infrastructure/Gym.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Gym.Api.IntegrationTests/Gym.Api.IntegrationTests.csproj" />
+    <Project Path="tests/Gym.Application.SubcutaneousTests/Gym.Application.SubcutaneousTests.csproj" />
+    <Project Path="tests/Gym.Application.UnitTests/Gym.Application.UnitTests.csproj" />
+    <Project Path="tests/Gym.Domain.UnitTests/Gym.Domain.UnitTests.csproj" />
+    <Project Path="tests/Gym.Tests.Common/Gym.Tests.Common.csproj" />
+  </Folder>
 </Solution>
