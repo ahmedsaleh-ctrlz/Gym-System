@@ -15,6 +15,26 @@ public class PersonImageTests
     }
 
     [Fact]
+    public void Create_ShouldReturnSuccess_WhenImageUrlIsValid()
+    {
+        var result = PersonImageFactory.CreatePersonImage("/images/person-image.jpg");
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("/images/person-image.jpg", result.Value.ImageUrl);
+    }
+
+    [Fact]
+    public void Update_ShouldReturnError_WhenImageUrlIsEmpty()
+    {
+        var image = PersonImageFactory.CreatePersonImage().Value;
+
+        var result = image.Update("");
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(PersonImageError.PersonImageUrlRequired.Code, result.TopError.Code);
+    }
+
+    [Fact]
     public void Update_ShouldReturnSuccess_WhenImageUrlIsValid()
     {
         var image = PersonImageFactory.CreatePersonImage().Value;

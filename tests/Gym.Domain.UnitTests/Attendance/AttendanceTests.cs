@@ -34,4 +34,12 @@ public class AttendanceTests
         Assert.Equal(5, result.Value.MemberId);
         Assert.Equal(DateTimeKind.Utc, result.Value.CheckInAtUtc.Kind);
     }
+
+    [Fact]
+    public void Create_ShouldAllowCheckInWithinOneMinuteTolerance()
+    {
+        var result = AttendanceFactory.CreateAttendance(checkInAtUtc: DateTime.UtcNow.AddSeconds(30));
+
+        Assert.True(result.IsSuccess);
+    }
 }

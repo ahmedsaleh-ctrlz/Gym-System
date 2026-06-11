@@ -58,6 +58,17 @@ public class PaymentTests
     }
 
     [Fact]
+    public void Pay_ShouldReturnError_WhenPaymentIsAlreadyPaid()
+    {
+        var payment = PaymentFactory.CreatePayment(payImmediately: true).Value;
+
+        var result = payment.Pay(PaymentMethod.Cash);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(PaymentErrors.InvalidPaymentStatus.Code, result.TopError.Code);
+    }
+
+    [Fact]
     public void Pay_ShouldReturnError_WhenPaymentStatusIsNotPending()
     {
         var payment = PaymentFactory.CreatePayment(payImmediately: true).Value;

@@ -15,6 +15,15 @@ public class RefreshTokenTests
     }
 
     [Fact]
+    public void Create_ShouldReturnError_WhenUserIdIsMissing()
+    {
+        var result = RefreshTokenFactory.CreateRefreshToken(userId: "");
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(RefreshTokenErrors.UserIdRequired.Code, result.TopError.Code);
+    }
+
+    [Fact]
     public void Create_ShouldReturnError_WhenExpiryIsInPast()
     {
         var result = RefreshTokenFactory.CreateRefreshToken(expiresOnUtc: DateTimeOffset.UtcNow.AddMinutes(-1));
