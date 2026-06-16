@@ -1,11 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-
+<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <Compile Remove="Common\NewFolder1\**" />
     <EmbeddedResource Remove="Common\NewFolder1\**" />
@@ -13,13 +6,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentValidation" Version="12.1.1" />
-    <PackageReference Include="MediatR" Version="14.1.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.7" />
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="MediatR" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Gym.Domain\Gym.Domain.csproj" />
   </ItemGroup>
-
 </Project>
