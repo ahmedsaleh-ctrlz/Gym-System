@@ -1,6 +1,7 @@
 using Gym.Application.Common.Behaviors;
 using Gym.Application.Common.Interfaces;
 using Gym.Application.UnitTests.Common;
+
 using NSubstitute;
 
 namespace Gym.Application.UnitTests.Behaviors;

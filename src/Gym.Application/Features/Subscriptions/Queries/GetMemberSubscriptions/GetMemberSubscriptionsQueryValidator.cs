@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 
-
 namespace Gym.Application.Features.Subscriptions.Queries.GetMemberSubscriptions
 {
     public sealed class GetMemberSubscriptionsQueryValidator : AbstractValidator<GetMemberSubscriptionsQuery>

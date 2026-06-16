@@ -1,5 +1,4 @@
-﻿
-using FluentValidation;
+﻿using FluentValidation;
 
 namespace Gym.Application.Features.Members.Commands.DeleteMember;
 

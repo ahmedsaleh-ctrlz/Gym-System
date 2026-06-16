@@ -6,7 +6,7 @@ namespace Gym.Application.Features.Payments.Queries.GetMemberPayments
     {
         public GetMemberPaymentsQueryValidator()
         {
-            RuleFor(x => x.memberId).GreaterThan(0).WithMessage("Member ID must be greater than 0.");
+            RuleFor(x => x.MemberId).GreaterThan(0).WithMessage("Member ID must be greater than 0.");
         }
     }
 }

@@ -1,9 +1,11 @@
-﻿using Gym.Domain.Plans;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+
+using Gym.Domain.Plans;
+
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Gym.Infrastructure.Data.Configuration;
 
@@ -14,7 +16,7 @@ public class PlanConfiguration : IEntityTypeConfiguration<Plan>
         builder.ToTable("Plans");
         builder.HasKey(x => x.Id);
 
-        builder.Property(x=>x.Title)
+        builder.Property(x => x.Title)
             .HasMaxLength(30)
             .IsRequired();
 

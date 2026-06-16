@@ -1,7 +1,8 @@
 ﻿using FluentValidation;
-using Gym.Domain.Common.Result;
-using MediatR;
 
+using Gym.Domain.Common.Result;
+
+using MediatR;
 
 namespace Gym.Application.Features.Members.Commands.UpdateMember;
 
@@ -14,9 +15,4 @@ public sealed record UpdateMemberCommand(
     DateTime JoinDate,
     string? Notes) : IRequest<Result<Updated>>;
 
-
-public sealed record UpdateMemberImageCommand(int memberId, string imageUrl) : IRequest<Result<Updated>>;
-
-
-
-
+public sealed record UpdateMemberImageCommand(int MemberId, string ImageUrl) : IRequest<Result<Updated>>;

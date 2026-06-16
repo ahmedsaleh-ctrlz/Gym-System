@@ -1,13 +1,16 @@
-﻿using Gym.Application.Common.Interfaces;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+using Gym.Application.Common.Interfaces;
 using Gym.Application.Features.Dashboard.Dtos;
 using Gym.Domain.Common.Result;
 using Gym.Domain.Payments.Enums;
 using Gym.Domain.Subscriptions.Enums;
+
 using MediatR;
+
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Gym.Application.Features.Dashboard.Queries.GetAdminDashboard;
 
@@ -102,7 +105,6 @@ public class GetAdminDashboardQueryHandler(IAppDbContext dbContext) : IRequestHa
                .OrderByDescending(x => x.Count)
                .FirstOrDefaultAsync(ct);
 
-
         var pendingPaymentsCount =
             await dbContext.Payments
                 .CountAsync(
@@ -114,7 +116,6 @@ public class GetAdminDashboardQueryHandler(IAppDbContext dbContext) : IRequestHa
                 .CountAsync(
                     p => p.Status == PaymentStatus.Paid,
                     ct);
-
 
         return new AdminDashboardResponse
         {
@@ -153,6 +154,5 @@ public class GetAdminDashboardQueryHandler(IAppDbContext dbContext) : IRequestHa
 
             PaidPaymentsCount = paidPaymentsCount,
         };
-
     }
 }

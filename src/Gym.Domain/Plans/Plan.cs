@@ -8,7 +8,7 @@ public sealed class Plan : AuditableEntity
     public string Title { get; private set; } = string.Empty;
     public string? Description { get; private set; }
     public decimal Cost { get; private set; }
-    public int DurationInDays  {  get; private set; }
+    public int DurationInDays { get; private set; }
     public bool IsActive { get; private set; } = true;
 
     // Freeze related properties
@@ -19,12 +19,12 @@ public sealed class Plan : AuditableEntity
     {
     }
 
-    private Plan(string title, string? description, decimal cost , int durationInDays, int allowedFreezeCount, int maxTotalFreezeDays)
+    private Plan(string title, string? description, decimal cost, int durationInDays, int allowedFreezeCount, int maxTotalFreezeDays)
     {
         Title = title;
         Description = description;
         Cost = cost;
-        DurationInDays  = durationInDays;
+        DurationInDays = durationInDays;
         AllowedFreezeCount = allowedFreezeCount;
         MaxTotalFreezeDays = maxTotalFreezeDays;
     }
@@ -58,7 +58,7 @@ public sealed class Plan : AuditableEntity
         Cost = cost;
         DurationInDays = durationInDays;
         AllowedFreezeCount = allowedFreezeCount;
-        MaxTotalFreezeDays = maxTotalFreezeDays;    
+        MaxTotalFreezeDays = maxTotalFreezeDays;
 
         return Result.Updated;
     }
@@ -85,7 +85,7 @@ public sealed class Plan : AuditableEntity
         return Result.Updated;
     }
 
-    private static Error? Validate(string title, decimal cost ,int durationInDays, int allowedFreezeCount, int maxTotalFreezeDays)
+    private static Error? Validate(string title, decimal cost, int durationInDays, int allowedFreezeCount, int maxTotalFreezeDays)
     {
         if (string.IsNullOrWhiteSpace(title))
         {
@@ -111,7 +111,6 @@ public sealed class Plan : AuditableEntity
         {
             return PlanError.InvalidMaxTotalFreezeDays;
         }
-
 
         return null;
     }

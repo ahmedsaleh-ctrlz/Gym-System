@@ -3,7 +3,9 @@ using Gym.Application.Common.Models;
 using Gym.Application.Features.Payments.Dtos;
 using Gym.Domain.Common.Result;
 using Gym.Domain.Payments;
+
 using MediatR;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Gym.Application.Features.Payments.Queries.GetPayments;
@@ -40,7 +42,7 @@ public sealed class GetPaymentsQueryHandler(IAppDbContext context)
                 Amount = p.Amount,
                 PaymentMethod = p.PaymentMethod.HasValue ? p.PaymentMethod.Value.ToString() : string.Empty,
                 Status = p.Status.ToString(),
-                PaidAtUtc = p.PaidAtUtc.HasValue ? DateTime.SpecifyKind(p.PaidAtUtc.Value, DateTimeKind.Utc) : null 
+                PaidAtUtc = p.PaidAtUtc.HasValue ? DateTime.SpecifyKind(p.PaidAtUtc.Value, DateTimeKind.Utc) : null
             })
             .ToListAsync(ct);
 

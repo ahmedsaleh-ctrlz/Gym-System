@@ -1,18 +1,18 @@
-﻿using Gym.Application.Common.Interfaces;
-using Gym.Application.Features.Dashboard.Dtos;
-using Gym.Domain.Common.Result;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+
+using Gym.Application.Common.Interfaces;
+using Gym.Application.Features.Dashboard.Dtos;
+using Gym.Domain.Common.Result;
 
 namespace Gym.Application.Features.Dashboard.Queries.GetAdminDashboard;
 
 public class GetAdminDashboardQuery : ICachedQuery<Result<AdminDashboardResponse>>
 {
+    public string CacheKey => "AdminDashboard";
 
-    public string cacheKey => "AdminDashboard";
+    public string[] CacheTag => ["AdminDashboard"];
 
-    public string[] cacheTag => ["AdminDashboard"];
-
-    public TimeSpan cacheDuration => TimeSpan.FromMinutes(10);
+    public TimeSpan CacheDuration => TimeSpan.FromMinutes(10);
 }

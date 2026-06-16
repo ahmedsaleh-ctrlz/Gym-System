@@ -17,7 +17,7 @@ public class CoachTests
     [Fact]
     public void Create_ShouldReturnError_WhenPersonDataIsInvalid()
     {
-        var result = CoachFactory.CreateCoach(firstName: "");
+        var result = CoachFactory.CreateCoach(firstName: string.Empty);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(Gym.Domain.People.PersonError.FirstNameRequired.Code, result.TopError.Code);
@@ -61,7 +61,7 @@ public class CoachTests
     {
         var coach = CoachFactory.CreateCoach().Value;
 
-        var result = coach.UpdateInfo("", "B", DateTime.UtcNow.AddYears(-20), "010", DateTime.UtcNow.AddDays(-3));
+        var result = coach.UpdateInfo(string.Empty, "B", DateTime.UtcNow.AddYears(-20), "010", DateTime.UtcNow.AddDays(-3));
 
         Assert.False(result.IsSuccess);
         Assert.Equal(Gym.Domain.People.PersonError.FirstNameRequired.Code, result.TopError.Code);
@@ -97,7 +97,7 @@ public class CoachTests
     {
         var coach = CoachFactory.CreateCoach().Value;
 
-        var result = coach.UpdateImage("");
+        var result = coach.UpdateImage(string.Empty);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(Gym.Domain.People.PersonImages.PersonImageError.PersonImageUrlRequired.Code, result.TopError.Code);

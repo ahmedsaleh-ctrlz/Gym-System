@@ -2,7 +2,9 @@
 using Gym.Application.Common.Interfaces;
 using Gym.Domain.Common.Result;
 using Gym.Domain.Subscriptions.Enums;
+
 using MediatR;
+
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 
@@ -15,46 +17,49 @@ public sealed class UpdateSubscriptionStatusCommandHandler(ILogger<Result<Update
 {
     public async Task<Result<Updated>> Handle(UpdateSubscriptionStatusCommand request, CancellationToken ct)
     {
-       logger.LogTrace("Handling UpdateSubscriptionStatusCommand for SubscriptionId: {SubscriptionId}", request.subscriptionId);
-       var subscription = await context.Subscriptions.FindAsync([request.subscriptionId],ct);
+        logger.LogTrace("Handling UpdateSubscriptionStatusCommand for SubscriptionId: {SubscriptionId}", request.SubscriptionId);
+        var subscription = await context.Subscriptions.FindAsync([request.SubscriptionId], ct);
         if (subscription is null)
         {
-            logger.LogWarning("Subscription with Id {SubscriptionId} not found", request.subscriptionId);
+            logger.LogWarning("Subscription with Id {SubscriptionId} not found", request.SubscriptionId);
             return ApplicationErrors.SubscriptionNotFound;
         }
 
-        switch (request.newStatus) 
+        switch (request.NewStatus)
         {
             case SubscriptionStatus.Active:
                 var activateResult = subscription.Activate();
-                if(activateResult.IsError)
+                if (activateResult.IsError)
                 {
-                    logger.LogWarning("Failed to activate subscription with Id {SubscriptionId}: {Errors}", request.subscriptionId, activateResult.Errors);
+                    logger.LogWarning("Failed to activate subscription with Id {SubscriptionId}: {Errors}", request.SubscriptionId, activateResult.Errors);
                     return activateResult.Errors;
                 }
+
                 break;
 
             case SubscriptionStatus.Scheduled:
                 var scheduleResult = subscription.Scheduled();
                 if (scheduleResult.IsError)
                 {
-                    logger.LogWarning("Failed to schedule subscription with Id {SubscriptionId}: {Errors}", request.subscriptionId, scheduleResult.Errors);
+                    logger.LogWarning("Failed to schedule subscription with Id {SubscriptionId}: {Errors}", request.SubscriptionId, scheduleResult.Errors);
                     return scheduleResult.Errors;
                 }
+
                 break;
 
             case SubscriptionStatus.Cancelled:
                 var cancelResult = subscription.Cancel();
-                if(cancelResult.IsError)
+                if (cancelResult.IsError)
                 {
-                    logger.LogWarning("Failed to cancel subscription with Id {SubscriptionId}: {Errors}", request.subscriptionId, cancelResult.Errors);
+                    logger.LogWarning("Failed to cancel subscription with Id {SubscriptionId}: {Errors}", request.SubscriptionId, cancelResult.Errors);
                     return cancelResult.Errors;
                 }
-                break;  
+
+                break;
         }
-        
-        logger.LogInformation("Subscription with Id {SubscriptionId} status updated to {NewStatus}", request.subscriptionId, request.newStatus);
-        await cache.RemoveByTagAsync("Subscriptions",ct);
+
+        logger.LogInformation("Subscription with Id {SubscriptionId} status updated to {NewStatus}", request.SubscriptionId, request.NewStatus);
+        await cache.RemoveByTagAsync("Subscriptions", ct);
         await cache.RemoveByTagAsync("AdminDashboard", ct);
         await context.SaveChangesAsync(ct);
 

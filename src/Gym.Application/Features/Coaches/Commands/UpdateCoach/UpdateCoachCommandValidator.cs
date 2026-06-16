@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 
 namespace Gym.Application.Features.Coaches.Commands.UpdateCoach;
+
 public class UpdateCoachCommandValidator : AbstractValidator<UpdateCoachCommand>
 {
     public UpdateCoachCommandValidator()
@@ -16,16 +17,14 @@ public class UpdateCoachCommandValidator : AbstractValidator<UpdateCoachCommand>
         RuleFor(x => x.PhoneNumber)
             .NotEmpty().WithMessage("Phone number is required.")
             .Matches(@"^\+?[1-9]\d{1,14}$").WithMessage("Phone number must be in a valid format.");
-      
     }
-
-
 }
+
 public sealed class UpdateCoachImageCommandValidator : AbstractValidator<UpdateCoachImageCommand>
 {
     public UpdateCoachImageCommandValidator()
     {
-        RuleFor(x => x.imageUrl)
+        RuleFor(x => x.ImageUrl)
             .NotEmpty().WithMessage("Image URL is required.")
             .Must(uri => Uri.IsWellFormedUriString(uri, UriKind.Absolute)).WithMessage("Image URL must be a valid URL.");
     }

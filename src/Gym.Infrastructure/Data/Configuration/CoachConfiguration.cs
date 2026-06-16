@@ -1,4 +1,5 @@
 ﻿using Gym.Domain.Coaches;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Gym.Infrastructure.Data.Configuration
@@ -13,7 +14,6 @@ namespace Gym.Infrastructure.Data.Configuration
 
             builder.Property(m => m.HireDate)
              .IsRequired().HasDefaultValueSql("GETDATE()");
-
 
             builder.HasOne(e => e.Person)
                 .WithOne()

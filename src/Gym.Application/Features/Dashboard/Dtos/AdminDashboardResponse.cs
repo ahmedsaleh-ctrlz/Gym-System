@@ -42,6 +42,4 @@ public sealed class AdminDashboardResponse
     public int PendingPaymentsCount { get; init; }
 
     public int PaidPaymentsCount { get; init; }
-
-    
 }

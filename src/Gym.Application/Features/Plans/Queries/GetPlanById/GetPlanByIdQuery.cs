@@ -6,9 +6,9 @@ namespace Gym.Application.Features.Plans.Queries.GetPlanById;
 
 public sealed record GetPlanByIdQuery(int Id) : ICachedQuery<Result<PlanDetailsResponse>>
 {
-    public string cacheKey => $"Plan_{Id}";
+    public string CacheKey => $"Plan_{Id}";
 
-    public string[] cacheTag => ["Plan"];
+    public string[] CacheTag => ["Plan"];
 
-    public TimeSpan cacheDuration => TimeSpan.FromMinutes(10);
+    public TimeSpan CacheDuration => TimeSpan.FromMinutes(10);
 }

@@ -1,4 +1,5 @@
 using System.Reflection;
+
 using Gym.Domain.Common;
 using Gym.Domain.Common.Result;
 using Gym.Domain.Plans;

@@ -1,18 +1,20 @@
-﻿using Gym.Application.Common.Interfaces;
-using Gym.Application.Features.Identity.Dtos;
-using Gym.Domain.Common.Result;
-using Gym.Domain.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
+using Gym.Application.Common.Interfaces;
+using Gym.Application.Features.Identity.Dtos;
+using Gym.Domain.Common.Result;
+using Gym.Domain.Identity;
+
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+
 namespace Gym.Infrastructure.Identity;
 
-public class TokenProvider(IConfiguration configuration , IAppDbContext context) : ITokenProvider
+public class TokenProvider(IConfiguration configuration, IAppDbContext context) : ITokenProvider
 {
     public async Task<Result<TokenResponse>> GenerateJwtTokenAsync(AppUserDto user, CancellationToken ct = default)
     {
@@ -47,7 +49,6 @@ public class TokenProvider(IConfiguration configuration , IAppDbContext context)
             ClockSkew = TimeSpan.Zero
         };
 
-        
         var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
 
         if (securityToken is not JwtSecurityToken jwtSecurityToken ||
@@ -71,8 +72,8 @@ public class TokenProvider(IConfiguration configuration , IAppDbContext context)
 
         var claims = new List<Claim>
         {
-            new (JwtRegisteredClaimNames.Sub , user.UserId!),
-            new (JwtRegisteredClaimNames.Email , user.Email!)
+            new (JwtRegisteredClaimNames.Sub, user.UserId!),
+            new (JwtRegisteredClaimNames.Email, user.Email!)
         };
 
         if (user.PersonId > 0)
@@ -80,10 +81,9 @@ public class TokenProvider(IConfiguration configuration , IAppDbContext context)
             claims.Add(new("person_id", user.PersonId.ToString()!));
         }
 
-    
         foreach (var role in user.Roles)
         {
-            claims.Add(new(ClaimTypes.Role,role));
+            claims.Add(new(ClaimTypes.Role, role));
         }
 
         var descriptor = new SecurityTokenDescriptor
@@ -112,7 +112,7 @@ public class TokenProvider(IConfiguration configuration , IAppDbContext context)
             return refreshTokenResult.Errors;
         }
 
-        await context.RefreshTokens.AddAsync(refreshTokenResult.Value,ct);
+        await context.RefreshTokens.AddAsync(refreshTokenResult.Value, ct);
 
         await context.SaveChangesAsync(ct);
 
@@ -127,6 +127,4 @@ public class TokenProvider(IConfiguration configuration , IAppDbContext context)
     {
         return Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
     }
-
-    
 }

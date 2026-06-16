@@ -6,7 +6,7 @@ public sealed class RenewSubscriptionCommandValidator : AbstractValidator<RenewS
 {
     public RenewSubscriptionCommandValidator()
     {
-        RuleFor(x => x.memberId).GreaterThan(0).WithMessage("MemberId must be greater than 0.");
-        RuleFor(x => x.planId).GreaterThan(0).WithMessage("PlanId must be greater than 0.");
+        RuleFor(x => x.MemberId).GreaterThan(0).WithMessage("MemberId must be greater than 0.");
+        RuleFor(x => x.PlanId).GreaterThan(0).WithMessage("PlanId must be greater than 0.");
     }
 }

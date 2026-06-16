@@ -1,4 +1,7 @@
-﻿using Asp.Versioning;
+﻿using System.Security.Cryptography;
+
+using Asp.Versioning;
+
 using Gym.Api.Contracts.Coaches;
 using Gym.Application.Features.Coaches.Commands.CreateCoach;
 using Gym.Application.Features.Coaches.Commands.DeleteCoach;
@@ -8,14 +11,14 @@ using Gym.Application.Features.Coaches.Queries.GetCoachById;
 using Gym.Application.Features.Coaches.Queries.GetCoaches;
 using Gym.Domain.Identity;
 using Gym.Infrastructure.Identity.Policies;
+
 using MediatR;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
-using System.Security.Cryptography;
 
 namespace Gym.Api.Controllers;
-
 
 [ApiController]
 [Route("api/v{version:apiVersion}/coaches")]
@@ -31,7 +34,7 @@ public sealed class CoachesController(ISender sender) : ApiController
     [EndpointName("GetCoachs")]
     [MapToApiVersion("1.0")]
     [ProducesDefaultResponseType]
-    
+
     public async Task<IActionResult> GetCoachs(
         CancellationToken ct,
         [FromQuery] int pageNumber = 1,
@@ -89,8 +92,8 @@ public sealed class CoachesController(ISender sender) : ApiController
             request.Password));
 
         return result.Match(
-           _ => Created()
-                , Problem);
+            _ => Created(),
+            Problem);
     }
 
     [HttpPut("{id:int}")]
@@ -105,7 +108,8 @@ public sealed class CoachesController(ISender sender) : ApiController
     [Authorize(Policy = Policies.SameCoach)]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateCoachRequest request, CancellationToken ct)
     {
-        var result = await sender.Send(new UpdateCoachCommand(
+        var result = await sender.Send(
+            new UpdateCoachCommand(
             id,
             request.FirstName,
             request.LastName,
@@ -145,7 +149,7 @@ public sealed class CoachesController(ISender sender) : ApiController
     [EndpointDescription("Deletes the specified Coach from the system.")]
     [EndpointName("RemoveCoach")]
     [MapToApiVersion("1.0")]
-    [Authorize(Roles =nameof(Role.Admin))]
+    [Authorize(Roles = nameof(Role.Admin))]
 
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {

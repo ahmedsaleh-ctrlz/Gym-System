@@ -1,11 +1,14 @@
-﻿using Gym.Application.Common.Errors;
+﻿using System.Security.Claims;
+
+using Gym.Application.Common.Errors;
 using Gym.Application.Common.Interfaces;
 using Gym.Application.Features.Identity.Dtos;
 using Gym.Domain.Common.Result;
+
 using MediatR;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
-using System.Security.Claims;
 
 namespace Gym.Application.Features.Identity.Queries.RefreshToken;
 
@@ -17,7 +20,6 @@ public sealed class RefreshTokenQueryHandler(
 {
     public async Task<Result<TokenResponse>> Handle(RefreshTokenQuery request, CancellationToken ct)
     {
-
         // Get principal From ExpiredToken
         var principal = tokenProvider.GetPrincipalFromExpiredToken(request.ExpiredAccessToken);
 
@@ -37,7 +39,7 @@ public sealed class RefreshTokenQueryHandler(
             return ApplicationErrors.UserIdClaimInvalid;
         }
 
-        // get user 
+        // get user
 
         var userResult = await identityService.GetUserByIdAsync(userId);
 

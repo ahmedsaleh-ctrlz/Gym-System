@@ -1,4 +1,5 @@
 using Asp.Versioning;
+
 using Gym.Api.Contracts.Subscriptions;
 using Gym.Application.Common.Models;
 using Gym.Application.Features.Subscriptions.Commands.CreateSubscription;
@@ -12,7 +13,9 @@ using Gym.Application.Features.Subscriptions.Queries.GetSubscriptions;
 using Gym.Domain.Identity;
 using Gym.Domain.Subscriptions.Enums;
 using Gym.Infrastructure.Identity.Policies;
+
 using MediatR;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,7 +35,7 @@ public sealed class SubscriptionsController(ISender sender) : ApiController
     [EndpointName("GetSubscriptions")]
     [MapToApiVersion("1.0")]
     [ProducesDefaultResponseType]
-    [Authorize(Roles =$"{nameof(Role.Admin)},{nameof(Role.Coach)}")]
+    [Authorize(Roles = $"{nameof(Role.Admin)},{nameof(Role.Coach)}")]
     public async Task<IActionResult> GetSubscriptions(
         CancellationToken ct,
         [FromQuery] int pageNumber = 1,
@@ -75,7 +78,6 @@ public sealed class SubscriptionsController(ISender sender) : ApiController
             Problem);
     }
 
-
     [HttpGet("member/{id:int}/history")]
     [ProducesResponseType(typeof(SubscriptionResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -94,7 +96,6 @@ public sealed class SubscriptionsController(ISender sender) : ApiController
             response => Ok(response),
             Problem);
     }
-
 
     [HttpGet("member/{id:int}")]
     [ProducesResponseType(typeof(SubscriptionResponse), StatusCodes.Status200OK)]
@@ -148,15 +149,13 @@ public sealed class SubscriptionsController(ISender sender) : ApiController
     public async Task<IActionResult> Renew([FromBody] RenewSubscriptionRequest request, CancellationToken ct)
     {
         var result = await sender.Send(
-            new RenewSubscriptionCommand(request.MemberId, request.PlanId),  
+            new RenewSubscriptionCommand(request.MemberId, request.PlanId),
             ct);
 
         return result.Match(
             _ => Created(),
             Problem);
     }
-
-
 
     [HttpPut("{subscriptionId:int}/activate")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -203,7 +202,6 @@ public sealed class SubscriptionsController(ISender sender) : ApiController
             _ => NoContent(),
             Problem);
     }
-
 
     [HttpPut("{subscriptionId:int}/cancel")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

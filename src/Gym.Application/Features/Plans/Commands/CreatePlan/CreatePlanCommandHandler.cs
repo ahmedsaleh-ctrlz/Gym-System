@@ -1,22 +1,24 @@
 ﻿using Gym.Application.Common.Interfaces;
 using Gym.Domain.Common.Result;
 using Gym.Domain.Plans;
+
 using MediatR;
+
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 
 namespace Gym.Application.Features.Plans.Commands.CreatePlan;
 
 public sealed class CreatePlanCommandHandler(
-    ILogger<Result<Created>> logger ,
+    ILogger<Result<Created>> logger,
     IAppDbContext context,
-    HybridCache cache) 
+    HybridCache cache)
     : IRequestHandler<CreatePlanCommand, Result<Created>>
 {
     public async Task<Result<Created>> Handle(CreatePlanCommand request, CancellationToken ct)
     {
         logger.LogTrace("Handling New Plan Creation");
-        var planResult = Plan.Create(request.title,request.description,request.cost,request.durationInDays,request.allowedFreezeCount,request.maxTotalFreezeDays);
+        var planResult = Plan.Create(request.Title, request.Description, request.Cost, request.DurationInDays, request.AllowedFreezeCount, request.MaxTotalFreezeDays);
 
         if (planResult.IsError)
         {
@@ -26,12 +28,10 @@ public sealed class CreatePlanCommandHandler(
 
         logger.LogInformation("{Plan Title} Plan Created succfully", planResult.Value.Title);
 
-        await context.Plans.AddAsync(planResult.Value,ct);
+        await context.Plans.AddAsync(planResult.Value, ct);
         await cache.RemoveByTagAsync("Plan", ct);
         await context.SaveChangesAsync(ct);
 
         return Result.Created;
     }
-
-    
 }

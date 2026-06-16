@@ -1,8 +1,10 @@
-﻿using Gym.Domain.Common.Result;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+
+using Gym.Domain.Common.Result;
+
+using Microsoft.Extensions.Logging;
 
 namespace Gym.Application.Common.Helpers
 {
@@ -11,7 +13,9 @@ namespace Gym.Application.Common.Helpers
         public async static Task<Result<Deleted>> DeleteImage(string imagePath)
         {
             if (!File.Exists(imagePath))
+            {
                 return Error.NotFound("Image not found");
+            }
 
             try
             {

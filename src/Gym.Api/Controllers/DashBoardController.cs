@@ -1,7 +1,10 @@
 ﻿using Asp.Versioning;
+
 using Gym.Application.Features.Dashboard.Dtos;
 using Gym.Application.Features.Dashboard.Queries.GetAdminDashboard;
+
 using MediatR;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,6 +28,5 @@ namespace Gym.Api.Controllers
                 response => Ok(response),
                 Problem);
         }
-
     }
 }

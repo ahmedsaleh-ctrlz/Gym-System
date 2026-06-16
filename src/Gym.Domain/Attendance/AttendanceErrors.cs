@@ -9,5 +9,4 @@ public static class AttendanceErrors
 
     public static Error InvalidCheckInTime =>
         Error.Validation("Attendance.InvalidCheckInTime", "Attendance timestamp cannot be in the future.");
-
 }

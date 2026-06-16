@@ -1,7 +1,8 @@
-﻿using MediatR;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+
+using MediatR;
 
 namespace Gym.Application.Features.Subscriptions.Commands.BackgroundJobs.UnfreezeSubscriptions;
 

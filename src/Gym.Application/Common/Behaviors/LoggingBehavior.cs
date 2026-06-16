@@ -1,7 +1,8 @@
-﻿
-using Gym.Application.Common.Interfaces;
+﻿using Gym.Application.Common.Interfaces;
+
 using MediatR;
 using MediatR.Pipeline;
+
 using Microsoft.Extensions.Logging;
 
 namespace Gym.Application.Common.Behaviors;

@@ -1,5 +1,5 @@
-﻿
-using Gym.Domain.People;
+﻿using Gym.Domain.People;
+
 using Microsoft.AspNetCore.Identity;
 
 namespace Gym.Infrastructure.Identity;

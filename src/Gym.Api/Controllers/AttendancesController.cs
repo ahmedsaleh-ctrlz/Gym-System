@@ -1,4 +1,5 @@
 using Asp.Versioning;
+
 using Gym.Application.Common.Models;
 using Gym.Application.Features.Attendances.Commands.CheckInMember;
 using Gym.Application.Features.Attendances.Dtos;
@@ -6,7 +7,9 @@ using Gym.Application.Features.Attendances.Queries.GetAttendances;
 using Gym.Application.Features.Attendances.Queries.GetMemberAttendanceHistory;
 using Gym.Domain.Identity;
 using Gym.Infrastructure.Identity.Policies;
+
 using MediatR;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

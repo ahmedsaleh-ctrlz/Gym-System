@@ -1,6 +1,8 @@
 ﻿using Gym.Application.Common.Interfaces;
 using Gym.Domain.Subscriptions.Enums;
+
 using MediatR;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Gym.Application.Features.Subscriptions.Commands.BackgroundJobs.UnfreezeSubscriptions;
@@ -14,9 +16,9 @@ public sealed class UnfreezeSubscriptionsCommandHandler(IAppDbContext dbContext)
 
         foreach (var subscription in frozenSubscriptions)
         {
-            if(subscription.CanUnFreeze())
+            if (subscription.CanUnFreeze())
             {
-                subscription.Unfreeze();   
+                subscription.Unfreeze();
             }
         }
 

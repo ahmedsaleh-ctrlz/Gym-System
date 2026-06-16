@@ -1,6 +1,8 @@
 ﻿using Gym.Application.Common.Interfaces;
 using Gym.Domain.Subscriptions.Enums;
+
 using MediatR;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Gym.Application.Features.Subscriptions.Commands.BackgroundJobs.ExpireSubscriptions;

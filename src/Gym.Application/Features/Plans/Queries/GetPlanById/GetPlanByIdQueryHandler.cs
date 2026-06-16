@@ -3,7 +3,9 @@ using Gym.Application.Common.Interfaces;
 using Gym.Application.Features.Plans.Dtos;
 using Gym.Application.Features.Plans.Mappers;
 using Gym.Domain.Common.Result;
+
 using MediatR;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 

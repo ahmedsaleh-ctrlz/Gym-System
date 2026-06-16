@@ -7,7 +7,7 @@ namespace Gym.Domain.Subscriptions.Enums;
 public enum SubscriptionStatus
 {
     Pending,
-    Active, 
+    Active,
     Expired,
     Frozen,
     Cancelled,

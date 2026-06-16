@@ -1,23 +1,23 @@
-﻿
-using Gym.Application.Common.Interfaces;
+﻿using Gym.Application.Common.Interfaces;
 using Gym.Application.Common.Models;
 using Gym.Application.Features.Coaches.Dtos;
 using Gym.Domain.Coaches;
 using Gym.Domain.Common.Result;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
 
+using MediatR;
+
+using Microsoft.EntityFrameworkCore;
 
 namespace Gym.Application.Features.Coaches.Queries.GetCoaches;
 
 public class GetCoachesQueryHandler(IAppDbContext context) : IRequestHandler<GetCoachesQuery, Result<PaginatedList<CoachResponse>>>
 {
-    public async Task<Result<PaginatedList<CoachResponse>>> Handle(GetCoachesQuery query, CancellationToken ct)        
+    public async Task<Result<PaginatedList<CoachResponse>>> Handle(GetCoachesQuery query, CancellationToken ct)
     {
         var coachQuery = context.Coaches.AsNoTracking().AsQueryable();
 
         coachQuery = ApplyFilters(coachQuery, query.SearchTerm);
-        coachQuery = ApplySorting(coachQuery, query.SortBy, query.sortDirection);
+        coachQuery = ApplySorting(coachQuery, query.SortBy, query.SortDirection);
 
         var count = await coachQuery.CountAsync(ct);
 
@@ -33,7 +33,6 @@ public class GetCoachesQueryHandler(IAppDbContext context) : IRequestHandler<Get
                 PhoneNumber = m.Person.PhoneNumber,
                 ImageUrl = m.Person.Image.ImageUrl,
                 HireDate = m.HireDate
-           
             })
             .ToListAsync(ct);
 
@@ -42,24 +41,23 @@ public class GetCoachesQueryHandler(IAppDbContext context) : IRequestHandler<Get
             Items = items,
             PageNumber = query.PageNumber,
             PageSize = query.PageSize,
-           TotalCount = count,
+            TotalCount = count,
         };
     }
-
 
     private static IQueryable<Coach> ApplyFilters(IQueryable<Coach> query, string? searchTerm)
     {
         if (string.IsNullOrWhiteSpace(searchTerm))
+        {
             return query;
+        }
 
         var normalized = searchTerm.Trim().ToLower();
 
         return query.Where(m =>
             m.Person.FirstName.ToLower().Contains(normalized) ||
             m.Person.LastName.ToLower().Contains(normalized) ||
-            m.Person.PhoneNumber.ToLower().Contains(normalized)
-        );
-
+            m.Person.PhoneNumber.ToLower().Contains(normalized));
     }
 
     private static IQueryable<Coach> ApplySorting(
@@ -79,8 +77,7 @@ public class GetCoachesQueryHandler(IAppDbContext context) : IRequestHandler<Get
                 ? query.OrderByDescending(m => m.HireDate)
                 : query.OrderBy(m => m.HireDate),
 
-            _ => query.OrderBy(m => m.Id) 
+            _ => query.OrderBy(m => m.Id)
         };
     }
-
 }

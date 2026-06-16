@@ -6,7 +6,7 @@ public sealed record TestRequest(string Name);
 
 public sealed record CachedTestRequest(string Name) : ICachedQuery<string>
 {
-    public string cacheKey => $"test:{Name}";
-    public string[] cacheTag => ["tests", Name];
-    public TimeSpan cacheDuration => TimeSpan.FromMinutes(5);
+    public string CacheKey => $"test:{Name}";
+    public string[] CacheTag => ["tests", Name];
+    public TimeSpan CacheDuration => TimeSpan.FromMinutes(5);
 }

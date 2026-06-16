@@ -21,7 +21,6 @@ public sealed class RefreshToken : AuditableEntity
 
     public static Result<RefreshToken> Create(string? token, string? userId, DateTimeOffset expiresOnUtc)
     {
- 
         if (string.IsNullOrWhiteSpace(token))
         {
             return RefreshTokenErrors.TokenRequired;

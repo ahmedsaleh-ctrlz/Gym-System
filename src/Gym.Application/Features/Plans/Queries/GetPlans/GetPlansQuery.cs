@@ -12,10 +12,10 @@ public sealed record GetPlansQuery(
     string? SortBy = null,
     string? SortDirection = "Asce") : ICachedQuery<Result<PaginatedList<PlanDetailsResponse>>>
 {
-    public string cacheKey =>
+    public string CacheKey =>
         $"Plans:Page={PageNumber}:Size={PageSize}:Search={SearchTerm ?? "all"}:Sort={SortBy ?? "id"}:SortDirection={SortDirection}";
 
-    public string[] cacheTag => ["Plan"];
+    public string[] CacheTag => ["Plan"];
 
-    public TimeSpan cacheDuration => TimeSpan.FromMinutes(10);
+    public TimeSpan CacheDuration => TimeSpan.FromMinutes(10);
 }

@@ -13,7 +13,7 @@ namespace Gym.Application.Features.Members.Mappers
             return new MemberResponse
             {
                 MemberId = member.Id,
-                
+
                 FirstName = member.Person.FirstName,
                 LastName = member.Person.LastName,
                 DateOfBirth = member.Person.DateOfBirth,
@@ -35,7 +35,6 @@ namespace Gym.Application.Features.Members.Mappers
                 PhoneNumber = m.Person.PhoneNumber,
                 ImageUrl = m.Person.Image.ImageUrl
             }).ToList();
-
         }
     }
 }

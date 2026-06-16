@@ -1,7 +1,9 @@
 using Gym.Application.Common.Errors;
 using Gym.Application.Common.Interfaces;
 using Gym.Domain.Common.Result;
+
 using MediatR;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
@@ -24,7 +26,7 @@ public sealed class UpdatePlanCommandHandler(
             return ApplicationErrors.PlanNotFound;
         }
 
-        var updateResult = plan.UpdateInfo(command.Title, command.Description, command.Cost, command.DurationInDays,command.AllowedFreezeCount, command.MaxTotalFreezeDays);
+        var updateResult = plan.UpdateInfo(command.Title, command.Description, command.Cost, command.DurationInDays, command.AllowedFreezeCount, command.MaxTotalFreezeDays);
         if (updateResult.IsError)
         {
             logger.LogWarning("Failed to update plan with ID {PlanId}. Errors: {Errors}", command.PlanId, updateResult.Errors);

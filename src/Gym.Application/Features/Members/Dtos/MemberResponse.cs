@@ -11,5 +11,4 @@ public sealed record MemberResponse
     public string? ImageUrl { get; set; }
     public DateTime JoinDate { get; set; }
     public string? Notes { get; set; } = null!;
-
 }

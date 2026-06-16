@@ -1,5 +1,6 @@
 using Gym.Domain.Identity;
 using Gym.Infrastructure.Identity;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

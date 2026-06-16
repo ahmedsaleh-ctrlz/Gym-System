@@ -3,6 +3,7 @@ using Gym.Application.Common.Interfaces;
 using Gym.Application.Features.Identity.Dtos;
 using Gym.Domain.Common.Result;
 using Gym.Domain.Identity;
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,7 +19,6 @@ public class IdentityService(UserManager<AppUser> userManager) : IIdentityServic
         {
             return Error.Conflict("UserAlreadyExists", $"A user with the email '{Utility.MaskEmail(email)}' already exists.");
         }
-
 
         var user = new AppUser
         {
@@ -56,7 +56,7 @@ public class IdentityService(UserManager<AppUser> userManager) : IIdentityServic
 
     public async Task<Result<Deleted>> DeleteUserAsync(int PersonId, CancellationToken ct)
     {
-        var user = await userManager.Users.FirstOrDefaultAsync(u => u.PersonId == PersonId,ct);
+        var user = await userManager.Users.FirstOrDefaultAsync(u => u.PersonId == PersonId, ct);
 
         if (user is null)
         {
@@ -65,7 +65,7 @@ public class IdentityService(UserManager<AppUser> userManager) : IIdentityServic
 
         var deleteResult = await userManager.DeleteAsync(user);
 
-        if (!deleteResult.Succeeded) 
+        if (!deleteResult.Succeeded)
         {
             return deleteResult.Errors
                 .Select(e => Error.Conflict(e.Code, e.Description))
@@ -83,7 +83,7 @@ public class IdentityService(UserManager<AppUser> userManager) : IIdentityServic
 
         var claims = await userManager.GetClaimsAsync(user);
 
-        return new AppUserDto(user.Id,user.PersonId,user.Email!, roles, claims);
+        return new AppUserDto(user.Id, user.PersonId, user.Email!, roles, claims);
     }
 
     public async Task<string?> GetUserNameByIdAsync(string userId, CancellationToken ct)
@@ -96,7 +96,7 @@ public class IdentityService(UserManager<AppUser> userManager) : IIdentityServic
     {
         var user = await userManager.FindByEmailAsync(email);
 
-        if (user is null) 
+        if (user is null)
         {
             return Error.NotFound("User_Not_Found", $"User with email {Utility.MaskEmail(email)} not found");
         }
@@ -106,17 +106,17 @@ public class IdentityService(UserManager<AppUser> userManager) : IIdentityServic
             return Error.Conflict("Invalid_Login_Attempt", "Email / Password are incorrect");
         }
 
-        return new AppUserDto(user.Id,user.PersonId,user.Email!, await userManager.GetRolesAsync(user), await userManager.GetClaimsAsync(user));
-
+        return new AppUserDto(user.Id, user.PersonId, user.Email!, await userManager.GetRolesAsync(user), await userManager.GetClaimsAsync(user));
     }
 
     public async Task<Result<string>> GetEmailByPersonIdAsync(int personId, CancellationToken ct)
     {
         var user = await userManager.Users.Select(u => new { u.PersonId, u.Email }).FirstOrDefaultAsync(u => u.PersonId == personId, ct);
-        if(user is null) 
+        if (user is null)
         {
             return Error.NotFound("User_Not_Found", $"User with PersonId {personId} not found");
         }
+
         return user.Email!;
     }
 }

@@ -1,8 +1,11 @@
 ﻿using FluentValidation;
+
 using Gym.Application.Common.Interfaces;
 using Gym.Application.Features.Payments.Dtos;
 using Gym.Domain.Common.Result;
+
 using MediatR;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Gym.Application.Features.Payments.Queries.GetMemberPayments
@@ -12,7 +15,7 @@ namespace Gym.Application.Features.Payments.Queries.GetMemberPayments
         public async Task<Result<List<PaymentResponse>>> Handle(GetMemberPaymentsQuery request, CancellationToken cancellationToken)
         {
             var payments = await dbContext.Payments.AsNoTracking().Include(p => p.Subscription)
-                .Where(p => p.Subscription.MemberId == request.memberId)
+                .Where(p => p.Subscription.MemberId == request.MemberId)
                 .OrderByDescending(p => p.PaidAtUtc)
                 .Select(p => new PaymentResponse
                 {

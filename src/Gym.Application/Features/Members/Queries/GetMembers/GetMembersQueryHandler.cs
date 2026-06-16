@@ -1,25 +1,26 @@
-﻿
-using Gym.Application.Common.Interfaces;
+﻿using Gym.Application.Common.Interfaces;
 using Gym.Application.Common.Models;
 using Gym.Application.Features.Members.Dtos;
 using Gym.Domain.Common.Result;
 using Gym.Domain.Members;
+
 using MediatR;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Gym.Application.Features.Members.Queries.GetMembers;
 
 public class GetMembersQueryHandler(IAppDbContext context) : IRequestHandler<GetMembersQuery, Result<PaginatedList<MemberResponse>>>
 {
-    public async Task<Result<PaginatedList<MemberResponse>>> Handle(GetMembersQuery query, CancellationToken ct)        
+    public async Task<Result<PaginatedList<MemberResponse>>> Handle(GetMembersQuery query, CancellationToken ct)
     {
         var membersQuery = context.Members.AsNoTracking().AsQueryable();
         var memberQuery = ApplyFilters(membersQuery, query.SearchTerm);
 
-        memberQuery = ApplySorting(memberQuery, query.SortBy, query.sortDirection);
+        memberQuery = ApplySorting(memberQuery, query.SortBy, query.SortDirection);
 
         var count = await memberQuery.CountAsync(ct);
-        
+
         var items = await memberQuery
             .Skip((query.PageNumber - 1) * query.PageSize)
             .Take(query.PageSize)
@@ -41,24 +42,23 @@ public class GetMembersQueryHandler(IAppDbContext context) : IRequestHandler<Get
             Items = items,
             PageNumber = query.PageNumber,
             PageSize = query.PageSize,
-           TotalCount = count,
+            TotalCount = count,
         };
     }
-
 
     private static IQueryable<Member> ApplyFilters(IQueryable<Member> query, string? searchTerm)
     {
         if (string.IsNullOrWhiteSpace(searchTerm))
+        {
             return query;
+        }
 
         var normalized = searchTerm.Trim().ToLower();
 
         return query.Where(m =>
             m.Person.FirstName.ToLower().Contains(normalized) ||
             m.Person.LastName.ToLower().Contains(normalized) ||
-            m.Person.PhoneNumber.ToLower().Contains(normalized)
-        );
-
+            m.Person.PhoneNumber.ToLower().Contains(normalized));
     }
 
     private static IQueryable<Member> ApplySorting(
@@ -78,8 +78,7 @@ public class GetMembersQueryHandler(IAppDbContext context) : IRequestHandler<Get
                 ? query.OrderByDescending(m => m.JoinDate)
                 : query.OrderBy(m => m.JoinDate),
 
-            _ => query.OrderBy(m => m.Id) 
+            _ => query.OrderBy(m => m.Id)
         };
     }
-
 }

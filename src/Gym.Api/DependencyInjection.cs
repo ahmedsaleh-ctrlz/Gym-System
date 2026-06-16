@@ -1,21 +1,25 @@
-﻿
+﻿using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
+
 using Asp.Versioning;
+
 using Gym.Api.Infrastructure;
 using Gym.Api.OpenApi;
 using Gym.Api.Services;
 using Gym.Application.Common.Interfaces;
 using Gym.Infrastructure.BackgroundJobs;
 using Gym.Infrastructure.Settings;
+
 using Hangfire;
+
 using Microsoft.Extensions.FileProviders;
+
 using Serilog;
-using System.Runtime.CompilerServices;
-using System.Text.Json.Serialization;
 namespace Gym.Api;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddApi(this IServiceCollection services ,IConfiguration configuration)
+    public static IServiceCollection AddApi(this IServiceCollection services, IConfiguration configuration)
     {
         services
         .AddControllerWithJsonConfiguration()
@@ -25,8 +29,6 @@ public static class DependencyInjection
         .AddCustomerExceptionHandling()
         .AddApiDocumentation()
         .AddIdentityInfrastructure();
-        
-
 
         return services;
     }
@@ -56,7 +58,6 @@ public static class DependencyInjection
         });
 
         return services;
-
     }
 
     public static IServiceCollection AddCustomApiVersioning(this IServiceCollection services)
@@ -79,10 +80,10 @@ public static class DependencyInjection
     public static IServiceCollection AddControllerWithJsonConfiguration(this IServiceCollection services)
     {
         services.AddControllers().AddJsonOptions(options =>
-        { 
+        {
             options.JsonSerializerOptions
                 .DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());    
+            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         });
         return services;
     }
@@ -100,7 +101,7 @@ public static class DependencyInjection
         return services;
     }
 
-    public static IApplicationBuilder UseCoreMiddlewares(this IApplicationBuilder app ,IConfiguration configuration) 
+    public static IApplicationBuilder UseCoreMiddlewares(this IApplicationBuilder app, IConfiguration configuration)
     {
         app.UseExceptionHandler();
         app.UseStatusCodePages();
@@ -116,7 +117,7 @@ public static class DependencyInjection
         return app;
     }
 
-    public static IServiceCollection AddApiDocumentation(this IServiceCollection services) 
+    public static IServiceCollection AddApiDocumentation(this IServiceCollection services)
     {
         string[] versions = ["v1"];
 
@@ -133,7 +134,6 @@ public static class DependencyInjection
         return services;
     }
 
- 
     public static IApplicationBuilder UseBackgroundJobs(
     this IApplicationBuilder app)
     {
@@ -155,13 +155,11 @@ public static class DependencyInjection
         app.UseStaticFiles(new StaticFileOptions
         {
             FileProvider = new PhysicalFileProvider(
-        @"D:\Uploads"
-    ),
+        @"D:\Uploads"),
 
             RequestPath = "/Uploads"
         });
 
         return app;
     }
-
 }

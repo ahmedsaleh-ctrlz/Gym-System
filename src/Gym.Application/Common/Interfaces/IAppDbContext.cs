@@ -1,10 +1,11 @@
-﻿using Gym.Domain.Coaches;
+﻿using Gym.Domain.Attendance;
+using Gym.Domain.Coaches;
 using Gym.Domain.Identity;
 using Gym.Domain.Members;
 using Gym.Domain.Payments;
 using Gym.Domain.Plans;
 using Gym.Domain.Subscriptions;
-using Gym.Domain.Attendance;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
@@ -12,14 +13,14 @@ namespace Gym.Application.Common.Interfaces;
 
 public interface IAppDbContext
 {
-    public DbSet<Member> Members { get;}
+    public DbSet<Member> Members { get; }
 
-    public DbSet<Coach> Coaches { get;}
+    public DbSet<Coach> Coaches { get; }
 
     public DatabaseFacade Database { get; }
-    public DbSet<RefreshToken> RefreshTokens { get;}
+    public DbSet<RefreshToken> RefreshTokens { get; }
 
-    public DbSet<Plan> Plans { get;}
+    public DbSet<Plan> Plans { get; }
 
     public DbSet<Subscription> Subscriptions { get; }
 

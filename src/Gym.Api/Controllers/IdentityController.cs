@@ -1,11 +1,14 @@
 ﻿using Asp.Versioning;
+
 using Gym.Api.Contracts.Identity;
 using Gym.Api.Contracts.Members;
 using Gym.Application.Features.Identity.Dtos;
 using Gym.Application.Features.Identity.Queries.GenerateToken;
 using Gym.Application.Features.Identity.Queries.RefreshToken;
 using Gym.Application.Features.Members.Commands.CreateMember;
+
 using MediatR;
+
 using Microsoft.AspNetCore.Mvc;
 
 namespace Gym.Api.Controllers
@@ -25,13 +28,12 @@ namespace Gym.Api.Controllers
         [MapToApiVersion("1.0")]
         public async Task<ActionResult<TokenResponse>> GenerateToken([FromBody] GenerateTokenRequest request, CancellationToken ct)
         {
-            var result = await sender.Send(new GenerateTokenQuery(request.email, request.password), ct);
+            var result = await sender.Send(new GenerateTokenQuery(request.Email, request.Password), ct);
 
             return result.Match(
-                response => Ok(response)
-                , Problem);
+                response => Ok(response),
+                Problem);
         }
-
 
         [HttpPost("token/refresh-token")]
         [ProducesResponseType(typeof(TokenResponse), StatusCodes.Status200OK)]
@@ -44,7 +46,7 @@ namespace Gym.Api.Controllers
         [ProducesResponseType(typeof(TokenResponse), StatusCodes.Status200OK)]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request, CancellationToken ct)
         {
-            var result = await sender.Send(new RefreshTokenQuery(request.RefreshToken,request.ExpiredAccessToken), ct);
+            var result = await sender.Send(new RefreshTokenQuery(request.RefreshToken, request.ExpiredAccessToken), ct);
             return result.Match(
                 response => Ok(response),
                 Problem);
@@ -72,8 +74,8 @@ namespace Gym.Api.Controllers
                 request.Password));
 
             return result.Match(
-               _ => Created()
-                    , Problem);
+                _ => Created(),
+                Problem);
         }
     }
 }

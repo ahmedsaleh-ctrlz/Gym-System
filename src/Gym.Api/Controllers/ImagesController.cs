@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,7 +27,9 @@ public class ImagesController : ApiController
     CancellationToken ct)
     {
         if (file is null || file.Length == 0)
+        {
             return BadRequest("No file");
+        }
 
         var dir = @"D:\Uploads";
 

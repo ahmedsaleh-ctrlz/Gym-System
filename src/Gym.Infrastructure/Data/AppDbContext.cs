@@ -1,5 +1,4 @@
-﻿
-using Gym.Application.Common.Interfaces;
+﻿using Gym.Application.Common.Interfaces;
 using Gym.Domain.Attendance;
 using Gym.Domain.Coaches;
 using Gym.Domain.Identity;
@@ -10,12 +9,13 @@ using Gym.Domain.People.PersonImages;
 using Gym.Domain.Plans;
 using Gym.Domain.Subscriptions;
 using Gym.Infrastructure.Identity;
+
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Gym.Infrastructure.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options) 
+public class AppDbContext(DbContextOptions<AppDbContext> options)
     : IdentityDbContext<AppUser>(options), IAppDbContext
 {
     public DbSet<Member> Members => Set<Member>();

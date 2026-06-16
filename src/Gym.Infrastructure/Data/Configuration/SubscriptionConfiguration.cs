@@ -1,4 +1,5 @@
 using Gym.Domain.Subscriptions;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

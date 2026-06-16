@@ -12,5 +12,5 @@ public static class PlanError
     public static Error PlanInactive => Error.Conflict("Plan_Inactive", "PlanInactive");
     public static Error InvaildDuration => Error.Conflict("Invaild_Duration", "InvaildDuration");
     public static Error InvalidAllowedFreezeCount => Error.Conflict("Invalid_Allowed_Freeze_Count", "InvalidAllowedFreezeCount");
-    public static Error InvalidMaxTotalFreezeDays => Error.Conflict("Invalid_Max_Total_Freeze_Days", "InvalidMaxTotalFreezeDays");  
+    public static Error InvalidMaxTotalFreezeDays => Error.Conflict("Invalid_Max_Total_Freeze_Days", "InvalidMaxTotalFreezeDays");
 }

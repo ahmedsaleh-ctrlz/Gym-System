@@ -1,4 +1,5 @@
 using System.Security.Claims;
+
 using Gym.Application.Common.Interfaces;
 using Gym.Application.Features.Identity.Dtos;
 using Gym.Domain.Common.Result;

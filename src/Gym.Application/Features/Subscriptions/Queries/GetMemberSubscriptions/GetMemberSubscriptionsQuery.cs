@@ -1,7 +1,7 @@
 ﻿using Gym.Application.Features.Subscriptions.Dtos;
 using Gym.Domain.Common.Result;
-using MediatR;
 
+using MediatR;
 
 namespace Gym.Application.Features.Subscriptions.Queries.GetMemberSubscriptions
 {

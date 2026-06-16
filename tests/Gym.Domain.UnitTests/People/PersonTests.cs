@@ -8,7 +8,7 @@ public class PersonTests
     [Fact]
     public void Create_ShouldReturnError_WhenFirstNameIsMissing()
     {
-        var result = PersonFactory.CreatePerson(firstName: "");
+        var result = PersonFactory.CreatePerson(firstName: string.Empty);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(PersonError.FirstNameRequired.Code, result.TopError.Code);
@@ -17,7 +17,7 @@ public class PersonTests
     [Fact]
     public void Create_ShouldReturnError_WhenLastNameIsMissing()
     {
-        var result = PersonFactory.CreatePerson(lastName: "");
+        var result = PersonFactory.CreatePerson(lastName: string.Empty);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(PersonError.LastNameRequired.Code, result.TopError.Code);
@@ -35,7 +35,7 @@ public class PersonTests
     [Fact]
     public void Create_ShouldReturnError_WhenPhoneNumberIsMissing()
     {
-        var result = PersonFactory.CreatePerson(phoneNumber: "");
+        var result = PersonFactory.CreatePerson(phoneNumber: string.Empty);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(PersonError.PhoneNumberRequired.Code, result.TopError.Code);
@@ -44,7 +44,7 @@ public class PersonTests
     [Fact]
     public void Create_ShouldReturnError_WhenImageIsInvalid()
     {
-        var result = PersonFactory.CreatePerson(imageUrl: "");
+        var result = PersonFactory.CreatePerson(imageUrl: string.Empty);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(Gym.Domain.People.PersonImages.PersonImageError.PersonImageUrlRequired.Code, result.TopError.Code);
@@ -65,7 +65,7 @@ public class PersonTests
     {
         var person = PersonFactory.CreatePerson().Value;
 
-        var result = person.UpdateInfo("", "Hassan", DateTime.UtcNow.AddYears(-20), "01000000000");
+        var result = person.UpdateInfo(string.Empty, "Hassan", DateTime.UtcNow.AddYears(-20), "01000000000");
 
         Assert.False(result.IsSuccess);
         Assert.Equal(PersonError.FirstNameRequired.Code, result.TopError.Code);
@@ -76,7 +76,7 @@ public class PersonTests
     {
         var person = PersonFactory.CreatePerson().Value;
 
-        var result = person.UpdateInfo("Ali", "", DateTime.UtcNow.AddYears(-20), "01000000000");
+        var result = person.UpdateInfo("Ali", string.Empty, DateTime.UtcNow.AddYears(-20), "01000000000");
 
         Assert.False(result.IsSuccess);
         Assert.Equal(PersonError.LastNameRequired.Code, result.TopError.Code);
@@ -98,7 +98,7 @@ public class PersonTests
     {
         var person = PersonFactory.CreatePerson().Value;
 
-        var result = person.UpdateInfo("Ali", "Hassan", DateTime.UtcNow.AddYears(-20), "");
+        var result = person.UpdateInfo("Ali", "Hassan", DateTime.UtcNow.AddYears(-20), string.Empty);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(PersonError.PhoneNumberRequired.Code, result.TopError.Code);
@@ -122,7 +122,7 @@ public class PersonTests
     {
         var person = PersonFactory.CreatePerson().Value;
 
-        var result = person.UpdateImage("");
+        var result = person.UpdateImage(string.Empty);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(Gym.Domain.People.PersonImages.PersonImageError.PersonImageUrlRequired.Code, result.TopError.Code);

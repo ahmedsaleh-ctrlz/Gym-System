@@ -1,4 +1,5 @@
 using Gym.Domain.Attendance;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

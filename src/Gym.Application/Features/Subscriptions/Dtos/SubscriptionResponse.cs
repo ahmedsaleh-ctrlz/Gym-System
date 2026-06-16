@@ -13,5 +13,5 @@ public sealed record SubscriptionResponse
     public DateOnly EndDate { get; set; }
     public string? Status { get; set; }
     public int FreezeCountUsed { get; set; }
-    public int TotalFreezeDaysUsed { get;set; }
+    public int TotalFreezeDaysUsed { get; set; }
 }

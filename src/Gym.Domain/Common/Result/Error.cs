@@ -1,7 +1,7 @@
 ﻿namespace Gym.Domain.Common.Result;
-public readonly record struct Error(string Code , string? Description , ErrorType Type)
-{
 
+public readonly record struct Error(string Code, string? Description, ErrorType Type)
+{
     public static Error Failure(string code = nameof(Failure), string description = "General failure.")
         => new(code, description, ErrorType.Failure);
 
@@ -22,5 +22,4 @@ public readonly record struct Error(string Code , string? Description , ErrorTyp
 
     public static Error Forbidden(string code = nameof(Forbidden), string description = "Forbidden error")
         => new(code, description, ErrorType.Forbidden);
-
 }

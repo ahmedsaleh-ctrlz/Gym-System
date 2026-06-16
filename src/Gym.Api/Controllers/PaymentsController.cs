@@ -1,4 +1,5 @@
 using Asp.Versioning;
+
 using Gym.Api.Contracts.Payments;
 using Gym.Application.Common.Models;
 using Gym.Application.Features.Payments.Commands.PayPayment;
@@ -9,7 +10,9 @@ using Gym.Application.Features.Payments.Queries.GetPayments;
 using Gym.Domain.Identity;
 using Gym.Domain.Payments.Enums;
 using Gym.Infrastructure.Identity.Policies;
+
 using MediatR;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -58,7 +61,6 @@ public sealed class PaymentsController(ISender sender) : ApiController
             Problem);
     }
 
-
     [HttpGet("member/{Id:int}")]
     [ProducesResponseType(typeof(List<PaymentResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -73,14 +75,12 @@ public sealed class PaymentsController(ISender sender) : ApiController
     [ProducesDefaultResponseType]
     [Authorize(Policy = Policies.SameMemberOrCoachOrAdmin)]
 
-    public async Task<IActionResult> GetMemberPaymentsHistory(int Id,CancellationToken ct)
+    public async Task<IActionResult> GetMemberPaymentsHistory(int Id, CancellationToken ct)
     {
         var response = await sender.Send(new GetMemberPaymentsQuery(Id), ct);
         return
             response.Match(response => Ok(response), Problem);
     }
-
-
 
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(PaymentResponse), StatusCodes.Status200OK)]

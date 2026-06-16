@@ -9,5 +9,4 @@ public sealed record CoachResponse
     public string? PhoneNumber { get; set; }
     public string? ImageUrl { get; set; }
     public DateTime HireDate { get; set; }
-
 }

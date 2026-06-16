@@ -1,6 +1,6 @@
-﻿
-using Gym.Domain.People;
+﻿using Gym.Domain.People;
 using Gym.Domain.People.PersonImages;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -29,7 +29,6 @@ namespace Gym.Infrastructure.Data.Configuration
                 .WithOne()
                 .HasForeignKey<PersonImage>(i => i.Id)
                 .OnDelete(DeleteBehavior.Cascade);
-
         }
     }
 }

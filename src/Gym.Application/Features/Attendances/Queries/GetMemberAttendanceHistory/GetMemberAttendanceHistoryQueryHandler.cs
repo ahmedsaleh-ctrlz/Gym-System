@@ -3,7 +3,9 @@ using Gym.Application.Common.Interfaces;
 using Gym.Application.Common.Models;
 using Gym.Application.Features.Attendances.Dtos;
 using Gym.Domain.Common.Result;
+
 using MediatR;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Gym.Application.Features.Attendances.Queries.GetMemberAttendanceHistory;

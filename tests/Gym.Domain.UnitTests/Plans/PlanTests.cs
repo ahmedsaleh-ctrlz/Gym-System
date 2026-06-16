@@ -8,7 +8,7 @@ public class PlanTests
     [Fact]
     public void Create_ShouldReturnError_WhenTitleIsMissing()
     {
-        var result = PlanFactory.CreatePlan(title: "");
+        var result = PlanFactory.CreatePlan(title: string.Empty);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(PlanError.TitleRequired.Code, result.TopError.Code);
@@ -79,7 +79,7 @@ public class PlanTests
     {
         var plan = PlanFactory.CreatePlan().Value;
 
-        var result = plan.UpdateInfo("", "Desc", 500m, 30, 2, 14);
+        var result = plan.UpdateInfo(string.Empty, "Desc", 500m, 30, 2, 14);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(PlanError.TitleRequired.Code, result.TopError.Code);

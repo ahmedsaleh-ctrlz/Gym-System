@@ -1,4 +1,5 @@
 using System.Security.Claims;
+
 using Gym.Application.Common.Errors;
 using Gym.Application.Features.Identity.Queries.GenerateToken;
 using Gym.Application.Features.Identity.Queries.RefreshToken;

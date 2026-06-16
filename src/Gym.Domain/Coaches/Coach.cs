@@ -1,9 +1,9 @@
-﻿
-using Gym.Domain.Common;
+﻿using Gym.Domain.Common;
 using Gym.Domain.Common.Result;
 using Gym.Domain.People;
 
 namespace Gym.Domain.Coaches;
+
 public sealed class Coach : AuditableEntity
 {
     public DateTime HireDate { get; private set; }
@@ -41,7 +41,7 @@ public sealed class Coach : AuditableEntity
             return personResult.TopError;
         }
 
-        return new Coach(hireDate,personResult.Value);
+        return new Coach(hireDate, personResult.Value);
     }
 
     public Result<Updated> UpdateInfo(
@@ -69,7 +69,6 @@ public sealed class Coach : AuditableEntity
         }
 
         HireDate = hireDate;
-        
 
         return Result.Updated;
     }
@@ -118,7 +117,6 @@ public sealed class Coach : AuditableEntity
         {
             return CoachError.InvalidHireDate;
         }
-
 
         return null;
     }

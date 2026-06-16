@@ -1,4 +1,5 @@
 using Asp.Versioning;
+
 using Gym.Api.Contracts.Plans;
 using Gym.Application.Common.Models;
 using Gym.Application.Features.Plans.Commands;
@@ -9,7 +10,9 @@ using Gym.Application.Features.Plans.Dtos;
 using Gym.Application.Features.Plans.Queries.GetPlanById;
 using Gym.Application.Features.Plans.Queries.GetPlans;
 using Gym.Domain.Identity;
+
 using MediatR;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
@@ -57,8 +60,7 @@ public sealed class PlansController(ISender sender) : ApiController
     [EndpointDescription("Returns detailed information about the specified plan if found.")]
     [EndpointName("GetPlanById")]
     [MapToApiVersion("1.0")]
-    
-    
+
     public async Task<IActionResult> GetPlanById(int id, CancellationToken ct)
     {
         var result = await sender.Send(new GetPlanByIdQuery(id), ct);
@@ -79,7 +81,8 @@ public sealed class PlansController(ISender sender) : ApiController
     [Authorize(Roles = nameof(Role.Admin))]
     public async Task<IActionResult> Create([FromBody] CreatePlanRequest request, CancellationToken ct)
     {
-        var result = await sender.Send(new CreatePlanCommand(
+        var result = await sender.Send(
+            new CreatePlanCommand(
             request.Title,
             request.Description,
             request.Cost,
@@ -103,7 +106,8 @@ public sealed class PlansController(ISender sender) : ApiController
     [Authorize(Roles = nameof(Role.Admin))]
     public async Task<IActionResult> Update(int id, [FromBody] UpdatePlanRequest request, CancellationToken ct)
     {
-        var result = await sender.Send(new UpdatePlanCommand(
+        var result = await sender.Send(
+            new UpdatePlanCommand(
             id,
             request.Title,
             request.Description,

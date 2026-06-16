@@ -3,6 +3,7 @@ using Gym.Domain.Identity;
 using Gym.Domain.Members;
 using Gym.Domain.People;
 using Gym.Infrastructure.Identity;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +17,6 @@ public class AppDbContextInitailiser(ILogger<AppDbContextInitailiser> logger,
     UserManager<AppUser> userManager,
     RoleManager<IdentityRole> roleManager)
 {
-
     private readonly ILogger<AppDbContextInitailiser> _logger = logger;
     private readonly AppDbContext _context = context;
     private readonly UserManager<AppUser> _userManager = userManager;
@@ -48,7 +48,6 @@ public class AppDbContextInitailiser(ILogger<AppDbContextInitailiser> logger,
         }
     }
 
-
     public async Task TrySeedAsync()
     {
         var adminRole = new IdentityRole(nameof(Role.Admin));
@@ -61,13 +60,11 @@ public class AppDbContextInitailiser(ILogger<AppDbContextInitailiser> logger,
 
         await _context.SaveChangesAsync();
 
-
         var admin = new AppUser
         {
-           
             Email = "A@gmail.com",
             UserName = "Ahmedsaleh",
-            EmailConfirmed = true 
+            EmailConfirmed = true
         };
 
         if (_userManager.Users.All(u => u.Email != admin.Email))
@@ -84,8 +81,8 @@ public class AppDbContextInitailiser(ILogger<AppDbContextInitailiser> logger,
                 await _userManager.AddToRolesAsync(admin, [adminRole.Name!]);
             }
         }
-
     }
+
     private async Task CheckRoleAndCreateIfNotExist(IdentityRole role)
     {
         if (_roleManager.Roles.All(r => r.Name != role.Name))
@@ -93,8 +90,6 @@ public class AppDbContextInitailiser(ILogger<AppDbContextInitailiser> logger,
             await _roleManager.CreateAsync(role);
         }
     }
-
-
 }
 
 public static class InitialiserExtensions

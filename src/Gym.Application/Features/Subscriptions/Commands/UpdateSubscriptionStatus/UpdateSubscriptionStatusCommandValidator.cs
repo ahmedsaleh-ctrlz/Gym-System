@@ -6,7 +6,7 @@ public class UpdateSubscriptionStatusCommandValidator : AbstractValidator<Update
 {
     public UpdateSubscriptionStatusCommandValidator()
     {
-        RuleFor(x => x.subscriptionId).GreaterThan(0).WithMessage("Subscription ID must be greater than 0.");
-        RuleFor(x => x.newStatus).IsInEnum().WithMessage("Invalid subscription status.");
+        RuleFor(x => x.SubscriptionId).GreaterThan(0).WithMessage("Subscription ID must be greater than 0.");
+        RuleFor(x => x.NewStatus).IsInEnum().WithMessage("Invalid subscription status.");
     }
 }

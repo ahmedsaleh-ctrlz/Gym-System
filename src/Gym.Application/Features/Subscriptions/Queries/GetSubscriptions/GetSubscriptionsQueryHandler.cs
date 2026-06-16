@@ -6,7 +6,9 @@ using Gym.Application.Features.Subscriptions.Mappers;
 using Gym.Domain.Common.Result;
 using Gym.Domain.Members;
 using Gym.Domain.Subscriptions;
+
 using MediatR;
+
 using Microsoft.EntityFrameworkCore;
 namespace Gym.Application.Features.Subscriptions.Queries.GetSubscriptions;
 
@@ -41,12 +43,10 @@ public class GetSubscriptionsQueryHandler(IAppDbContext dbContext) : IRequestHan
         };
     }
 
-
     private static IQueryable<Subscription> ApplyFilters(
         IQueryable<Subscription> query,
         GetSubscriptionsQuery filters)
     {
-      
         if (!string.IsNullOrWhiteSpace(filters.SearchTerm))
         {
             var normalized = filters.SearchTerm
@@ -58,14 +58,12 @@ public class GetSubscriptionsQueryHandler(IAppDbContext dbContext) : IRequestHan
                 || s.Plan!.Title.ToLower().Contains(normalized));
         }
 
-      
         if (filters.Status is not null)
         {
             query = query.Where(s =>
                 s.Status == filters.Status);
         }
 
-       
         if (!string.IsNullOrWhiteSpace(filters.PlanName))
         {
             var normalizedPlan = filters.PlanName
@@ -76,21 +74,18 @@ public class GetSubscriptionsQueryHandler(IAppDbContext dbContext) : IRequestHan
                 s.Plan!.Title.ToLower().Contains(normalizedPlan));
         }
 
-       
         if (filters.StartDateFrom is not null)
         {
             query = query.Where(s =>
                 s.StartDate >= filters.StartDateFrom);
         }
 
-     
         if (filters.StartDateTo is not null)
         {
             query = query.Where(s =>
                 s.StartDate <= filters.StartDateTo);
         }
 
-    
         if (filters.EndDateFrom is not null)
         {
             query = query.Where(s =>
@@ -145,6 +140,4 @@ public class GetSubscriptionsQueryHandler(IAppDbContext dbContext) : IRequestHan
                 : query.OrderBy(s => s.Id)
         };
     }
-
-
 }

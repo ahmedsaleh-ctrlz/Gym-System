@@ -4,7 +4,9 @@ using Gym.Application.Features.Attendances.Dtos;
 using Gym.Domain.Attendance;
 using Gym.Domain.Common.Result;
 using Gym.Domain.Subscriptions.Enums;
+
 using MediatR;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
@@ -32,7 +34,7 @@ public sealed class CheckInMemberCommandHandler(
 
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
 
-        if(await context.Attendances.AnyAsync(a=> a.MemberId == command.MemberId && DateOnly.FromDateTime(a.CheckInAtUtc) == today, ct))
+        if (await context.Attendances.AnyAsync(a => a.MemberId == command.MemberId && DateOnly.FromDateTime(a.CheckInAtUtc) == today, ct))
         {
             logger.LogWarning("Member with ID {MemberId} attempted multiple check-ins on {Date}.", command.MemberId, today);
             return ApplicationErrors.InvalidCheckInTime;
@@ -40,7 +42,8 @@ public sealed class CheckInMemberCommandHandler(
 
         var hasActiveSubscription = await context.Subscriptions
             .AsNoTracking()
-            .AnyAsync(s =>
+            .AnyAsync(
+                s =>
                 s.MemberId == command.MemberId &&
                 s.Status == SubscriptionStatus.Active &&
                 s.StartDate <= today &&

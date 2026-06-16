@@ -13,6 +13,7 @@ using Gym.Application.SubcutaneousTests.Common;
 using Gym.Domain.Payments.Enums;
 using Gym.Domain.Subscriptions.Enums;
 using Gym.Tests.Common.Reflection;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Gym.Application.SubcutaneousTests.Features.Subscriptions;

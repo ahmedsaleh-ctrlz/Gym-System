@@ -1,7 +1,6 @@
-﻿
-using Gym.Domain.Common.Result;
-using MediatR;
+﻿using Gym.Domain.Common.Result;
 
+using MediatR;
 
 namespace Gym.Application.Features.Coaches.Commands.UpdateCoach;
 
@@ -13,9 +12,4 @@ public sealed record UpdateCoachCommand(
     string PhoneNumber,
     DateTime HireDate) : IRequest<Result<Updated>>;
 
-
-public sealed record UpdateCoachImageCommand(int coachId, string imageUrl) : IRequest<Result<Updated>>;
-
-
-
-
+public sealed record UpdateCoachImageCommand(int CoachId, string ImageUrl) : IRequest<Result<Updated>>;

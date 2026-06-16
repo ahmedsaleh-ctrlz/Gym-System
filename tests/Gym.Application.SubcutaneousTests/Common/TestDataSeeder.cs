@@ -1,4 +1,5 @@
 using System.Security.Claims;
+
 using Gym.Application.Features.Identity.Dtos;
 using Gym.Domain.Attendance;
 using Gym.Domain.Coaches;
@@ -9,8 +10,8 @@ using Gym.Domain.Payments.Enums;
 using Gym.Domain.Plans;
 using Gym.Domain.Subscriptions;
 using Gym.Domain.Subscriptions.Enums;
-using Gym.Tests.Common.Reflection;
 using Gym.Infrastructure.Identity;
+using Gym.Tests.Common.Reflection;
 
 namespace Gym.Application.SubcutaneousTests.Common;
 

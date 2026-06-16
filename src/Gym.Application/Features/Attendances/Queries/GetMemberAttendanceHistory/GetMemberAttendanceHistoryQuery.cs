@@ -13,10 +13,10 @@ public sealed record GetMemberAttendanceHistoryQuery(
     DateOnly? DateTo = null,
     string? SortDirection = "desc") : ICachedQuery<Result<PaginatedList<AttendanceResponse>>>
 {
-    public string cacheKey =>
+    public string CacheKey =>
         $"AttendanceHistory:Member={MemberId}:Page={PageNumber}:Size={PageSize}:DateFrom={DateFrom?.ToString() ?? "null"}:DateTo={DateTo?.ToString() ?? "null"}:Direction={SortDirection}";
 
-    public string[] cacheTag => ["Attendance"];
+    public string[] CacheTag => ["Attendance"];
 
-    public TimeSpan cacheDuration => TimeSpan.FromMinutes(10);
+    public TimeSpan CacheDuration => TimeSpan.FromMinutes(10);
 }

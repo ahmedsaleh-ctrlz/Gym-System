@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 
-
 namespace Gym.Application.Features.Payments.Commands.PayPayment;
 
 public sealed class PayPaymentCommandValidator : AbstractValidator<PayPaymentCommand>
@@ -9,7 +8,7 @@ public sealed class PayPaymentCommandValidator : AbstractValidator<PayPaymentCom
     {
         RuleFor(x => x.PaymentId)
             .GreaterThan(0).WithMessage("PaymentId must be greater than 0.");
-        RuleFor(x => x.paymentMethod)
+        RuleFor(x => x.PaymentMethod)
             .IsInEnum().WithMessage("Invalid payment method.");
     }
 }

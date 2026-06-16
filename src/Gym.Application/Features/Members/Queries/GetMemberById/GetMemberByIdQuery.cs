@@ -4,11 +4,11 @@ using Gym.Domain.Common.Result;
 
 namespace Gym.Application.Features.Members.Queries.GetMemberById;
 
-public sealed record GetMemberByIdQuery(int id) : ICachedQuery<Result<MemberResponse>>
+public sealed record GetMemberByIdQuery(int Id) : ICachedQuery<Result<MemberResponse>>
 {
-    public string cacheKey => $"Member_{id}";
+    public string CacheKey => $"Member_{Id}";
 
-    public string[] cacheTag => ["Member"];
+    public string[] CacheTag => ["Member"];
 
-    public TimeSpan cacheDuration => TimeSpan.FromMinutes(10);
+    public TimeSpan CacheDuration => TimeSpan.FromMinutes(10);
 }

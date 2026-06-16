@@ -9,6 +9,5 @@ namespace Gym.Infrastructure.Identity.Policies
         public const string SameCoach = "SameCoach";
         public const string SameMemberOrAdmin = "SameMemberOrAdmin";
         public const string SameMemberOrCoachOrAdmin = "SameMemberOrCoachOrAdmin";
-
     }
 }

@@ -1,12 +1,14 @@
 ﻿using FluentValidation;
+
 using Gym.Application.Common.Interfaces;
 using Gym.Application.Features.Payments.Dtos;
 using Gym.Application.Features.Payments.Queries.GetMemberPayments;
 using Gym.Application.Features.Subscriptions.Dtos;
 using Gym.Domain.Common.Result;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
 
+using MediatR;
+
+using Microsoft.EntityFrameworkCore;
 
 namespace Gym.Application.Features.Subscriptions.Queries.GetMemberSubscriptions
 {
@@ -27,14 +29,9 @@ namespace Gym.Application.Features.Subscriptions.Queries.GetMemberSubscriptions
                     FreezeCountUsed = s.FreezeCountUsed,
                     TotalFreezeDaysUsed = s.TotalFreezeDaysUsed,
                     Status = s.Status.ToString()
-
-
                 }).ToListAsync(cancellationToken);
 
             return subscriptions;
         }
-
-
-        
     }
 }

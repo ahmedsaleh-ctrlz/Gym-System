@@ -29,12 +29,12 @@ public sealed class Payment : AuditableEntity
     public static Result<Payment> Create(
         Subscription subscription)
     {
-
         var error = Validate(subscription);
         if (error is not null)
         {
             return error;
         }
+
         return new Payment(subscription);
     }
 
@@ -54,7 +54,7 @@ public sealed class Payment : AuditableEntity
 
     private static Error? Validate(Subscription subscription)
     {
-        if(subscription is null)
+        if (subscription is null)
         {
             return PaymentErrors.InvalidSubscription;
         }
@@ -64,11 +64,10 @@ public sealed class Payment : AuditableEntity
             return PaymentErrors.PaymentCanOnlyBeRecordedForPendingSubscription;
         }
 
-        if(subscription.PriceSnapshot <= 0)
+        if (subscription.PriceSnapshot <= 0)
         {
             return PaymentErrors.InvalidAmount;
         }
-
 
         return null;
     }

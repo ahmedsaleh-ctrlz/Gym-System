@@ -6,9 +6,9 @@ namespace Gym.Application.Features.Payments.Queries.GetPaymentById;
 
 public sealed record GetPaymentByIdQuery(int Id) : ICachedQuery<Result<PaymentResponse>>
 {
-    public string cacheKey => $"Payment_{Id}";
+    public string CacheKey => $"Payment_{Id}";
 
-    public string[] cacheTag => ["Payments"];
+    public string[] CacheTag => ["Payments"];
 
-    public TimeSpan cacheDuration => TimeSpan.FromMinutes(10);
+    public TimeSpan CacheDuration => TimeSpan.FromMinutes(10);
 }

@@ -8,7 +8,7 @@ public class RefreshTokenTests
     [Fact]
     public void Create_ShouldReturnError_WhenTokenIsMissing()
     {
-        var result = RefreshTokenFactory.CreateRefreshToken(token: "");
+        var result = RefreshTokenFactory.CreateRefreshToken(token: string.Empty);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(RefreshTokenErrors.TokenRequired.Code, result.TopError.Code);
@@ -17,7 +17,7 @@ public class RefreshTokenTests
     [Fact]
     public void Create_ShouldReturnError_WhenUserIdIsMissing()
     {
-        var result = RefreshTokenFactory.CreateRefreshToken(userId: "");
+        var result = RefreshTokenFactory.CreateRefreshToken(userId: string.Empty);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(RefreshTokenErrors.UserIdRequired.Code, result.TopError.Code);

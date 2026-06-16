@@ -1,5 +1,6 @@
 using Gym.Application.Common.Behaviors;
 using Gym.Application.UnitTests.Common;
+
 using Microsoft.Extensions.Logging;
 
 namespace Gym.Application.UnitTests.Behaviors;

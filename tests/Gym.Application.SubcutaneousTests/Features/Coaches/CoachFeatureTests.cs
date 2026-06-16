@@ -5,6 +5,7 @@ using Gym.Application.Features.Coaches.Commands.UpdateCoach;
 using Gym.Application.Features.Coaches.Queries.GetCoachById;
 using Gym.Application.Features.Coaches.Queries.GetCoaches;
 using Gym.Application.SubcutaneousTests.Common;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Gym.Application.SubcutaneousTests.Features.Coaches;

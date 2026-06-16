@@ -4,7 +4,6 @@ using Gym.Application.Features.Subscriptions.Commands.BackgroundJobs.UnfreezeSub
 
 using MediatR;
 
-
 namespace Gym.Infrastructure.BackgroundJobs;
 
 public sealed class SubscriptionJobs(ISender sender)
@@ -26,5 +25,4 @@ public sealed class SubscriptionJobs(ISender sender)
         await sender.Send(
             new UnfreezeSubscriptionsCommand());
     }
-
 }

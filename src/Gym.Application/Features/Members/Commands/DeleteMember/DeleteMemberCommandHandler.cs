@@ -4,7 +4,9 @@ using Gym.Application.Common.Interfaces;
 using Gym.Application.Features.Members.Commands.CreateMember;
 using Gym.Domain.Common.Result;
 using Gym.Domain.Subscriptions.Enums;
+
 using MediatR;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
@@ -16,17 +18,18 @@ public sealed class DeleteMemberCommandHandler(IAppDbContext context,
     IIdentityService identityService,
     HybridCache cache) : IRequestHandler<DeleteMemberCommand, Result<Deleted>>
 {
-    public async Task<Result<Deleted>> Handle(DeleteMemberCommand command , CancellationToken cancellationToken)
+    public async Task<Result<Deleted>> Handle(DeleteMemberCommand command, CancellationToken cancellationToken)
     {
         logger.LogTrace("Handling {CommandName} for MemberId: {MemberId}", nameof(DeleteMemberCommand), command.MemberId);
-        var member = await context.Members.Include(m=>m.Person).ThenInclude(p=> p.Image).FirstOrDefaultAsync(m=>m.Id==command.MemberId, cancellationToken);
+        var member = await context.Members.Include(m => m.Person).ThenInclude(p => p.Image).FirstOrDefaultAsync(m => m.Id == command.MemberId, cancellationToken);
         if (member is null)
         {
             logger.LogWarning("Member with id {MemberId} not found.", command.MemberId);
             return ApplicationErrors.MemberNotFound;
         }
 
-        if (await context.Subscriptions.AnyAsync(s=> s.MemberId == command.MemberId && (
+        if (await context.Subscriptions.AnyAsync(
+            s => s.MemberId == command.MemberId && (
              s.Status == SubscriptionStatus.Active
              || s.Status == SubscriptionStatus.Frozen
              || s.Status == SubscriptionStatus.Scheduled
@@ -43,15 +46,14 @@ public sealed class DeleteMemberCommandHandler(IAppDbContext context,
             return deleteResult.Errors;
         }
 
-        await identityService.DeleteUserAsync(member.PersonId,cancellationToken);
-        
+        await identityService.DeleteUserAsync(member.PersonId, cancellationToken);
+
         await context.SaveChangesAsync(cancellationToken);
 
         if (!string.IsNullOrEmpty(member.Person?.Image?.ImageUrl))
         {
             await Utility.DeleteImage(member.Person.Image.ImageUrl);
         }
-
 
         logger.LogInformation("Removing cache with tag: Member");
         await cache.RemoveByTagAsync("AdminDashboard", cancellationToken);

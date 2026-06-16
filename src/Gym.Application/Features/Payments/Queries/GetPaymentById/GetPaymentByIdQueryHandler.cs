@@ -3,7 +3,9 @@ using Gym.Application.Common.Interfaces;
 using Gym.Application.Features.Payments.Dtos;
 using Gym.Application.Features.Payments.Mappers;
 using Gym.Domain.Common.Result;
+
 using MediatR;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 

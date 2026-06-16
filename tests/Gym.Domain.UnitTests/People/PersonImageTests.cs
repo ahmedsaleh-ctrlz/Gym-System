@@ -8,7 +8,7 @@ public class PersonImageTests
     [Fact]
     public void Create_ShouldReturnError_WhenImageUrlIsEmpty()
     {
-        var result = PersonImageFactory.CreatePersonImage("");
+        var result = PersonImageFactory.CreatePersonImage(string.Empty);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(PersonImageError.PersonImageUrlRequired.Code, result.TopError.Code);
@@ -28,7 +28,7 @@ public class PersonImageTests
     {
         var image = PersonImageFactory.CreatePersonImage().Value;
 
-        var result = image.Update("");
+        var result = image.Update(string.Empty);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(PersonImageError.PersonImageUrlRequired.Code, result.TopError.Code);

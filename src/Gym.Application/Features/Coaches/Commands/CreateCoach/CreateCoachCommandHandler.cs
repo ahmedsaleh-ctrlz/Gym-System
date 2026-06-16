@@ -1,12 +1,14 @@
 ﻿using Gym.Application.Common.Interfaces;
 using Gym.Application.Features.Coaches.Dtos;
 using Gym.Application.Features.Coaches.Mappers;
-using Gym.Domain.Common.Result;
 using Gym.Domain.Coaches;
+using Gym.Domain.Common.Result;
+using Gym.Domain.Identity;
+
 using MediatR;
+
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
-using Gym.Domain.Identity;
 
 namespace Gym.Application.Features.Coaches.Commands.CreateCoach;
 
@@ -14,7 +16,6 @@ public class CreateCoachCommandHandler(IAppDbContext context,
     ILogger<CreateCoachCommandHandler> logger,
     HybridCache cache,
     IIdentityService identityService) : IRequestHandler<CreateCoachCommand, Result<CoachResponse>>
-
 {
     private readonly IAppDbContext _context = context;
     private readonly ILogger<CreateCoachCommandHandler> _logger = logger;
@@ -23,53 +24,51 @@ public class CreateCoachCommandHandler(IAppDbContext context,
 
     public async Task<Result<CoachResponse>> Handle(CreateCoachCommand command, CancellationToken ct)
     {
-        _logger.LogTrace("Creating Coach for email: {Email}", command.email);
+        _logger.LogTrace("Creating Coach for email: {Email}", command.Email);
 
         await using var transaction = await _context.Database.BeginTransactionAsync(ct);
 
         string? userId = null;
-        int? personId = null;  
+        int? personId = null;
 
         try
         {
-            
-            var CoachResult = Coach.Create(
-                command.firstName,
-                command.lastName,
-                command.dateOfBirth,
-                command.phoneNumber,
-                command.imageUrl,
+            var coachResult = Coach.Create(
+                command.FirstName,
+                command.LastName,
+                command.DateOfBirth,
+                command.PhoneNumber,
+                command.ImageUrl,
                 command.HireDate);
 
-            if (CoachResult.IsError)
-                return CoachResult.Errors;
+            if (coachResult.IsError)
+            {
+                return coachResult.Errors;
+            }
 
-            var coach = CoachResult.Value;
+            var coach = coachResult.Value;
 
-            
             await _context.Coaches.AddAsync(coach, ct);
             await _context.SaveChangesAsync(ct);
 
             personId = coach.Person.Id;
 
-            
             var userResult = await _identityService.CreateUserAsync(
-                command.email,
-                command.password,
+                command.Email,
+                command.Password,
                 Role.Coach,
                 personId.Value,
                 ct);
 
             if (userResult.IsError)
             {
-                _logger.LogError("Failed to create user for Coach with email: {Email}. Errors: {Errors}", command.email, userResult.Errors);   
+                _logger.LogError("Failed to create user for Coach with email: {Email}. Errors: {Errors}", command.Email, userResult.Errors);
                 await transaction.RollbackAsync(ct);
                 return userResult.Errors;
             }
 
             userId = userResult.Value;
 
-           
             await transaction.CommitAsync(ct);
 
             await _cache.RemoveByTagAsync("Coach", ct);
@@ -87,7 +86,7 @@ public class CreateCoachCommandHandler(IAppDbContext context,
                 await _identityService.DeleteUserAsync(personId!.Value, ct);
             }
 
-            _logger.LogError(ex, "Error creating Coach for {Email}", command.email);
+            _logger.LogError(ex, "Error creating Coach for {Email}", command.Email);
             throw;
         }
     }

@@ -4,10 +4,9 @@ public abstract class Entity
 {
     protected Entity()
     {
-
     }
 
-    public int Id { get; protected set;}
+    public int Id { get; protected set; }
 
     private readonly List<DomainEvents> _domainEvents = [];
 

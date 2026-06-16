@@ -17,7 +17,7 @@ public class MemberTests
     [Fact]
     public void Create_ShouldReturnError_WhenPersonDataIsInvalid()
     {
-        var result = MemberFactory.CreateMember(firstName: "");
+        var result = MemberFactory.CreateMember(firstName: string.Empty);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(Gym.Domain.People.PersonError.FirstNameRequired.Code, result.TopError.Code);
@@ -85,7 +85,7 @@ public class MemberTests
     {
         var member = MemberFactory.CreateMember().Value;
 
-        var result = member.UpdateInfo("", "B", DateTime.UtcNow.AddYears(-22), "010", DateTime.UtcNow.AddDays(-1), "Updated");
+        var result = member.UpdateInfo(string.Empty, "B", DateTime.UtcNow.AddYears(-22), "010", DateTime.UtcNow.AddDays(-1), "Updated");
 
         Assert.False(result.IsSuccess);
         Assert.Equal(Gym.Domain.People.PersonError.FirstNameRequired.Code, result.TopError.Code);
@@ -122,7 +122,7 @@ public class MemberTests
     {
         var member = MemberFactory.CreateMember().Value;
 
-        var result = member.UpdateImage("");
+        var result = member.UpdateImage(string.Empty);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(Gym.Domain.People.PersonImages.PersonImageError.PersonImageUrlRequired.Code, result.TopError.Code);

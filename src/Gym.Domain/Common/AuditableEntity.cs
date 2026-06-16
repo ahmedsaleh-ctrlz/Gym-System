@@ -1,4 +1,5 @@
 ﻿namespace Gym.Domain.Common;
+
 public abstract class AuditableEntity : Entity
 {
     protected AuditableEntity()
@@ -9,5 +10,4 @@ public abstract class AuditableEntity : Entity
     public string? CreatedBy { get; set; }
     public DateTimeOffset LastModifiedUtc { get; set; }
     public string? LastModifiedBy { get; set; }
-
 }

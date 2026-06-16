@@ -6,7 +6,8 @@ public sealed class TestLogger<T> : ILogger<T>
 {
     public List<LogEntry> Entries { get; } = [];
 
-    public IDisposable? BeginScope<TState>(TState state) where TState : notnull
+    public IDisposable? BeginScope<TState>(TState state)
+        where TState : notnull
     {
         return null;
     }

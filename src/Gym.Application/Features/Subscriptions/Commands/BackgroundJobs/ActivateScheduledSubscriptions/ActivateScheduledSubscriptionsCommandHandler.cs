@@ -1,6 +1,8 @@
 ﻿using Gym.Application.Common.Interfaces;
 using Gym.Domain.Subscriptions.Enums;
+
 using MediatR;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -14,18 +16,18 @@ public sealed class ActivateScheduledSubscriptionsCommandHandler(IAppDbContext d
             .Where(s => s.Status == SubscriptionStatus.Scheduled && s.StartDate <= DateOnly.FromDateTime(DateTime.UtcNow))
                 .ToListAsync(cancellationToken);
 
-        foreach(var sub in subscriptions) 
+        foreach (var sub in subscriptions)
         {
             var result = sub.Activate();
-            if(result.IsError)
+            if (result.IsError)
             {
                 logger.LogError("Failed to activate subscription {SubscriptionId}: {Error}", sub.Id, result.Errors);
                 continue;
             }
+
             logger.LogInformation("Activated subscription {SubscriptionId}", sub.Id);
-        }   
-        
+        }
+
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 }
-

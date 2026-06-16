@@ -1,7 +1,9 @@
 using Gym.Application;
 using Gym.Application.Common.Interfaces;
 using Gym.Infrastructure.Data;
+
 using MediatR;
+
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;

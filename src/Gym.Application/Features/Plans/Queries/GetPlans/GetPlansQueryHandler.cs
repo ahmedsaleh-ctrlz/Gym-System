@@ -3,7 +3,9 @@ using Gym.Application.Common.Models;
 using Gym.Application.Features.Plans.Dtos;
 using Gym.Domain.Common.Result;
 using Gym.Domain.Plans;
+
 using MediatR;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Gym.Application.Features.Plans.Queries.GetPlans;
@@ -31,7 +33,7 @@ public sealed class GetPlansQueryHandler(IAppDbContext context)
                 Cost = p.Cost,
                 DurationInDays = p.DurationInDays,
                 IsActive = p.IsActive,
-                AllowedFreezeCount = p.AllowedFreezeCount,  
+                AllowedFreezeCount = p.AllowedFreezeCount,
                 MaxTotalFreezeDays = p.MaxTotalFreezeDays
             })
             .ToListAsync(ct);

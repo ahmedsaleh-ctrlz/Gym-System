@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 
 namespace Gym.Application.Features.Members.Commands.UpdateMember;
+
 public class UpdateMemberCommandValidator : AbstractValidator<UpdateMemberCommand>
 {
     public UpdateMemberCommandValidator()
@@ -19,14 +20,13 @@ public class UpdateMemberCommandValidator : AbstractValidator<UpdateMemberComman
         RuleFor(x => x.JoinDate)
             .LessThanOrEqualTo(DateTime.Now).WithMessage("Join date cannot be in the future.");
     }
-
-
 }
+
 public sealed class UpdateMemberImageCommandValidator : AbstractValidator<UpdateMemberImageCommand>
 {
     public UpdateMemberImageCommandValidator()
     {
-        RuleFor(x => x.imageUrl)
+        RuleFor(x => x.ImageUrl)
             .NotEmpty().WithMessage("Image URL is required.")
             .Must(uri => Uri.IsWellFormedUriString(uri, UriKind.Absolute)).WithMessage("Image URL must be a valid URL.");
     }

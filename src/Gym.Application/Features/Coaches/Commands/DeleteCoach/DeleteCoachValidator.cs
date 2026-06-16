@@ -1,6 +1,4 @@
-﻿
-using FluentValidation;
-
+﻿using FluentValidation;
 
 namespace Gym.Application.Features.Coaches.Commands.DeleteCoach;
 

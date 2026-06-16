@@ -1,4 +1,5 @@
 using Gym.Domain.Common.Result;
+
 using MediatR;
 
 namespace Gym.Application.Features.Plans.Commands.UpdatePlan;

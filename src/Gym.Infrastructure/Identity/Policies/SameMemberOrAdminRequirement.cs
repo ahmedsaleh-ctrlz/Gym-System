@@ -1,5 +1,6 @@
 ﻿using Gym.Application.Common.Interfaces;
 using Gym.Domain.Identity;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -41,14 +42,13 @@ public sealed class SameMemberOrAdminRequirementHandler(IAppDbContext dbContext,
             return;
         }
 
-        var isSameCoach = await dbContext.Members.AnyAsync
-            (c => c.Id == requestedmemberId && c.PersonId == Convert.ToInt32(personId));
+        var isSameCoach = await dbContext.Members.AnyAsync(
+            c => c.Id == requestedmemberId && c.PersonId == Convert.ToInt32(personId));
         if (isSameCoach)
         {
             context.Succeed(requirement);
         }
 
         return;
-
     }
 }

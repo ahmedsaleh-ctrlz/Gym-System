@@ -1,4 +1,5 @@
 ﻿namespace Gym.Domain.Common.Result;
+
 public enum ErrorType
 {
     Failure,

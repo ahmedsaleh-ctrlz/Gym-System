@@ -1,10 +1,14 @@
+using System.Text;
+
 using Gym.Application.Common.Interfaces;
 using Gym.Infrastructure.BackgroundJobs;
 using Gym.Infrastructure.Data;
 using Gym.Infrastructure.Data.Interceptors;
 using Gym.Infrastructure.Identity;
 using Gym.Infrastructure.Identity.Policies;
+
 using Hangfire;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -14,7 +18,6 @@ using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 namespace Gym.Infrastructure;
 
@@ -70,7 +73,6 @@ public static class DependencyInjection
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-
         }).AddJwtBearer(options =>
         {
             var jwtSettings = configuration.GetSection("JwtSettings");
@@ -94,7 +96,6 @@ public static class DependencyInjection
             options.AddPolicy(Policies.SameCoach, policy => policy.AddRequirements(new SameCoachRequirement()));
             options.AddPolicy(Policies.SameMemberOrAdmin, policy => policy.AddRequirements(new SameMemberOrAdminRequirement()));
             options.AddPolicy(Policies.SameMemberOrCoachOrAdmin, policy => policy.AddRequirements(new SameMemberOrCoachOrAdminRequirement()));
-
         });
 
         services.AddHangfire(options => options.UseSqlServerStorage(connectionString));
@@ -103,5 +104,4 @@ public static class DependencyInjection
 
         return services;
     }
-
 }

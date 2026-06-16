@@ -8,8 +8,8 @@ public static class Result
     public static Created Created => default;
     public static Deleted Deleted => default;
     public static Updated Updated => default;
-
 }
+
 public class Result<TValue> : IResult
 {
     private readonly TValue? _value;
@@ -20,9 +20,8 @@ public class Result<TValue> : IResult
     public TValue Value => IsSuccess ? _value! : default!;
     public List<Error> Errors => IsError ? _errors! : [];
     public Error TopError => (_errors?.Count > 0) ? _errors[0] : default;
-    
 
-    public Result(TValue? value, List<Error>? errors, bool isSuccess) 
+    public Result(TValue? value, List<Error>? errors, bool isSuccess)
     {
         if (isSuccess)
         {
@@ -41,13 +40,13 @@ public class Result<TValue> : IResult
             _value = default!;
             IsSuccess = false;
         }
-
-        
     }
+
     private Result(Error error)
     {
         _errors = [error];
     }
+
     private Result(List<Error> errors)
     {
         if (errors is null || errors.Count == 0)
@@ -59,6 +58,7 @@ public class Result<TValue> : IResult
 
         IsSuccess = false;
     }
+
     private Result(TValue value)
     {
         if (value is null)
@@ -70,7 +70,6 @@ public class Result<TValue> : IResult
 
         IsSuccess = true;
     }
-
 
     public static implicit operator Result<TValue>(TValue value)
         => new(value);
@@ -84,7 +83,6 @@ public class Result<TValue> : IResult
     public TNextValue Match<TNextValue>(Func<TValue, TNextValue> onValue, Func<List<Error>, TNextValue> onError)
         => IsSuccess ? onValue(Value!) : onError(Errors);
 }
-
 
 public readonly record struct Success;
 public readonly record struct Created;

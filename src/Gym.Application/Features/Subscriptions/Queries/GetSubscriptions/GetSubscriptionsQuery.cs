@@ -20,7 +20,7 @@ public sealed record GetSubscriptionsQuery(
     string? SortDirection = "Asce"
 ) : ICachedQuery<Result<PaginatedList<SubscriptionResponse>>>
 {
-    public string cacheKey =>
+    public string CacheKey =>
         $"Subscriptions:" +
         $"Page={PageNumber}:" +
         $"Size={PageSize}:" +
@@ -34,7 +34,7 @@ public sealed record GetSubscriptionsQuery(
         $"Sort={SortBy ?? "Id"}:" +
         $"Direction={SortDirection}";
 
-    public string[] cacheTag => ["Subscriptions"];
+    public string[] CacheTag => ["Subscriptions"];
 
-    public TimeSpan cacheDuration => TimeSpan.FromMinutes(10);
+    public TimeSpan CacheDuration => TimeSpan.FromMinutes(10);
 }

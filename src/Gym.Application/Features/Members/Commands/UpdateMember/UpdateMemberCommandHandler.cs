@@ -1,7 +1,9 @@
 ﻿using Gym.Application.Common.Errors;
 using Gym.Application.Common.Interfaces;
 using Gym.Domain.Common.Result;
+
 using MediatR;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
@@ -47,28 +49,26 @@ public sealed class UpdateMemberCommandHandler(IAppDbContext context,
         return Result.Updated;
     }
 
-
-
     public class UpdateMemberImageCommandHandler(IAppDbContext context, ILogger<UpdateMemberImageCommandHandler> logger, HybridCache cache) : IRequestHandler<UpdateMemberImageCommand, Result<Updated>>
     {
         public async Task<Result<Updated>> Handle(UpdateMemberImageCommand command, CancellationToken ct)
         {
-            logger.LogTrace("Handling Update Member Image command for Member ID {MemberId}.", command.memberId);
+            logger.LogTrace("Handling Update Member Image command for Member ID {MemberId}.", command.MemberId);
 
             var memberResult = await context.Members.Include(m => m.Person).
-                FirstOrDefaultAsync(m => m.Id == command.memberId, ct);
+                FirstOrDefaultAsync(m => m.Id == command.MemberId, ct);
 
             if (memberResult is null)
             {
-                logger.LogWarning("Member with ID {MemberId} not found for image update.", command.memberId);
+                logger.LogWarning("Member with ID {MemberId} not found for image update.", command.MemberId);
                 return ApplicationErrors.MemberNotFound;
             }
 
-            var updateResult = memberResult.UpdateImage(command.imageUrl);
+            var updateResult = memberResult.UpdateImage(command.ImageUrl);
 
             if (updateResult.IsError)
             {
-                logger.LogWarning("Failed to update image for Member ID {MemberId}. Errors: {Errors}", command.memberId, string.Join(", ", updateResult.Errors.Select(e => e.Description)));
+                logger.LogWarning("Failed to update image for Member ID {MemberId}. Errors: {Errors}", command.MemberId, string.Join(", ", updateResult.Errors.Select(e => e.Description)));
                 return updateResult.Errors;
             }
 
@@ -76,7 +76,7 @@ public sealed class UpdateMemberCommandHandler(IAppDbContext context,
 
             await cache.RemoveByTagAsync("Member", ct);
 
-            logger.LogInformation("Successfully updated image for Member ID {MemberId}.", command.memberId);
+            logger.LogInformation("Successfully updated image for Member ID {MemberId}.", command.MemberId);
 
             return Result.Updated;
         }

@@ -14,10 +14,10 @@ public sealed record GetAttendancesQuery(
     string? SortBy = null,
     string? SortDirection = "desc") : ICachedQuery<Result<PaginatedList<AttendanceResponse>>>
 {
-    public string cacheKey =>
+    public string CacheKey =>
         $"Attendances:Page={PageNumber}:Size={PageSize}:Search={SearchTerm ?? "all"}:DateFrom={DateFrom?.ToString() ?? "null"}:DateTo={DateTo?.ToString() ?? "null"}:Sort={SortBy ?? "checkin"}:Direction={SortDirection}";
 
-    public string[] cacheTag => ["Attendance"];
+    public string[] CacheTag => ["Attendance"];
 
-    public TimeSpan cacheDuration => TimeSpan.FromMinutes(10);
+    public TimeSpan CacheDuration => TimeSpan.FromMinutes(10);
 }

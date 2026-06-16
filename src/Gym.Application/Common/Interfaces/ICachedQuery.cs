@@ -1,15 +1,13 @@
-﻿
-using MediatR;
+﻿using MediatR;
 
 namespace Gym.Application.Common.Interfaces;
 
 public interface ICachedQuery
 {
-    public string cacheKey { get; }
-    public string[] cacheTag { get; }
+    public string CacheKey { get; }
+    public string[] CacheTag { get; }
 
-    public TimeSpan cacheDuration { get; }
-
+    public TimeSpan CacheDuration { get; }
 }
 
 public interface ICachedQuery<TResponse> : IRequest<TResponse>, ICachedQuery;

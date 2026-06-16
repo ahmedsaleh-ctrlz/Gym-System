@@ -6,4 +6,4 @@ public sealed record CreatePlanRequest(
     decimal Cost,
     int DurationInDays,
     int AllowedFreezeCount,
-    int MaxTotalFreezeDays);    
+    int MaxTotalFreezeDays);

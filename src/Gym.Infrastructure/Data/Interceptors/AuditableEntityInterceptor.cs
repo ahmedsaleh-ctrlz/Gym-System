@@ -1,13 +1,13 @@
-﻿
-using Gym.Application.Common.Interfaces;
+﻿using Gym.Application.Common.Interfaces;
 using Gym.Domain.Common;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Gym.Infrastructure.Data.Interceptors;
 
-public class AuditableEntityInterceptor(IUser user , TimeProvider dateTime) : SaveChangesInterceptor
+public class AuditableEntityInterceptor(IUser user, TimeProvider dateTime) : SaveChangesInterceptor
 {
     public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
     {

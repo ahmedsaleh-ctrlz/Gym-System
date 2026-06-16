@@ -1,4 +1,5 @@
 using Asp.Versioning;
+
 using Gym.Api.Contracts.Members;
 using Gym.Application.Features.Members.Commands.CreateMember;
 using Gym.Application.Features.Members.Commands.DeleteMember;
@@ -10,7 +11,9 @@ using Gym.Application.Features.Members.Queries.GetMembers;
 using Gym.Application.Features.Members.Queries.GetMembersWithActiveSubscription;
 using Gym.Domain.Identity;
 using Gym.Infrastructure.Identity.Policies;
+
 using MediatR;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
@@ -40,7 +43,7 @@ public sealed class MembersController(ISender sender) : ApiController
         [FromQuery] int pageSize = 10,
         [FromQuery] string? searchTerm = null,
         [FromQuery] string? sortBy = null,
-        [FromQuery] string? sortDirection = "asc" )
+        [FromQuery] string? sortDirection = "asc")
     {
         var result = await sender.Send(new GetMembersQuery(pageNumber, pageSize, searchTerm, sortBy, sortDirection), ct);
 
@@ -60,9 +63,8 @@ public sealed class MembersController(ISender sender) : ApiController
     [Authorize(Roles = $"{nameof(Role.Admin)},{nameof(Role.Coach)}")]
 
     public async Task<IActionResult> GetMembersWithActiveSubscription(CancellationToken ct)
-        
     {
-        var result = await sender.Send(new GetMembersWithActiveSubscriptionQuery(),ct);
+        var result = await sender.Send(new GetMembersWithActiveSubscriptionQuery(), ct);
 
         return result.Match(
             response => Ok(response),
@@ -87,7 +89,6 @@ public sealed class MembersController(ISender sender) : ApiController
             Problem);
     }
 
-
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(MemberResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -98,9 +99,8 @@ public sealed class MembersController(ISender sender) : ApiController
     [EndpointName("GetMemberById")]
     [MapToApiVersion("1.0")]
     [Authorize(Policy = Policies.SameMemberOrCoachOrAdmin)]
-    
 
-    public async Task<IActionResult> GetMemberById(int id , CancellationToken ct)
+    public async Task<IActionResult> GetMemberById(int id, CancellationToken ct)
     {
         var result = await sender.Send(new GetMemberByIdQuery(id), ct);
 
@@ -132,8 +132,8 @@ public sealed class MembersController(ISender sender) : ApiController
             request.Password));
 
         return result.Match(
-           _ => Created()
-                ,Problem); 
+            _ => Created(),
+            Problem);
     }
 
     [HttpPut("{id:int}")]
@@ -146,16 +146,17 @@ public sealed class MembersController(ISender sender) : ApiController
     [EndpointName("UpdateMember")]
     [MapToApiVersion("1.0")]
     [Authorize(Policy = Policies.SameMemberOrAdmin)]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdateMemberRequest request , CancellationToken ct)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateMemberRequest request, CancellationToken ct)
     {
-        var result = await sender.Send(new UpdateMemberCommand(
+        var result = await sender.Send(
+            new UpdateMemberCommand(
             id,
             request.FirstName,
             request.LastName,
             request.DateOfBirth,
             request.PhoneNumber,
             request.JoinDate,
-            request.Notes),ct);
+            request.Notes), ct);
 
         return result.Match(
             _ => NoContent(),
@@ -173,9 +174,9 @@ public sealed class MembersController(ISender sender) : ApiController
     [MapToApiVersion("1.0")]
     [Authorize(Policy = Policies.SameMemberOrAdmin)]
 
-    public async Task<IActionResult> UpdateImage(int id, [FromBody] UpdateMemberImageRequest request ,CancellationToken ct)
+    public async Task<IActionResult> UpdateImage(int id, [FromBody] UpdateMemberImageRequest request, CancellationToken ct)
     {
-        var result = await sender.Send(new UpdateMemberImageCommand(id, request.ImageUrl),ct);
+        var result = await sender.Send(new UpdateMemberImageCommand(id, request.ImageUrl), ct);
         return result.Match(
             _ => NoContent(),
             Problem);
@@ -191,15 +192,11 @@ public sealed class MembersController(ISender sender) : ApiController
     [MapToApiVersion("1.0")]
     [Authorize(Roles = nameof(Role.Admin))]
 
-    public async Task<IActionResult> Delete(int id , CancellationToken ct)
+    public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
-        var result = await sender.Send(new DeleteMemberCommand(id) ,ct);
+        var result = await sender.Send(new DeleteMemberCommand(id), ct);
         return result.Match(
             _ => NoContent(),
             Problem);
     }
-
-
- 
-
 }

@@ -1,6 +1,6 @@
-﻿
-using Gym.Domain.Members;
+﻿using Gym.Domain.Members;
 using Gym.Domain.People;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -22,8 +22,5 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
         builder.HasOne(m => m.Person)
         .WithOne()
         .HasForeignKey<Member>(m => m.PersonId);
-
-
-
     }
 }

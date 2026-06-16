@@ -1,6 +1,9 @@
 using System.Diagnostics;
+
 using Gym.Application.Common.Interfaces;
+
 using MediatR;
+
 using Microsoft.Extensions.Logging;
 
 namespace Gym.Application.Common.Behaviors;

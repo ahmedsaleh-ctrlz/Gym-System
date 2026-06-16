@@ -1,15 +1,16 @@
-﻿using Gym.Application.Common.Interfaces;
-using System.Security.Claims;
+﻿using System.Security.Claims;
+
+using Gym.Application.Common.Interfaces;
 
 namespace Gym.Api.Services;
 
 public class CurrentUser(IHttpContextAccessor httpContextAccessor) : IUser
 {
-    public string? Id => 
+    public string? Id =>
         httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
 
-    public string? PersonId => 
+    public string? PersonId =>
         httpContextAccessor.HttpContext?.User?.FindFirstValue("person_id");
-     public string? Role => 
-        httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.Role);
+    public string? Role =>
+       httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.Role);
 }

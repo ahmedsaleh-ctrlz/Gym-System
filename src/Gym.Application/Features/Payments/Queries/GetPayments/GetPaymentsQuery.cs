@@ -16,10 +16,10 @@ public sealed record GetPaymentsQuery(
     string? SortBy = null,
     string? SortDirection = "desc") : ICachedQuery<Result<PaginatedList<PaymentResponse>>>
 {
-    public string cacheKey =>
+    public string CacheKey =>
         $"Payments:Page={PageNumber}:Size={PageSize}:Search={SearchTerm ?? "all"}:Member={MemberId?.ToString() ?? "all"}:Subscription={SubscriptionId?.ToString() ?? "all"}:Status={Status?.ToString() ?? "all"}:Sort={SortBy ?? "paidat"}:Direction={SortDirection}";
 
-    public string[] cacheTag => ["Payments"];
+    public string[] CacheTag => ["Payments"];
 
-    public TimeSpan cacheDuration => TimeSpan.FromMinutes(10);
+    public TimeSpan CacheDuration => TimeSpan.FromMinutes(10);
 }

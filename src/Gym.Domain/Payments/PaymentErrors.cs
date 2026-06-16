@@ -15,7 +15,7 @@ public static class PaymentErrors
 
     public static Error PaymentCanOnlyBeRecordedForPendingSubscription =>
         Error.Conflict("Payment.SubscriptionNotPending", "Payments can only be recorded for pending subscriptions.");
-    
+
     public static Error PaymentAlreadyPaid => Error.Conflict("Payment.AlreadyPaid", "Payment has already been made.");
 
     public static Error InvalidPaymentStatus => Error.Conflict("Payment.InvalidPaymentStatus", "Invalid payment status.");
