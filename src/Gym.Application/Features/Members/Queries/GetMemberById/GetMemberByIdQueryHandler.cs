@@ -19,7 +19,7 @@ public class GetMemberByIdQueryHandler(
         var member = await context.Members.Include(m => m.Person).ThenInclude(p => p.Image)
             .FirstOrDefaultAsync(m => m.Id == query.Id, ct);
 
-        var email = await identityService.GetEmailByPersonIdAsync(member.PersonId, ct);
+        var email = await identityService.GetEmailByPersonIdAsync(member!.PersonId, ct);
 
         if (member is null)
         {

@@ -152,11 +152,15 @@ public static class DependencyInjection
     public static IApplicationBuilder UseCustomStaticFiles(
     this IApplicationBuilder app)
     {
+        var uploadsPath = Path.Combine(
+            Directory.GetCurrentDirectory(),
+            "Uploads");
+
+        Directory.CreateDirectory(uploadsPath);
+
         app.UseStaticFiles(new StaticFileOptions
         {
-            FileProvider = new PhysicalFileProvider(
-        @"D:\Uploads"),
-
+            FileProvider = new PhysicalFileProvider(uploadsPath),
             RequestPath = "/Uploads"
         });
 
