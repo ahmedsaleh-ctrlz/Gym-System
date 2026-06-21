@@ -5,11 +5,6 @@
 
   <ItemGroup>
     <PackageReference Include="NSubstitute" />
-    <PackageReference Include="xunit" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Using Include="Xunit" />
   </ItemGroup>
 
   <ItemGroup>
