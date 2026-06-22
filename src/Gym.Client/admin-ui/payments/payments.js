@@ -36,7 +36,7 @@ async function loadPayments(page = currentPage, search = searchInput.value) {
     if (sortByFilter.value) query.set("sortBy", sortByFilter.value);
 
     const response = await fetch(
-      `https://localhost:7022/api/v1/payments?${query.toString()}`,
+      `http://localhost:8080/api/v1/payments?${query.toString()}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -73,7 +73,8 @@ function ensurePaginationContainer() {
   if (!container) {
     container = document.createElement("div");
     container.id = "paginationContainer";
-    container.className = "d-flex justify-content-between align-items-center mt-3";
+    container.className =
+      "d-flex justify-content-between align-items-center mt-3";
     document.querySelector(".table-container").after(container);
   }
 
@@ -216,7 +217,7 @@ async function payPayment(paymentId, paymentMethod) {
       paymentMethod,
     };
 
-    const response = await fetch("https://localhost:7022/api/v1/payments/Pay", {
+    const response = await fetch("http://localhost:8080/api/v1/payments/Pay", {
       method: "POST",
 
       headers: {
@@ -284,4 +285,3 @@ function logout() {
 // Init
 
 loadPayments();
-

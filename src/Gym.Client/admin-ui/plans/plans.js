@@ -36,7 +36,7 @@ async function loadPlans(page = currentPage, search = searchInput.value) {
     if (sortByFilter.value) query.set("sortBy", sortByFilter.value);
 
     const response = await fetch(
-      `https://localhost:7022/api/v1/plans?${query.toString()}`,
+      `http://localhost:8080/api/v1/plans?${query.toString()}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -71,7 +71,8 @@ function ensurePaginationContainer() {
   if (!container) {
     container = document.createElement("div");
     container.id = "paginationContainer";
-    container.className = "d-flex justify-content-between align-items-center mt-3";
+    container.className =
+      "d-flex justify-content-between align-items-center mt-3";
     plansGrid.after(container);
   }
 
@@ -200,7 +201,7 @@ document.getElementById("addPlanForm").addEventListener("submit", async (e) => {
       ),
     };
 
-    const response = await fetch("https://localhost:7022/api/v1/plans", {
+    const response = await fetch("http://localhost:8080/api/v1/plans", {
       method: "POST",
 
       headers: {
@@ -236,7 +237,7 @@ async function deletePlan(id) {
   if (!confirmed) return;
 
   try {
-    const response = await fetch(`https://localhost:7022/api/v1/plans/${id}`, {
+    const response = await fetch(`http://localhost:8080/api/v1/plans/${id}`, {
       method: "DELETE",
 
       headers: {
@@ -308,20 +309,17 @@ document
         ),
       };
 
-      const response = await fetch(
-        `https://localhost:7022/api/v1/plans/${id}`,
-        {
-          method: "PUT",
+      const response = await fetch(`http://localhost:8080/api/v1/plans/${id}`, {
+        method: "PUT",
 
-          headers: {
-            "Content-Type": "application/json",
+        headers: {
+          "Content-Type": "application/json",
 
-            Authorization: `Bearer ${token}`,
-          },
-
-          body: JSON.stringify(body),
+          Authorization: `Bearer ${token}`,
         },
-      );
+
+        body: JSON.stringify(body),
+      });
 
       if (!response.ok) {
         await throwApiError(response, "Update failed");
@@ -367,4 +365,3 @@ function logout() {
 }
 
 loadPlans();
-

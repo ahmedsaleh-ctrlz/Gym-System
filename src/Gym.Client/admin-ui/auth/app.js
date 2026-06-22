@@ -79,9 +79,7 @@ function getRoleFromToken(token) {
     const role =
       payload.role ||
       payload.roles ||
-      payload[
-        "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
-      ];
+      payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
 
     return Array.isArray(role) ? role[0] : role;
   } catch {
@@ -117,7 +115,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
 
   try {
     const response = await fetch(
-      "https://localhost:7022/api/v1/Identity/token/generate",
+      "http://localhost:8080/api/v1/Identity/token/generate",
       {
         method: "POST",
 
@@ -187,7 +185,7 @@ document
         formData.append("file", imageFile);
 
         const uploadResponse = await fetch(
-          "https://localhost:7022/api/v1/images/UploadImage",
+          "http://localhost:8080/api/v1/images/UploadImage",
           {
             method: "POST",
             body: formData,
@@ -222,7 +220,7 @@ document
         imageUrl: imagePath,
       };
 
-      const response = await fetch("https://localhost:7022/api/v1/Identity", {
+      const response = await fetch("http://localhost:8080/api/v1/Identity", {
         method: "POST",
 
         headers: {
@@ -261,4 +259,3 @@ document
   });
 
 bindImageUploadUI();
-

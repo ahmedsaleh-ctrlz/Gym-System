@@ -7,7 +7,7 @@ if (!token) {
 async function loadDashboardStats() {
   try {
     const response = await fetch(
-      "https://localhost:7022/api/v1/dashboard/stats",
+      "http://localhost:8080/api/v1/dashboard/stats",
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -85,7 +85,6 @@ function loadCharts(data) {
     },
   });
 
-
   // Attendance Chart
 
   new Chart(document.getElementById("attendanceChart"), {
@@ -111,4 +110,3 @@ function logout() {
 }
 
 loadDashboardStats();
-

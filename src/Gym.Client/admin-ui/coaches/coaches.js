@@ -66,7 +66,7 @@ async function loadCoaches(page = currentPage, search = searchInput.value) {
     if (sortByFilter.value) query.set("sortBy", sortByFilter.value);
 
     const response = await fetch(
-      `https://localhost:7022/api/v1/coaches?${query.toString()}`,
+      `http://localhost:8080/api/v1/coaches?${query.toString()}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -101,7 +101,8 @@ function ensurePaginationContainer() {
   if (!container) {
     container = document.createElement("div");
     container.id = "paginationContainer";
-    container.className = "d-flex justify-content-between align-items-center mt-3";
+    container.className =
+      "d-flex justify-content-between align-items-center mt-3";
     coachesGrid.after(container);
   }
 
@@ -208,7 +209,7 @@ document
         formData.append("file", imageFile);
 
         const uploadResponse = await fetch(
-          "https://localhost:7022/api/v1/images/UploadImage",
+          "http://localhost:8080/api/v1/images/UploadImage",
           {
             method: "POST",
             body: formData,
@@ -234,7 +235,7 @@ document
         imageUrl: imagePath,
       };
 
-      const response = await fetch("https://localhost:7022/api/v1/coaches", {
+      const response = await fetch("http://localhost:8080/api/v1/coaches", {
         method: "POST",
 
         headers: {
@@ -270,8 +271,7 @@ document
 function showCoach(id) {
   const coach = coaches.find((c) => c.coachId === id);
 
-  document.getElementById("viewImage").src =
-    coach.imageUrl || DEFAULT_AVATAR;
+  document.getElementById("viewImage").src = coach.imageUrl || DEFAULT_AVATAR;
 
   document.getElementById("viewName").textContent =
     `${coach.firstName} ${coach.lastName}`;
@@ -291,16 +291,13 @@ async function deleteCoach(id) {
   if (!confirmed) return;
 
   try {
-    const response = await fetch(
-      `https://localhost:7022/api/v1/coaches/${id}`,
-      {
-        method: "DELETE",
+    const response = await fetch(`http://localhost:8080/api/v1/coaches/${id}`, {
+      method: "DELETE",
 
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
-    );
+    });
 
     if (!response.ok) {
       await throwApiError(response, "Delete failed");
@@ -343,4 +340,3 @@ function logout() {
 
 loadCoaches();
 bindImageUploadUI();
-

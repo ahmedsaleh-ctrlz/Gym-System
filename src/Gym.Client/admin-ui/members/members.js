@@ -130,7 +130,7 @@ async function loadMembers(page = currentPage, search = searchInput.value) {
     if (sortByFilter.value) query.set("sortBy", sortByFilter.value);
 
     const response = await fetch(
-      `https://localhost:7022/api/v1/members?${query.toString()}`,
+      `http://localhost:8080/api/v1/members?${query.toString()}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -277,7 +277,7 @@ function renderMembers() {
 async function loadSubscriptionPlans() {
   try {
     const response = await fetch(
-      "https://localhost:7022/api/v1/plans?pageNumber=1&pageSize=100",
+      "http://localhost:8080/api/v1/plans?pageNumber=1&pageSize=100",
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -335,7 +335,8 @@ function ensurePaginationContainer() {
   if (!container) {
     container = document.createElement("div");
     container.id = "paginationContainer";
-    container.className = "d-flex justify-content-between align-items-center mt-3";
+    container.className =
+      "d-flex justify-content-between align-items-center mt-3";
     document.getElementById("tableContainer").after(container);
   }
 
@@ -379,7 +380,7 @@ addMemberForm.addEventListener("submit", async (e) => {
       formData.append("file", imageFile);
 
       const uploadResponse = await fetch(
-        "https://localhost:7022/api/v1/images/UploadImage",
+        "http://localhost:8080/api/v1/images/UploadImage",
         {
           method: "POST",
           body: formData,
@@ -417,7 +418,7 @@ addMemberForm.addEventListener("submit", async (e) => {
       imageUrl: imagePath,
     };
 
-    const response = await fetch("https://localhost:7022/api/v1/members", {
+    const response = await fetch("http://localhost:8080/api/v1/members", {
       method: "POST",
 
       headers: {
@@ -456,16 +457,13 @@ async function deleteMember(id) {
   if (!confirmed) return;
 
   try {
-    const response = await fetch(
-      `https://localhost:7022/api/v1/members/${id}`,
-      {
-        method: "DELETE",
+    const response = await fetch(`http://localhost:8080/api/v1/members/${id}`, {
+      method: "DELETE",
 
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
-    );
+    });
 
     if (!response.ok) {
       await throwApiError(response, "Delete failed");
@@ -481,14 +479,14 @@ async function showCurrentSubscription(memberId) {
   try {
     const headers = { Authorization: `Bearer ${token}` };
     const [currentRes, historyRes, paymentsRes] = await Promise.all([
-      fetch(`https://localhost:7022/api/v1/subscriptions/member/${memberId}`, {
+      fetch(`http://localhost:8080/api/v1/subscriptions/member/${memberId}`, {
         headers,
       }),
       fetch(
-        `https://localhost:7022/api/v1/subscriptions/member/${memberId}/history`,
+        `http://localhost:8080/api/v1/subscriptions/member/${memberId}/history`,
         { headers },
       ),
-      fetch(`https://localhost:7022/api/v1/payments/member/${memberId}`, {
+      fetch(`http://localhost:8080/api/v1/payments/member/${memberId}`, {
         headers,
       }),
     ]);
@@ -508,7 +506,9 @@ async function showCurrentSubscription(memberId) {
 
     document.getElementById("subPlanName").textContent = sub.planName || "-";
     document.getElementById("subStatus").textContent = sub.status || "-";
-    document.getElementById("subStartDate").textContent = formatDate(sub.startDate);
+    document.getElementById("subStartDate").textContent = formatDate(
+      sub.startDate,
+    );
     document.getElementById("subEndDate").textContent = formatDate(sub.endDate);
     document.getElementById("subPrice").textContent =
       sub.priceSnapshot != null ? `${sub.priceSnapshot} EGP` : "-";
@@ -524,7 +524,9 @@ async function showCurrentSubscription(memberId) {
       cancelBtn.classList.add("d-none");
     }
 
-    new bootstrap.Modal(document.getElementById("memberSubscriptionModal")).show();
+    new bootstrap.Modal(
+      document.getElementById("memberSubscriptionModal"),
+    ).show();
   } catch (error) {
     showToast(error.message, "error");
   }
@@ -541,7 +543,7 @@ document.getElementById("cancelSubBtn").addEventListener("click", async () => {
 
   try {
     const response = await fetch(
-      `https://localhost:7022/api/v1/subscriptions/${currentMemberSubscriptionId}/cancel`,
+      `http://localhost:8080/api/v1/subscriptions/${currentMemberSubscriptionId}/cancel`,
       {
         method: "PUT",
         headers: {
@@ -575,8 +577,8 @@ memberSubActionForm.addEventListener("submit", async (e) => {
 
   const endpoint =
     mode === "renew"
-      ? "https://localhost:7022/api/v1/subscriptions/renew"
-      : "https://localhost:7022/api/v1/subscriptions";
+      ? "http://localhost:8080/api/v1/subscriptions/renew"
+      : "http://localhost:8080/api/v1/subscriptions";
 
   const body =
     mode === "renew"
@@ -603,7 +605,9 @@ memberSubActionForm.addEventListener("submit", async (e) => {
     if (!response.ok) {
       await throwApiError(
         response,
-        mode === "renew" ? "Renew subscription failed" : "Create subscription failed",
+        mode === "renew"
+          ? "Renew subscription failed"
+          : "Create subscription failed",
       );
     }
 
@@ -623,14 +627,11 @@ memberSubActionForm.addEventListener("submit", async (e) => {
 
 async function showMemberDetails(id) {
   try {
-    const response = await fetch(
-      `https://localhost:7022/api/v1/members/${id}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    const response = await fetch(`http://localhost:8080/api/v1/members/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
-    );
+    });
 
     if (!response.ok) {
       await throwApiError(response, "Failed to load member");
@@ -638,7 +639,8 @@ async function showMemberDetails(id) {
 
     const member = await response.json();
 
-    document.getElementById("viewImage").src = member.imageUrl || DEFAULT_AVATAR;
+    document.getElementById("viewImage").src =
+      member.imageUrl || DEFAULT_AVATAR;
     document.getElementById("viewImage").onerror = function imageFallback() {
       this.src = DEFAULT_AVATAR;
     };
@@ -670,14 +672,11 @@ async function showMemberDetails(id) {
 
 async function openEditModal(id) {
   try {
-    const response = await fetch(
-      `https://localhost:7022/api/v1/members/${id}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    const response = await fetch(`http://localhost:8080/api/v1/members/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
-    );
+    });
 
     if (!response.ok) {
       await throwApiError(response, "Failed to load member");
@@ -736,7 +735,7 @@ document
       };
 
       const response = await fetch(
-        `https://localhost:7022/api/v1/members/${id}`,
+        `http://localhost:8080/api/v1/members/${id}`,
         {
           method: "PUT",
 
@@ -798,4 +797,3 @@ function logout() {
 loadMembers();
 loadSubscriptionPlans();
 bindImageUploadUI();
-

@@ -33,7 +33,7 @@ async function loadAttendanceBoard() {
 }
 
 async function loadActiveMembers() {
-  const response = await fetch("https://localhost:7022/api/v1/members/active", {
+  const response = await fetch("http://localhost:8080/api/v1/members/active", {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -57,7 +57,7 @@ async function loadTodayCheckIns() {
   });
 
   const response = await fetch(
-    `https://localhost:7022/api/v1/attendances?${query.toString()}`,
+    `http://localhost:8080/api/v1/attendances?${query.toString()}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -149,7 +149,8 @@ function ensurePaginationContainer() {
   if (!container) {
     container = document.createElement("div");
     container.id = "paginationContainer";
-    container.className = "d-flex justify-content-between align-items-center mt-3";
+    container.className =
+      "d-flex justify-content-between align-items-center mt-3";
     document.querySelector(".table-container").after(container);
   }
 
@@ -182,7 +183,7 @@ async function checkInMember(memberId) {
 
   try {
     const response = await fetch(
-      `https://localhost:7022/api/v1/attendances/${memberId}/check-in`,
+      `http://localhost:8080/api/v1/attendances/${memberId}/check-in`,
       {
         method: "POST",
         headers: {
@@ -218,5 +219,3 @@ function logout() {
 }
 
 loadAttendanceBoard();
-
-

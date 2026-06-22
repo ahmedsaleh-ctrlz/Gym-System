@@ -28,7 +28,7 @@ async function loadMemberPortal() {
 
   try {
     currentMember = await apiGet(
-      "https://localhost:7022/api/v1/members/me",
+      "http://localhost:8080/api/v1/members/me",
       "Failed to load member profile",
     );
 
@@ -39,19 +39,19 @@ async function loadMemberPortal() {
       await Promise.all([
         loadCurrentSubscription(memberId),
         apiGet(
-          `https://localhost:7022/api/v1/subscriptions/member/${memberId}/history`,
+          `http://localhost:8080/api/v1/subscriptions/member/${memberId}/history`,
           "Failed to load subscription history",
         ),
         apiGet(
-          `https://localhost:7022/api/v1/attendances/${memberId}/history?pageNumber=1&pageSize=8&sortDirection=desc`,
+          `http://localhost:8080/api/v1/attendances/${memberId}/history?pageNumber=1&pageSize=8&sortDirection=desc`,
           "Failed to load attendance history",
         ),
         apiGet(
-          "https://localhost:7022/api/v1/plans?pageNumber=1&pageSize=20&sortDirection=asc",
+          "http://localhost:8080/api/v1/plans?pageNumber=1&pageSize=20&sortDirection=asc",
           "Failed to load plans",
         ),
         apiGet(
-          `https://localhost:7022/api/v1/payments/member/${memberId}`,
+          `http://localhost:8080/api/v1/payments/member/${memberId}`,
           "Failed to load payments",
         ),
       ]);
@@ -74,7 +74,7 @@ async function loadMemberPortal() {
 async function loadCurrentSubscription(memberId) {
   try {
     return await apiGet(
-      `https://localhost:7022/api/v1/subscriptions/member/${memberId}`,
+      `http://localhost:8080/api/v1/subscriptions/member/${memberId}`,
       "Failed to load current subscription",
     );
   } catch {
@@ -262,7 +262,7 @@ async function payByVisa(paymentId) {
   if (!confirmed) return;
 
   try {
-    const response = await fetch("https://localhost:7022/api/v1/payments/Pay", {
+    const response = await fetch("http://localhost:8080/api/v1/payments/Pay", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

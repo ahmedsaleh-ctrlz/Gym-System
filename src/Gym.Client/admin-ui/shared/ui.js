@@ -175,7 +175,7 @@ async function refreshAccessToken() {
   }
 
   const response = await nativeFetch(
-    "https://localhost:7022/api/v1/Identity/token/refresh-token",
+    "http://localhost:8080/api/v1/Identity/token/refresh-token",
     {
       method: "POST",
       headers: {
