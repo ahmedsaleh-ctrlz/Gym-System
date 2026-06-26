@@ -16,9 +16,7 @@ const endDateFromFilter = document.getElementById("endDateFromFilter");
 const endDateToFilter = document.getElementById("endDateToFilter");
 const sortByFilter = document.getElementById("sortByFilter");
 const sortDirectionFilter = document.getElementById("sortDirectionFilter");
-const freezeSubscriptionForm = document.getElementById(
-  "freezeSubscriptionForm",
-);
+const freezeSubscriptionForm = document.getElementById("freezeSubscriptionForm");
 
 let subscriptions = [];
 let currentPage = 1;
@@ -38,17 +36,12 @@ async function loadSubscriptions(page = currentPage) {
     query.set("pageSize", String(pageSize));
     query.set("sortDirection", sortDirectionFilter.value || "asc");
 
-    if (searchInput.value.trim())
-      query.set("searchTerm", searchInput.value.trim());
+    if (searchInput.value.trim()) query.set("searchTerm", searchInput.value.trim());
     if (statusFilter.value) query.set("status", statusFilter.value);
-    if (planNameFilter.value.trim())
-      query.set("planName", planNameFilter.value.trim());
-    if (startDateFromFilter.value)
-      query.set("startDateFrom", startDateFromFilter.value);
-    if (startDateToFilter.value)
-      query.set("startDateTo", startDateToFilter.value);
-    if (endDateFromFilter.value)
-      query.set("endDateFrom", endDateFromFilter.value);
+    if (planNameFilter.value.trim()) query.set("planName", planNameFilter.value.trim());
+    if (startDateFromFilter.value) query.set("startDateFrom", startDateFromFilter.value);
+    if (startDateToFilter.value) query.set("startDateTo", startDateToFilter.value);
+    if (endDateFromFilter.value) query.set("endDateFrom", endDateFromFilter.value);
     if (endDateToFilter.value) query.set("endDateTo", endDateToFilter.value);
     if (sortByFilter.value) query.set("sortBy", sortByFilter.value);
 
@@ -82,8 +75,7 @@ function ensurePaginationContainer() {
   if (!container) {
     container = document.createElement("div");
     container.id = "paginationContainer";
-    container.className =
-      "d-flex justify-content-between align-items-center mt-3";
+    container.className = "d-flex justify-content-between align-items-center mt-3";
     document.querySelector(".table-container").after(container);
   }
 
@@ -183,9 +175,7 @@ function renderSubscriptions() {
 async function freezeSubscription(id) {
   document.getElementById("freezeSubscriptionId").value = id;
   document.getElementById("freezeDaysInput").value = "";
-  new bootstrap.Modal(
-    document.getElementById("freezeSubscriptionModal"),
-  ).show();
+  new bootstrap.Modal(document.getElementById("freezeSubscriptionModal")).show();
 }
 
 freezeSubscriptionForm.addEventListener("submit", async (e) => {
@@ -324,3 +314,7 @@ function logout() {
 // Init
 
 loadSubscriptions();
+
+
+
+

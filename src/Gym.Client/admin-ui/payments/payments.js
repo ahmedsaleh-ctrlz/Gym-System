@@ -73,8 +73,7 @@ function ensurePaginationContainer() {
   if (!container) {
     container = document.createElement("div");
     container.id = "paginationContainer";
-    container.className =
-      "d-flex justify-content-between align-items-center mt-3";
+    container.className = "d-flex justify-content-between align-items-center mt-3";
     document.querySelector(".table-container").after(container);
   }
 
@@ -159,14 +158,24 @@ function renderPayments() {
                     ${
                       payment.status === "Pending"
                         ? `
-                        <button
-                            class="btn-pay"
-                            onclick="openPayModal(${payment.paymentId})"
-                        >
+                        <div class="payment-actions">
+                          <button
+                              class="btn-pay"
+                              onclick="openPayModal(${payment.paymentId})"
+                          >
 
-                            Pay
+                              Pay
 
-                        </button>
+                          </button>
+                          <button
+                              class="btn-cancel-payment"
+                              onclick="cancelPayment(${payment.paymentId})"
+                          >
+
+                              Cancel
+
+                          </button>
+                        </div>
                         `
                         : `
                         <span>
@@ -244,6 +253,35 @@ async function payPayment(paymentId, paymentMethod) {
   }
 }
 
+async function cancelPayment(paymentId) {
+  const confirmed = await showConfirm(
+    "Cancel Payment",
+    "Are you sure you want to cancel this pending payment?",
+  );
+
+  if (!confirmed) return;
+
+  try {
+    const response = await fetch("http://localhost:8080/api/v1/payments/cancel", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ PaymentId: paymentId }),
+    });
+
+    if (!response.ok) {
+      await throwApiError(response, "Payment cancellation failed");
+    }
+
+    showToast("Payment cancelled successfully", "success");
+    loadPayments();
+  } catch (error) {
+    showToast(error.message, "error");
+  }
+}
+
 document.getElementById("confirmPayBtn").addEventListener("click", async () => {
   const paymentId = Number(document.getElementById("payPaymentId").value);
   const paymentMethod = document.getElementById("paymentMethodSelect").value;
@@ -285,3 +323,5 @@ function logout() {
 // Init
 
 loadPayments();
+
+

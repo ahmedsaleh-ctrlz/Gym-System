@@ -5,35 +5,6 @@ const registerTab = document.getElementById("registerTab");
 const loginSection = document.getElementById("loginSection");
 
 const registerSection = document.getElementById("registerSection");
-const imageInput = document.getElementById("image");
-const imageFileName = document.getElementById("imageFileName");
-const imagePreview = document.getElementById("imagePreview");
-
-function bindImageUploadUI() {
-  if (!imageInput || !imageFileName || !imagePreview) return;
-
-  imageInput.addEventListener("change", () => {
-    const file = imageInput.files?.[0];
-
-    if (!file) {
-      imageFileName.textContent = "No file chosen";
-      imagePreview.classList.add("d-none");
-      imagePreview.removeAttribute("src");
-      return;
-    }
-
-    imageFileName.textContent = file.name;
-    imagePreview.src = URL.createObjectURL(file);
-    imagePreview.classList.remove("d-none");
-  });
-}
-
-function resetImageUploadUI() {
-  if (!imageFileName || !imagePreview) return;
-  imageFileName.textContent = "No file chosen";
-  imagePreview.classList.add("d-none");
-  imagePreview.removeAttribute("src");
-}
 
 // Tabs
 
@@ -79,7 +50,9 @@ function getRoleFromToken(token) {
     const role =
       payload.role ||
       payload.roles ||
-      payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+      payload[
+        "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+      ];
 
     return Array.isArray(role) ? role[0] : role;
   } catch {
@@ -245,7 +218,6 @@ document
       loginSection.classList.remove("d-none");
 
       document.getElementById("registerForm").reset();
-      resetImageUploadUI();
     } catch (error) {
       console.log(error);
 
@@ -258,4 +230,3 @@ document
     }
   });
 
-bindImageUploadUI();

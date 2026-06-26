@@ -85,6 +85,7 @@ function loadCharts(data) {
     },
   });
 
+
   // Attendance Chart
 
   new Chart(document.getElementById("attendanceChart"), {
@@ -110,3 +111,5 @@ function logout() {
 }
 
 loadDashboardStats();
+
+

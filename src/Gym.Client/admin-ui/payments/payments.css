@@ -282,6 +282,26 @@ body {
   border-radius: 12px;
 }
 
+.payment-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-cancel-payment {
+  border: none;
+  background: #dc3545;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+.btn-cancel-payment:hover {
+  background: #bb2d3b;
+}
+
 .dark-modal {
   background: #181818;
   color: white;

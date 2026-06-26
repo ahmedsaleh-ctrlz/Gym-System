@@ -149,8 +149,7 @@ function ensurePaginationContainer() {
   if (!container) {
     container = document.createElement("div");
     container.id = "paginationContainer";
-    container.className =
-      "d-flex justify-content-between align-items-center mt-3";
+    container.className = "d-flex justify-content-between align-items-center mt-3";
     document.querySelector(".table-container").after(container);
   }
 
@@ -219,3 +218,6 @@ function logout() {
 }
 
 loadAttendanceBoard();
+
+
+

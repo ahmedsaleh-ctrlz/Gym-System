@@ -71,8 +71,7 @@ function ensurePaginationContainer() {
   if (!container) {
     container = document.createElement("div");
     container.id = "paginationContainer";
-    container.className =
-      "d-flex justify-content-between align-items-center mt-3";
+    container.className = "d-flex justify-content-between align-items-center mt-3";
     plansGrid.after(container);
   }
 
@@ -309,17 +308,20 @@ document
         ),
       };
 
-      const response = await fetch(`http://localhost:8080/api/v1/plans/${id}`, {
-        method: "PUT",
+      const response = await fetch(
+        `http://localhost:8080/api/v1/plans/${id}`,
+        {
+          method: "PUT",
 
-        headers: {
-          "Content-Type": "application/json",
+          headers: {
+            "Content-Type": "application/json",
 
-          Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
+          },
+
+          body: JSON.stringify(body),
         },
-
-        body: JSON.stringify(body),
-      });
+      );
 
       if (!response.ok) {
         await throwApiError(response, "Update failed");
@@ -365,3 +367,5 @@ function logout() {
 }
 
 loadPlans();
+
+

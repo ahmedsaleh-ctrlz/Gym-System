@@ -34,7 +34,9 @@ const els = {
   ),
   subscriptionActionForm: document.getElementById("subscriptionActionForm"),
   subscriptionPlanSelect: document.getElementById("subscriptionPlanSelect"),
-  subscriptionStartDateWrap: document.getElementById("subscriptionStartDateWrap"),
+  subscriptionStartDateWrap: document.getElementById(
+    "subscriptionStartDateWrap",
+  ),
   subscriptionStartDate: document.getElementById("subscriptionStartDate"),
   subscriptionSubmitBtn: document.getElementById("subscriptionSubmitBtn"),
   freezeSubscriptionModal: document.getElementById("freezeSubscriptionModal"),
@@ -63,6 +65,7 @@ let selectedSubscriptionMode = "subscribe";
 let selectedStripePayment = null;
 let stripeElements = null;
 let stripeCard = null;
+const CURRENT_SUBSCRIPTION_STATUSES = ["Active", "Frozen"];
 
 function apiHeaders(extra = {}) {
   return {
@@ -136,32 +139,48 @@ async function loadMemberPortal() {
   showLoading(true);
 
   try {
-    currentMember = await apiGet("/members/me", "Failed to load member profile");
+    currentMember = await apiGet(
+      "/members/me",
+      "Failed to load member profile",
+    );
     renderProfile(currentMember);
 
     const memberId = currentMember.memberId;
 
-    const [currentSubResp, historyResp, attendanceResp, plansResp, paymentsResp] =
-      await Promise.all([
-        loadCurrentSubscription(memberId),
-        apiGet(
-          `/subscriptions/member/${memberId}/history`,
-          "Failed to load subscription history",
-        ),
-        apiGet(
-          `/attendances/${memberId}/history?pageNumber=1&pageSize=8&sortDirection=desc`,
-          "Failed to load attendance history",
-        ),
-        apiGet("/plans?pageNumber=1&pageSize=20&sortDirection=asc", "Failed to load plans"),
-        apiGet(`/payments/member/${memberId}`, "Failed to load payments"),
-      ]);
+    const [
+      currentSubResp,
+      historyResp,
+      attendanceResp,
+      plansResp,
+      paymentsResp,
+    ] = await Promise.all([
+      loadCurrentSubscription(memberId),
+      apiGet(
+        `/subscriptions/member/${memberId}/history`,
+        "Failed to load subscription history",
+      ),
+      apiGet(
+        `/attendances/${memberId}/history?pageNumber=1&pageSize=8&sortDirection=desc`,
+        "Failed to load attendance history",
+      ),
+      apiGet(
+        "/plans?pageNumber=1&pageSize=20&sortDirection=asc",
+        "Failed to load plans",
+      ),
+      apiGet(`/payments/member/${memberId}`, "Failed to load payments"),
+    ]);
 
-    currentSubscription = currentSubResp;
     subscriptionHistory = Array.isArray(historyResp) ? historyResp : [];
+    currentSubscription = resolveCurrentSubscription(
+      currentSubResp,
+      subscriptionHistory,
+    );
     attendanceHistory = attendanceResp?.items || [];
     plans = plansResp?.items || [];
     allPayments = Array.isArray(paymentsResp) ? paymentsResp : [];
-    pendingPayments = allPayments.filter((payment) => payment.status === "Pending");
+    pendingPayments = allPayments.filter(
+      (payment) => payment.status === "Pending",
+    );
 
     renderPlans(plans);
     renderProfileSections();
@@ -217,7 +236,8 @@ function renderProfileSections() {
     0,
   );
 
-  els.currentPlan.textContent = currentSubscription?.planName || "No active plan";
+  els.currentPlan.textContent =
+    currentSubscription?.planName || "No active plan";
   els.currentStatus.innerHTML = currentSubscription
     ? statusPill(currentSubscription.status)
     : `<span class="empty-text-inline">-</span>`;
@@ -305,8 +325,8 @@ async function cancelPendingPayment(paymentId) {
 
   try {
     await apiPut(
-      `/payments/${paymentId}/cancel`,
-      null,
+      "/payments/cancel",
+      { PaymentId: paymentId },
       "Failed to cancel payment",
     );
     showToast("Pending payment cancelled successfully", "success");
@@ -314,6 +334,21 @@ async function cancelPendingPayment(paymentId) {
   } catch (error) {
     showToast(error.message, "error");
   }
+}
+
+function resolveCurrentSubscription(latestSubscription, historyItems) {
+  if (isCurrentSubscriptionStatus(latestSubscription?.status)) {
+    return latestSubscription;
+  }
+
+  return (
+    historyItems.find((item) => isCurrentSubscriptionStatus(item?.status)) ||
+    null
+  );
+}
+
+function isCurrentSubscriptionStatus(status) {
+  return CURRENT_SUBSCRIPTION_STATUSES.includes(status || "");
 }
 
 function openFreezeSubscription() {
@@ -379,7 +414,8 @@ function renderPaymentHistory(payments) {
 
 function renderPlans(planList) {
   if (!planList.length) {
-    els.plansGrid.innerHTML = '<div class="empty-text">No plans available.</div>';
+    els.plansGrid.innerHTML =
+      '<div class="empty-text">No plans available.</div>';
     return;
   }
 

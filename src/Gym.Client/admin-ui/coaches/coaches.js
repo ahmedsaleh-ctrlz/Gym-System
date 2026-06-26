@@ -9,9 +9,6 @@ const coachesGrid = document.getElementById("coachesGrid");
 const searchInput = document.getElementById("searchInput");
 const sortByFilter = document.getElementById("sortByFilter");
 const sortDirectionFilter = document.getElementById("sortDirectionFilter");
-const imageInput = document.getElementById("image");
-const imageFileName = document.getElementById("imageFileName");
-const imagePreview = document.getElementById("imagePreview");
 const DEFAULT_AVATAR =
   "https://ui-avatars.com/api/?name=User&background=2d2d2d&color=ffffff&size=128";
 
@@ -19,31 +16,6 @@ let coaches = [];
 let currentPage = 1;
 const pageSize = 10;
 let totalCount = 0;
-
-function bindImageUploadUI() {
-  if (!imageInput || !imageFileName || !imagePreview) return;
-
-  imageInput.addEventListener("change", () => {
-    const file = imageInput.files?.[0];
-    if (!file) {
-      imageFileName.textContent = "No file chosen";
-      imagePreview.classList.add("d-none");
-      imagePreview.removeAttribute("src");
-      return;
-    }
-
-    imageFileName.textContent = file.name;
-    imagePreview.src = URL.createObjectURL(file);
-    imagePreview.classList.remove("d-none");
-  });
-}
-
-function resetImageUploadUI() {
-  if (!imageFileName || !imagePreview) return;
-  imageFileName.textContent = "No file chosen";
-  imagePreview.classList.add("d-none");
-  imagePreview.removeAttribute("src");
-}
 
 // Load Coaches
 
@@ -101,8 +73,7 @@ function ensurePaginationContainer() {
   if (!container) {
     container = document.createElement("div");
     container.id = "paginationContainer";
-    container.className =
-      "d-flex justify-content-between align-items-center mt-3";
+    container.className = "d-flex justify-content-between align-items-center mt-3";
     coachesGrid.after(container);
   }
 
@@ -256,7 +227,6 @@ document
       ).hide();
 
       document.getElementById("addCoachForm").reset();
-      resetImageUploadUI();
 
       loadCoaches();
     } catch (error) {
@@ -271,7 +241,8 @@ document
 function showCoach(id) {
   const coach = coaches.find((c) => c.coachId === id);
 
-  document.getElementById("viewImage").src = coach.imageUrl || DEFAULT_AVATAR;
+  document.getElementById("viewImage").src =
+    coach.imageUrl || DEFAULT_AVATAR;
 
   document.getElementById("viewName").textContent =
     `${coach.firstName} ${coach.lastName}`;
@@ -291,13 +262,16 @@ async function deleteCoach(id) {
   if (!confirmed) return;
 
   try {
-    const response = await fetch(`http://localhost:8080/api/v1/coaches/${id}`, {
-      method: "DELETE",
+    const response = await fetch(
+      `http://localhost:8080/api/v1/coaches/${id}`,
+      {
+        method: "DELETE",
 
-      headers: {
-        Authorization: `Bearer ${token}`,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       await throwApiError(response, "Delete failed");
@@ -339,4 +313,5 @@ function logout() {
 // Init
 
 loadCoaches();
-bindImageUploadUI();
+
+

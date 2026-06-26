@@ -305,26 +305,13 @@
                 <div class="col-md-6 mb-3">
                   <label class="form-label"> Image </label>
 
-                  <div class="upload-control">
-                    <input
-                      type="file"
-                      id="image"
-                      class="upload-input"
-                      accept="image/*"
-                    />
-                    <label for="image" class="upload-label">
-                      <span class="upload-btn-text">
-                        <i class="bi bi-upload"></i>
-                        Choose Photo
-                      </span>
-                      <span id="imageFileName" class="upload-file-name">No file chosen</span>
-                    </label>
-                    <img
-                      id="imagePreview"
-                      class="upload-preview d-none"
-                      alt="Selected member photo preview"
-                    />
-                  </div>
+                  <input
+                    type="file"
+                    id="image"
+                    class="form-control"
+                    accept="image/*"
+                    required
+                  />
                 </div>
 
                 <div class="col-12">
@@ -400,7 +387,7 @@
     <!-- Current Subscription Modal -->
 
     <div class="modal fade" id="memberSubscriptionModal" tabindex="-1">
-      <div class="modal-dialog modal-xl">
+      <div class="modal-dialog">
         <div class="modal-content dark-modal">
           <div class="modal-header border-0">
             <h5 class="modal-title">Current Subscription</h5>
@@ -413,7 +400,6 @@
           </div>
 
           <div class="modal-body">
-            <div class="section-title">Current Subscription</div>
             <div class="details-item">
               <span>Plan</span>
               <strong id="subPlanName">-</strong>
@@ -434,56 +420,14 @@
               <strong id="subEndDate">-</strong>
             </div>
 
-            <div class="details-item mb-0">
+            <div class="details-item">
               <span>Price</span>
               <strong id="subPrice">-</strong>
             </div>
 
-            <button id="cancelSubBtn" class="btn btn-danger w-100 mt-3 d-none">
+            <button id="cancelSubBtn" class="btn btn-danger w-100 mt-2 d-none">
               Cancel Subscription
             </button>
-
-            <hr class="modal-separator" />
-
-            <div class="section-title">Subscription History</div>
-            <div class="history-table-wrap">
-              <table class="table table-dark table-sm history-table mb-0">
-                <thead>
-                  <tr>
-                    <th>Plan</th>
-                    <th>Status</th>
-                    <th>Start</th>
-                    <th>End</th>
-                    <th>Price</th>
-                  </tr>
-                </thead>
-                <tbody id="subscriptionHistoryTable"></tbody>
-              </table>
-              <p id="subscriptionHistoryEmpty" class="history-empty d-none">
-                No subscription history found.
-              </p>
-            </div>
-
-            <hr class="modal-separator" />
-
-            <div class="section-title">Payments History</div>
-            <div class="history-table-wrap">
-              <table class="table table-dark table-sm history-table mb-0">
-                <thead>
-                  <tr>
-                    <th>Plan</th>
-                    <th>Amount</th>
-                    <th>Method</th>
-                    <th>Status</th>
-                    <th>Paid At</th>
-                  </tr>
-                </thead>
-                <tbody id="memberPaymentsTable"></tbody>
-              </table>
-              <p id="memberPaymentsEmpty" class="history-empty d-none">
-                No payments found.
-              </p>
-            </div>
           </div>
         </div>
       </div>
