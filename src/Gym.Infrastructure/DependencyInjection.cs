@@ -6,6 +6,7 @@ using Gym.Infrastructure.Data;
 using Gym.Infrastructure.Data.Interceptors;
 using Gym.Infrastructure.Identity;
 using Gym.Infrastructure.Identity.Policies;
+using Gym.Infrastructure.Payments.Stripe;
 
 using Hangfire;
 
@@ -40,7 +41,7 @@ public static class DependencyInjection
         });
 
         services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
-
+        services.AddScoped<IStripePaymentService, StripePaymentService>();
         services.AddScoped<ITokenProvider, TokenProvider>();
 
         services.AddScoped<IAuthorizationHandler, SameCoachHandler>();

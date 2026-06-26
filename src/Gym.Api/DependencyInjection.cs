@@ -29,7 +29,7 @@ public static class DependencyInjection
         .AddCustomerExceptionHandling()
         .AddApiDocumentation()
         .AddIdentityInfrastructure();
-
+        services.Configure<StripeSettings>(configuration.GetSection("Stripe"));
         return services;
     }
 

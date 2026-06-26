@@ -30,6 +30,7 @@
             </div>
           </div>
         </div>
+
         <button class="logout-btn" onclick="logout()">
           <i class="bi bi-box-arrow-right"></i>
           Logout
@@ -56,34 +57,109 @@
       </section>
 
       <section class="content-grid">
-        <section class="panel current-panel">
+        <section class="panel">
           <div class="panel-head">
             <div>
-              <h2>Subscription Details</h2>
-              <p>Your current membership window and freeze usage.</p>
+              <h2>Current Subscription</h2>
+              <p>Your latest membership state.</p>
             </div>
           </div>
           <div id="currentSubscription" class="detail-list"></div>
         </section>
 
-        <section class="panel payment-panel">
+        <section class="panel">
           <div class="panel-head">
             <div>
-              <h2>Payments</h2>
-              <p>Complete pending payments with demo Visa checkout.</p>
+              <h2>Pending Payments</h2>
+              <p>Pay pending subscription invoices with Visa through Stripe.</p>
             </div>
           </div>
-          <div id="paymentsList" class="stack-list"></div>
+          <div id="pendingPaymentsList" class="stack-list"></div>
+        </section>
+
+        <section class="panel wide-panel subscription-action-panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Membership Action</p>
+              <h2 id="subscriptionActionTitle">Subscribe to a Plan</h2>
+              <p id="subscriptionActionDescription">
+                Choose a plan to create your subscription.
+              </p>
+            </div>
+            <i class="bi bi-lightning-charge-fill action-panel-icon"></i>
+          </div>
+
+          <form id="subscriptionActionForm" class="subscription-action-form">
+            <div class="subscription-field">
+              <label for="subscriptionPlanSelect" class="form-label">
+                Choose Plan
+              </label>
+              <select
+                id="subscriptionPlanSelect"
+                class="form-select"
+                required
+              ></select>
+            </div>
+
+            <div class="subscription-field" id="subscriptionStartDateWrap">
+              <label for="subscriptionStartDate" class="form-label">
+                Start Date
+              </label>
+              <input
+                type="date"
+                id="subscriptionStartDate"
+                class="form-control"
+                required
+              />
+            </div>
+
+            <div class="subscription-action-footer">
+              <div class="action-note">
+                <i class="bi bi-info-circle"></i>
+                Payment stays pending until Visa checkout is completed.
+              </div>
+              <button
+                type="submit"
+                class="btn btn-hero subscription-submit-btn"
+                id="subscriptionSubmitBtn"
+              >
+                Subscribe Now
+              </button>
+            </div>
+          </form>
         </section>
 
         <section class="panel">
           <div class="panel-head">
             <div>
               <h2>Available Plans</h2>
-              <p>Compare gym plans and durations.</p>
+              <p>Compare the available gym plans and their benefits.</p>
             </div>
           </div>
-          <div id="plansList" class="plans-list"></div>
+          <div id="plansGrid" class="plans-grid"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Payment History</h2>
+              <p>All completed and pending payment records.</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>Plan</th>
+                  <th>Amount</th>
+                  <th>Method</th>
+                  <th>Status</th>
+                  <th>Paid At</th>
+                </tr>
+              </thead>
+              <tbody id="paymentHistoryTable"></tbody>
+            </table>
+          </div>
         </section>
 
         <section class="panel">
@@ -103,7 +179,21 @@
               <p>Previous and scheduled subscription records.</p>
             </div>
           </div>
-          <div id="subscriptionHistory" class="history-table"></div>
+          <div class="table-wrap">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>Plan</th>
+                  <th>Price</th>
+                  <th>Start</th>
+                  <th>End</th>
+                  <th>Status</th>
+                  <th>Freeze</th>
+                </tr>
+              </thead>
+              <tbody id="subscriptionHistoryTable"></tbody>
+            </table>
+          </div>
         </section>
       </section>
     </main>
@@ -112,6 +202,85 @@
       <div class="spinner-border text-danger"></div>
     </div>
 
+    <div class="modal fade" id="freezeSubscriptionModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content member-modal">
+          <div class="modal-header border-0">
+            <div>
+              <p class="eyebrow mb-1">Pause Membership</p>
+              <h5 class="modal-title">Freeze Subscription</h5>
+            </div>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body pt-0">
+            <form id="freezeSubscriptionForm">
+              <label for="freezeDaysInput" class="form-label">
+                Number of freeze days
+              </label>
+              <div class="freeze-input-wrap">
+                <i class="bi bi-snow2"></i>
+                <input
+                  type="number"
+                  id="freezeDaysInput"
+                  class="form-control"
+                  min="1"
+                  step="1"
+                  placeholder="For example: 7"
+                  required
+                />
+              </div>
+              <div class="modal-note mt-3">
+                Your membership end date will be extended according to the
+                accepted freeze period.
+              </div>
+              <button type="submit" id="confirmFreezeBtn" class="btn freeze-submit-btn w-100 mt-3">
+                <i class="bi bi-snow2"></i>
+                Confirm Freeze
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="stripePaymentModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content member-modal">
+          <div class="modal-header border-0">
+            <h5 class="modal-title">Pay with Visa</h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body pt-0">
+            <div class="payment-summary" id="stripePaymentSummary"></div>
+
+            <div class="stripe-box">
+              <label class="form-label">Card Details</label>
+              <div id="stripeCardElement" class="stripe-card-element"></div>
+              <div class="modal-note mt-3">
+                Demo mode. Use Stripe test cards like `4242 4242 4242 4242`.
+              </div>
+            </div>
+
+            <button
+              id="confirmStripePayBtn"
+              class="btn btn-hero w-100 mt-3"
+            >
+              Confirm Payment
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://js.stripe.com/v3/"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../admin-ui/shared/ui.js"></script>
     <script src="member.js"></script>

@@ -19,4 +19,6 @@ public static class PaymentErrors
     public static Error PaymentAlreadyPaid => Error.Conflict("Payment.AlreadyPaid", "Payment has already been made.");
 
     public static Error InvalidPaymentStatus => Error.Conflict("Payment.InvalidPaymentStatus", "Invalid payment status.");
+
+    public static Error InvalidTransactionId => Error.Validation("Payment.InvalidTransactionId", "Transaction ID must be a non-empty string.");
 }

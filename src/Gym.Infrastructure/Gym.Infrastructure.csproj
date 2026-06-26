@@ -11,6 +11,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" />
     <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Stripe.net"/>
   </ItemGroup>
 
   <ItemGroup>

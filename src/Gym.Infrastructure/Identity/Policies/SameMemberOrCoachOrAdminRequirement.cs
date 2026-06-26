@@ -42,9 +42,9 @@ public sealed class SameMemberOrCoachOrAdminRequirementHandler(IAppDbContext dbC
             return;
         }
 
-        var isSameCoach = await dbContext.Members.AnyAsync(
+        var isSameMember = await dbContext.Members.AnyAsync(
             c => c.Id == requestedmemberId && c.PersonId == Convert.ToInt32(personId));
-        if (isSameCoach)
+        if (isSameMember)
         {
             context.Succeed(requirement);
         }

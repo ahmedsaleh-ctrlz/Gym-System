@@ -2,7 +2,10 @@ using Asp.Versioning;
 
 using Gym.Api.Contracts.Payments;
 using Gym.Application.Common.Models;
+using Gym.Application.Features.Payments.Commands.CancelPayment;
+using Gym.Application.Features.Payments.Commands.CreateStripePayment;
 using Gym.Application.Features.Payments.Commands.PayPayment;
+using Gym.Application.Features.Payments.Commands.ProcessStripePayment;
 using Gym.Application.Features.Payments.Dtos;
 using Gym.Application.Features.Payments.Queries.GetMemberPayments;
 using Gym.Application.Features.Payments.Queries.GetPaymentById;
@@ -10,11 +13,15 @@ using Gym.Application.Features.Payments.Queries.GetPayments;
 using Gym.Domain.Identity;
 using Gym.Domain.Payments.Enums;
 using Gym.Infrastructure.Identity.Policies;
+using Gym.Infrastructure.Settings;
 
 using MediatR;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+
+using Stripe;
 
 namespace Gym.Api.Controllers;
 
@@ -22,7 +29,7 @@ namespace Gym.Api.Controllers;
 [Route("api/v{version:apiVersion}/payments")]
 [ApiVersion("1.0")]
 [Authorize]
-public sealed class PaymentsController(ISender sender) : ApiController
+public sealed class PaymentsController(ISender sender, IOptions<StripeSettings> stripeOptions) : ApiController
 {
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedList<PaymentResponse>), StatusCodes.Status200OK)]
@@ -121,5 +128,76 @@ public sealed class PaymentsController(ISender sender) : ApiController
         return result.Match(
             _ => Created(),
             Problem);
+    }
+
+    [HttpPut("Cancel")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [EndpointSummary("Cancel a payment.")]
+    [EndpointDescription("Cancels a pending payment for a subscription.")]
+    [EndpointName("CancelPayment")]
+    [MapToApiVersion("1.0")]
+    public async Task<IActionResult> Cancel([FromBody] CancelPaymentRequest request, CancellationToken ct)
+    {
+        var result = await sender.Send(
+            new CancelPaymentCommand(request.PaymentId),
+            ct);
+
+        return result.Match(
+            _ => NoContent(),
+            Problem);
+    }
+
+    [HttpPost("{paymentId:int}/stripe-intent")]
+    [ProducesResponseType(typeof(StripePaymentIntentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [EndpointSummary("Creates a Stripe payment intent.")]
+    [EndpointDescription("Creates a Stripe payment intent for the specified pending payment and returns the client secret required for checkout.")]
+    [EndpointName("CreateStripePaymentIntent")]
+    [MapToApiVersion("1.0")]
+    public async Task<IActionResult> CreateStripePaymentIntent(
+        int paymentId,
+        CancellationToken ct)
+    {
+        var result = await sender.Send(
+            new CreateStripePaymentIntentCommand(paymentId),
+            ct);
+
+        return result.Match(
+            response => Ok(response),
+            Problem);
+    }
+
+    [AllowAnonymous]
+    [HttpPost("webhook")]
+    public async Task<IActionResult> Webhook()
+    {
+        var stripeSettings = stripeOptions.Value;
+
+        var json = await new StreamReader(Request.Body)
+            .ReadToEndAsync();
+
+        var stripeEvent = EventUtility.ConstructEvent(
+            json,
+            Request.Headers["Stripe-Signature"],
+            stripeSettings.WebhookSecret);
+
+        if (stripeEvent.Type == "payment_intent.succeeded")
+        {
+            var paymentIntent =
+                stripeEvent.Data.Object as PaymentIntent;
+
+            await sender.Send(
+                new ProcessStripePaymentCommand(
+                    paymentIntent!.Id));
+        }
+
+        return Ok();
     }
 }

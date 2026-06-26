@@ -12,6 +12,7 @@ public sealed class Payment : AuditableEntity
     public Subscription Subscription { get; private set; } = null!;
     public decimal Amount { get; private set; }
     public PaymentMethod? PaymentMethod { get; private set; } = null;
+    public string? ExternalTransactionId { get; private set; }
     public PaymentStatus Status { get; private set; }
     public DateTime? PaidAtUtc { get; private set; } = null;
 
@@ -48,6 +49,31 @@ public sealed class Payment : AuditableEntity
         PaymentMethod = paymentMethod;
         Status = PaymentStatus.Paid;
         PaidAtUtc = DateTime.UtcNow;
+
+        return Result.Updated;
+    }
+
+    public Result<Updated> Cancel()
+    {
+        if (Status != PaymentStatus.Pending)
+        {
+            return PaymentErrors.InvalidPaymentStatus;
+        }
+
+        Status = PaymentStatus.Cancelled;
+        Subscription.Cancel();
+
+        return Result.Updated;
+    }
+
+    public Result<Updated> SetExternalTransactionId(string transactionId)
+    {
+        if (string.IsNullOrWhiteSpace(transactionId))
+        {
+            return PaymentErrors.InvalidTransactionId;
+        }
+
+        ExternalTransactionId = transactionId;
 
         return Result.Updated;
     }
