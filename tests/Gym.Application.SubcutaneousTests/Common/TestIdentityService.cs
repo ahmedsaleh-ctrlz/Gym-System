@@ -99,4 +99,33 @@ public sealed class TestIdentityService : IIdentityService
     {
         _emailsByPersonId[personId] = email;
     }
+    #region Dummy Test Implementations 
+    public Task<Result<Updated>> UpdatePasswordAsync(
+    int memberId,
+    string currentPassword,
+    string newPassword)
+    {
+        return Task.FromResult<Result<Updated>>(Result.Updated);
+    }
+
+    public Task<Result<string>> GenerateEmailConfirmationUrlAsync(
+        string userId)
+    {
+        return Task.FromResult<Result<string>>(
+            $"https://localhost/api/v2/identity/confirm-email?userId={userId}&token=test-token");
+    }
+
+    public Task<Result<Updated>> ConfirmEmailAsync(
+        string userId,
+        string token)
+    {
+        return Task.FromResult<Result<Updated>>(Result.Updated);
+    }
+
+    public Task<Result<string>> GenerateEmailConfirmationUrlByEmailAsync(string email)
+    {
+        return Task.FromResult<Result<string>>(
+            $"https://localhost/api/v2/identity/confirm-email?userId=test-user-id&token=test-token");
+    }
+    #endregion
 }

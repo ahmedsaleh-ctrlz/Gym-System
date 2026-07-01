@@ -19,4 +19,8 @@ public interface IIdentityService
     Task<Result<AppUserDto>> GetUserByIdAsync(string userId);
 
     Task<Result<string>> GetEmailByPersonIdAsync(int personId, CancellationToken ct);
+    Task<Result<Updated>> UpdatePasswordAsync(int personId, string currentPassword, string newPassword);
+    Task<Result<string>> GenerateEmailConfirmationUrlAsync(string userId);
+    Task<Result<Updated>> ConfirmEmailAsync(string userId, string token);
+    Task<Result<string>> GenerateEmailConfirmationUrlByEmailAsync(string email);
 }

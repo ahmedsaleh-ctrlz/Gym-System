@@ -16,6 +16,9 @@ services:
       Serilog__WriteTo__1__Args__serverUrl: http://seq:5341
       JwtSettings__Issuer: gym-api
       JwtSettings__Audience: gym-api
+      Email__ApiKey: ${EMAIL_API_KEY}
+      Email__FromEmail: ${EMAIL_FROM_EMAIL}
+      JwtSettings__Secret: ${JWT_SECRET}
       Stripe__SecretKey: ${STRIPE_SECRET_KEY}
       Stripe__PublishableKey: ${STRIPE_PUBLISHABLE_KEY}
       Stripe__WebhookSecret: ${STRIPE_WEBHOOK_SECRET}

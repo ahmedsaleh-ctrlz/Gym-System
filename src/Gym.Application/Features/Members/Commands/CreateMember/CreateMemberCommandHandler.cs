@@ -27,10 +27,9 @@ public class CreateMemberCommandHandler(IAppDbContext context,
         _logger.LogTrace("Creating Member for email: {Email}", command.Email);
 
         await using var transaction = await _context.Database.BeginTransactionAsync(ct);
-
         string? userId = null;
         int? personId = null;
-
+        Member? member = null;
         try
         {
             var memberResult = Member.Create(
@@ -47,7 +46,7 @@ public class CreateMemberCommandHandler(IAppDbContext context,
                 return memberResult.Errors;
             }
 
-            var member = memberResult.Value;
+            member = memberResult.Value;
 
             await _context.Members.AddAsync(member, ct);
             await _context.SaveChangesAsync(ct);
@@ -64,19 +63,12 @@ public class CreateMemberCommandHandler(IAppDbContext context,
             if (userResult.IsError)
             {
                 _logger.LogError("Failed to create user for Member with email: {Email}. Errors: {Errors}", command.Email, userResult.Errors);
-                await transaction.RollbackAsync(ct);
                 return userResult.Errors;
             }
 
             userId = userResult.Value;
 
             await transaction.CommitAsync(ct);
-            await _cache.RemoveByTagAsync("AdminDashboard", ct);
-            await _cache.RemoveByTagAsync("Member", ct);
-
-            _logger.LogInformation("Successfully created Member with ID: {MemberId} and associated User ID: {UserId}", member.Id, userId);
-
-            return member.ToDto();
         }
         catch (Exception ex)
         {
@@ -90,5 +82,10 @@ public class CreateMemberCommandHandler(IAppDbContext context,
             _logger.LogError(ex, "Error creating member for {Email}", command.Email);
             throw;
         }
+
+        await _cache.RemoveByTagAsync("AdminDashboard", ct);
+        await _cache.RemoveByTagAsync("Member", ct);
+        _logger.LogInformation("Successfully created Member with ID: {MemberId} and associated User ID: {UserId}", member.Id, userId);
+        return member.ToDto();
     }
 }

@@ -28,6 +28,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/openapi/v1.json", "Gym API V1");
+        options.SwaggerEndpoint("/openapi/v2.json", "Gym API V2");
         options.EnableDeepLinking();
         options.DisplayRequestDuration();
         options.EnableFilter();

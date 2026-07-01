@@ -119,7 +119,7 @@ public static class DependencyInjection
 
     public static IServiceCollection AddApiDocumentation(this IServiceCollection services)
     {
-        string[] versions = ["v1"];
+        string[] versions = ["v1", "V2"];
 
         foreach (var version in versions)
         {

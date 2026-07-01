@@ -28,15 +28,29 @@ namespace Gym.Application.Common.Helpers
             }
         }
 
-        public static string MaskEmail(string email)
+        public static string MaskEmail(this string email)
         {
-            int atIndex = email.IndexOf('@');
-            if (atIndex <= 1)
+            if (string.IsNullOrWhiteSpace(email))
             {
-                return $"****{email.AsSpan(atIndex)}";
+                return string.Empty;
             }
 
-            return email[0] + "****" + email[atIndex - 1] + email[atIndex..];
+            var atIndex = email.IndexOf('@');
+
+            if (atIndex <= 1)
+            {
+                return email;
+            }
+
+            var username = email[..atIndex];
+            var domain = email[atIndex..];
+
+            if (username.Length <= 2)
+            {
+                return $"{username[0]}*{domain}";
+            }
+
+            return $"{username[0]}{new string('*', username.Length - 2)}{username[^1]}{domain}";
         }
     }
 }

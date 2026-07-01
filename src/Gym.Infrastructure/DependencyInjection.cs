@@ -4,9 +4,11 @@ using Gym.Application.Common.Interfaces;
 using Gym.Infrastructure.BackgroundJobs;
 using Gym.Infrastructure.Data;
 using Gym.Infrastructure.Data.Interceptors;
+using Gym.Infrastructure.Email;
 using Gym.Infrastructure.Identity;
 using Gym.Infrastructure.Identity.Policies;
 using Gym.Infrastructure.Payments.Stripe;
+using Gym.Infrastructure.Settings;
 
 using Hangfire;
 
@@ -31,9 +33,11 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
         services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
         services.AddSingleton(TimeProvider.System);
+        services.Configure<EmailSettings>(
+        configuration.GetSection(EmailSettings.SectionName));
+        services.AddHttpClient<IEmailSender, BrevoEmailSender>();
 
         services.AddScoped<AppDbContextInitailiser>();
-
         services.AddDbContext<AppDbContext>((sp, options) =>
         {
             options.AddInterceptors(sp.GetService<ISaveChangesInterceptor>()!);
@@ -61,7 +65,6 @@ public static class DependencyInjection
             .AddDefaultTokenProviders();
 
         services.AddScoped<IIdentityService, IdentityService>();
-
         services.AddDataProtection();
 
         services.AddHybridCache(options => options.DefaultEntryOptions = new HybridCacheEntryOptions
@@ -98,7 +101,6 @@ public static class DependencyInjection
             options.AddPolicy(Policies.SameMemberOrAdmin, policy => policy.AddRequirements(new SameMemberOrAdminRequirement()));
             options.AddPolicy(Policies.SameMemberOrCoachOrAdmin, policy => policy.AddRequirements(new SameMemberOrCoachOrAdminRequirement()));
         });
-
         services.AddHangfire(options => options.UseSqlServerStorage(connectionString));
         services.AddHangfireServer();
         services.AddScoped<SubscriptionJobs>();
