@@ -20,7 +20,7 @@ public class GenerateTokenQueryHandler(
 
         if (userResult.IsError)
         {
-            logger.LogWarning("Invalid Login Attemp for {Email} / Incorrect Email Or Password", Utility.MaskEmail(request.Email));
+            logger.LogWarning("Invalid Login Attemp for {Email} / Incorrect Email Or Password", request.Email);
             return userResult.Errors;
         }
 

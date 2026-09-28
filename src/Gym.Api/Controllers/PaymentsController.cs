@@ -6,6 +6,7 @@ using Gym.Application.Features.Payments.Commands.CancelPayment;
 using Gym.Application.Features.Payments.Commands.CreateStripePayment;
 using Gym.Application.Features.Payments.Commands.PayPayment;
 using Gym.Application.Features.Payments.Commands.ProcessStripePayment;
+using Gym.Application.Features.Payments.Commands.RefundPayment;
 using Gym.Application.Features.Payments.Dtos;
 using Gym.Application.Features.Payments.Queries.GetMemberPayments;
 using Gym.Application.Features.Payments.Queries.GetPaymentById;
@@ -122,11 +123,33 @@ public sealed class PaymentsController(ISender sender, IOptions<StripeSettings> 
     public async Task<IActionResult> Create([FromBody] PayPaymentRequest request, CancellationToken ct)
     {
         var result = await sender.Send(
-            new PayPaymentCommand(request.PaymentId, request.PaymentMethod),
+            new PayPaymentCommand(request.PaymentId, request.PaymentMethod, request.PaymentReference, request.PromoCodeId!),
             ct);
 
         return result.Match(
             _ => Created(),
+            Problem);
+    }
+
+    [HttpPost("refund")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [EndpointSummary("Refund a payment.")]
+    [EndpointDescription("Refund payment and cancel a subscription related with it.")]
+    [EndpointName("RefundPayment")]
+    [MapToApiVersion("1.0")]
+    [Authorize(Roles = nameof(Role.Admin))]
+    public async Task<IActionResult> Refund([FromBody] RefundPaymentRequest request, CancellationToken ct)
+    {
+        var result = await sender.Send(
+            new RefundPaymentCommand(request.PaymentId),
+            ct);
+
+        return result.Match(
+            _ => NoContent(),
             Problem);
     }
 
@@ -162,11 +185,11 @@ public sealed class PaymentsController(ISender sender, IOptions<StripeSettings> 
     [EndpointName("CreateStripePaymentIntent")]
     [MapToApiVersion("1.0")]
     public async Task<IActionResult> CreateStripePaymentIntent(
-        int paymentId,
+        CreateStripePaymentIntentRequest request,
         CancellationToken ct)
     {
         var result = await sender.Send(
-            new CreateStripePaymentIntentCommand(paymentId),
+            new CreateStripePaymentIntentCommand(request.PaymentId, request.PromoCodeId),
             ct);
 
         return result.Match(
@@ -188,14 +211,34 @@ public sealed class PaymentsController(ISender sender, IOptions<StripeSettings> 
             Request.Headers["Stripe-Signature"],
             stripeSettings.WebhookSecret);
 
+        Console.WriteLine($"Stripe Event: {stripeEvent.Type}");
+        Console.WriteLine($"Stripe Event Id: {stripeEvent.Id}");
+
         if (stripeEvent.Type == "payment_intent.succeeded")
         {
             var paymentIntent =
                 stripeEvent.Data.Object as PaymentIntent;
 
+            if (paymentIntent is null)
+            {
+                return BadRequest();
+            }
+
+            int? promoCodeId = null;
+
+            if (paymentIntent.Metadata.TryGetValue(
+                    "promoCodeId",
+                    out var value) &&
+                int.TryParse(value, out var parsedPromoCodeId))
+            {
+                promoCodeId = parsedPromoCodeId;
+            }
+
             await sender.Send(
                 new ProcessStripePaymentCommand(
-                    paymentIntent!.Id));
+                    paymentIntent.Id,
+                    promoCodeId),
+                CancellationToken.None);
         }
 
         return Ok();

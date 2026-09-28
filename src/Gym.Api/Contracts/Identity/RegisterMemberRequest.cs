@@ -4,6 +4,6 @@ public sealed record RegisterMemberRequest(string FirstName,
     string LastName,
     DateTime DateOfBirth,
     string PhoneNumber,
-    string ImageUrl,
     string Email,
-    string Password);
+    string Password,
+    string? ImageUrl);

@@ -1,4 +1,6 @@
-﻿using Asp.Versioning;
+using Asp.Versioning;
+
+using Gym.Application.Common.Interfaces;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -8,10 +10,10 @@ namespace Gym.Api.Controllers;
 [Route("api/v{version:apiVersion}/images")]
 [ApiVersion("1.0")]
 [ApiController]
-public class ImagesController : ApiController
+public class ImagesController(IImageStorage imageStorage) : ApiController
 {
     [HttpPost("UploadImage")]
-    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [EndpointSummary("Add Image.")]
@@ -31,28 +33,14 @@ public class ImagesController : ApiController
             return BadRequest("No file");
         }
 
-        var dir = Path.Combine(
-            Directory.GetCurrentDirectory(),
-            "Uploads");
+        var requestBaseUri = new Uri($"{Request.Scheme}://{Request.Host}/");
+        await using var stream = file.OpenReadStream();
 
-        if (!Directory.Exists(dir))
-        {
-            Directory.CreateDirectory(dir);
-        }
-
-        var fileName =
-            $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
-
-        var fullPath =
-            Path.Combine(dir, fileName);
-
-        await using var stream =
-            new FileStream(fullPath, FileMode.Create);
-
-        await file.CopyToAsync(stream, ct);
-
-        var imageUrl =
-            $"{Request.Scheme}://{Request.Host}/Uploads/{fileName}";
+        var imageUrl = await imageStorage.SaveTemporaryAsync(
+            stream,
+            file.FileName,
+            requestBaseUri,
+            ct);
 
         return Ok(new
         {

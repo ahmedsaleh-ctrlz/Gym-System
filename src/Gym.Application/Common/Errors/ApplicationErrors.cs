@@ -20,7 +20,7 @@ public class ApplicationErrors
     public static Error CannotCreateSubscriptionForMemberWithActiveOrFrozenSubscription => Error.Conflict("CannotCreateSubscriptionForMemberWithActiveOrFrozenSubscription", "Cannot create a subscription for a member who already has an active or frozen subscription.");
 
     public static Error InvalidCheckInTime =>
-        Error.Validation("Attendance.InvalidCheckInTime", "Attendance timestamp cannot be in the future.");
+        Error.Conflict("Attendance.InvalidCheckInTime", "Attendance timestamp cannot be in the future.");
 
     public static Error MemberCannotCheckInWithoutActiveSubscription =>
         Error.Conflict("Attendance.SubscriptionInactive", "Member cannot check-in without an active subscription.");
@@ -36,4 +36,45 @@ public class ApplicationErrors
     public static readonly Error RefreshTokenExpired = Error.Conflict(
         code: "Auth.RefreshToken.Expired",
         description: "Refresh token is invalid or has expired.");
+
+    public static readonly Error RefreshTokenRevoked = Error.Conflict(
+        code: "Auth.RefreshToken.Revoked",
+        description: "Refresh token is invalid or has Revoked.");
+
+    public static Error InvalidPaymentOwner =>
+        Error.Forbidden(
+            "Payment.Forbidden",
+            "You are not allowed to access this payment.");
+
+    public static Error PromoCodeNotFound =>
+        Error.NotFound(
+            "PromoCode.NotFound",
+            "Promo code not found.");
+
+    public static Error PromoCodeNotValid =>
+        Error.Conflict(
+            "PromoCode.NotValid",
+            "Promo code is not valid.");
+
+    public static Error PromoCodeNotApplicableToPlan =>
+        Error.Conflict(
+            code: "PromoCode.NotApplicableToPlan", description: "Promo code is not applicable to this plan.");
+
+    public static Error MinimumPurchaseAmountNotMet =>
+        Error.Conflict(
+            "PromoCode.MinimumPurchaseAmountNotMet",
+            "The minimum purchase amount required for this promo code has not been met.");
+
+    public static Error PromoCodeAlreadyUsed =>
+        Error.Conflict(
+            "PromoCode.AlreadyUsed",
+            "You have already used this promo code.");
+
+    public static Error PromoCodeOnlyForNewMembers =>
+        Error.Conflict(
+            "PromoCode.OnlyForNewMembers",
+            "This promo code is only available to new members.");
+
+    public static Error InvoiceNotFound => Error.NotFound("Invoice.NotFound", "Invoice with the specified ID was not found.");
+
 }

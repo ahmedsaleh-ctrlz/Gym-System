@@ -3,8 +3,10 @@
 using Gym.Application.Common.Errors;
 using Gym.Application.Common.Interfaces;
 using Gym.Domain.Common.Result;
+using Gym.Domain.Notifications.Enums;
 using Gym.Domain.Payments;
 using Gym.Domain.Subscriptions;
+using Gym.Domain.Subscriptions.Enums;
 
 using MediatR;
 
@@ -14,7 +16,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Gym.Application.Features.Subscriptions.Commands.RenewSubscription;
 
-public sealed class RenewSubscriptionCommandHandler(ILogger<Result<Created>> logger, IAppDbContext dbContext, HybridCache cache) : IRequestHandler<RenewSubscriptionCommand, Result<Created>>
+public sealed class RenewSubscriptionCommandHandler(ILogger<Result<Created>> logger, IAppDbContext dbContext, HybridCache cache, INotificationService notificationService, IIdentityService identityService) : IRequestHandler<RenewSubscriptionCommand, Result<Created>>
 {
     public async Task<Result<Created>> Handle(RenewSubscriptionCommand request, CancellationToken ct)
     {
@@ -38,7 +40,7 @@ public sealed class RenewSubscriptionCommandHandler(ILogger<Result<Created>> log
             return ApplicationErrors.MemberNotFound;
         }
 
-        var existingSubscription = await dbContext.Subscriptions.Where(s => s.MemberId == request.MemberId).OrderByDescending(s => s.EndDate).FirstOrDefaultAsync(ct);
+        var existingSubscription = await dbContext.Subscriptions.Where(s => s.MemberId == request.MemberId && (s.Status == SubscriptionStatus.Active || s.Status == SubscriptionStatus.Scheduled || s.Status == SubscriptionStatus.Frozen)).OrderByDescending(s => s.EndDate).FirstOrDefaultAsync(ct);
 
         if (existingSubscription is null)
         {
@@ -50,12 +52,14 @@ public sealed class RenewSubscriptionCommandHandler(ILogger<Result<Created>> log
 
         logger.LogTrace("Handling RenewSubscriptionCommand for member {MemberId} with plan {PlanId} starting on {StartDate}", request.MemberId, request.PlanId, startDate);
         var subscriptionResult = Subscription.Create(request.MemberId, plan, startDate);
+
         if (subscriptionResult.IsError)
         {
             logger.LogError("Failed to create subscription for member {MemberId} with plan {PlanId}. Errors: {Errors}", request.MemberId, request.PlanId, subscriptionResult.Errors);
             return subscriptionResult.Errors;
         }
 
+        var userId = await identityService.GetUserIdByPersonIdAsync(member.PersonId);
         var subscription = subscriptionResult.Value;
         var paymentResult = Payment.Create(subscriptionResult.Value);
         if (paymentResult.IsError)
@@ -70,8 +74,9 @@ public sealed class RenewSubscriptionCommandHandler(ILogger<Result<Created>> log
         await cache.RemoveByTagAsync("Payments", ct);
         await cache.RemoveByTagAsync("AdminDashboard", ct);
         await dbContext.SaveChangesAsync(ct);
+        await notificationService.SendNotificationAsync(userId.Value, "Subscription Created", $"Your {plan.Title} subscription has been created successfully. You have a pending payment.", NotificationType.Payment, cancellationToken: ct);
 
-        logger.LogInformation("Successfully renewed subscription with id {SubscriptionId} for member {MemberId} with plan {PlanId}.", subscription.Id, request.MemberId, request.PlanId);
+        logger.LogInformation("Successfully added renew subscription payment with id {SubscriptionId} for member {MemberId} with plan {PlanId} and paymentId is {paymentId}.", subscription.Id, request.MemberId, request.PlanId, paymentResult.Value.Id);
 
         return Result.Created;
     }

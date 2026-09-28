@@ -1,6 +1,7 @@
 using Gym.Application.Common.Errors;
 using Gym.Application.Common.Interfaces;
 using Gym.Domain.Common.Result;
+using Gym.Domain.Notifications.Enums;
 
 using MediatR;
 
@@ -10,28 +11,72 @@ using Microsoft.Extensions.Logging;
 
 namespace Gym.Application.Features.Payments.Commands.CancelPayment;
 
-public sealed record CancelPaymentCommandHandler(IAppDbContext DbContext, ILogger<CancelPaymentCommand> Logger, HybridCache Cache) : IRequestHandler<CancelPaymentCommand, Result<Updated>>
+public sealed record CancelPaymentCommandHandler(
+    IAppDbContext DbContext,
+    ILogger<CancelPaymentCommand> Logger,
+    HybridCache Cache,
+    IIdentityService IdentityService,
+    INotificationService NotificationService)
+    : IRequestHandler<CancelPaymentCommand, Result<Updated>>
 {
-    public async Task<Result<Updated>> Handle(CancelPaymentCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Updated>> Handle(
+        CancelPaymentCommand request,
+        CancellationToken cancellationToken)
     {
-        var payment = await DbContext.Payments.Include(p => p.Subscription).FirstOrDefaultAsync(p => p.Id == request.PaymentId, cancellationToken);
-        if(payment is null)
+        var payment = await DbContext.Payments
+            .Include(p => p.Subscription)
+            .FirstOrDefaultAsync(
+                p => p.Id == request.PaymentId,
+                cancellationToken);
+
+        if (payment is null)
         {
-            Logger.LogWarning("Payment with id {PaymentId} not found", request.PaymentId);
+            Logger.LogWarning(
+                "Payment with id {PaymentId} not found",
+                request.PaymentId);
+
             return ApplicationErrors.PaymentNotFound;
         }
 
         var result = payment.Cancel();
-        if(result.IsError)
+
+        if (result.IsError)
         {
-            Logger.LogWarning("Payment with id {PaymentId} cannot be cancelled. Status: {Status}", request.PaymentId, payment.Status);
+            Logger.LogWarning(
+                "Payment with id {PaymentId} cannot be cancelled. Status: {Status}",
+                request.PaymentId,
+                payment.Status);
+
             return result.Errors;
         }
 
-        Logger.LogInformation("Payment with id {PaymentId} cancelled successfully", request.PaymentId);
-        await Cache.RemoveByTagAsync("Payments");
-        await Cache.RemoveByTagAsync("Subscriptions");
         await DbContext.SaveChangesAsync(cancellationToken);
+
+        await Cache.RemoveByTagAsync("Payments", cancellationToken);
+        await Cache.RemoveByTagAsync("Subscriptions", cancellationToken);
+
+        var personId = await DbContext.Members
+            .Where(m => m.Id == payment.Subscription.MemberId)
+            .Select(m => m.PersonId)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var userIdResult = await IdentityService
+            .GetUserIdByPersonIdAsync(personId, cancellationToken);
+
+        if (userIdResult.IsSuccess)
+        {
+            await NotificationService.SendNotificationAsync(
+                userIdResult.Value,
+                "Payment Cancelled",
+                "Your payment has been cancelled. Please review your payment details and try again.",
+                NotificationType.Payment,
+                cancellationToken: cancellationToken);
+        }
+
+        Logger.LogInformation(
+            "Payment with id {PaymentId} cancelled successfully",
+            request.PaymentId);
+
         return Result.Updated;
     }
 }

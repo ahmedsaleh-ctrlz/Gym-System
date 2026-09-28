@@ -12,7 +12,7 @@ public class Subscription : AuditableEntity
     public Member Member { get; private set; }
     public int PlanId { get; private set; }
     public Plan? Plan { get; private set; }
-    public decimal PriceSnapshot { get; private set; }
+    public decimal Price { get; private set; }
     public DateOnly StartDate { get; private set; }
     public DateOnly EndDate { get; private set; }
     public SubscriptionStatus Status { get; private set; }
@@ -29,7 +29,7 @@ public class Subscription : AuditableEntity
         MemberId = memberId;
         Plan = plan;
         PlanId = plan.Id;
-        PriceSnapshot = plan.Cost;
+        Price = plan.Cost;
         StartDate = startDate;
         EndDate = StartDate.AddDays(Plan!.DurationInDays);
         Status = SubscriptionStatus.Pending;
@@ -50,7 +50,7 @@ public class Subscription : AuditableEntity
 
     public Result<Updated> Activate()
     {
-        if (Status != SubscriptionStatus.Pending && Status != SubscriptionStatus.Scheduled && Status != SubscriptionStatus.Frozen)
+        if (!(Status != SubscriptionStatus.Scheduled && Status != SubscriptionStatus.Frozen))
         {
             return SubscriptionErrors.InvalidStatusCannotActivate;
         }

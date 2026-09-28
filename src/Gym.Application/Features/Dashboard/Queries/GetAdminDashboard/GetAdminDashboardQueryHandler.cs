@@ -117,6 +117,67 @@ public class GetAdminDashboardQueryHandler(IAppDbContext dbContext) : IRequestHa
                     p => p.Status == PaymentStatus.Paid,
                     ct);
 
+        var revenueData =
+            await dbContext.Payments.Where(p => p.PaidAtUtc.HasValue && p.Status == PaymentStatus.Paid && DateOnly.FromDateTime(p.PaidAtUtc.Value) >= today.AddDays(-6) ).
+            GroupBy(p => DateOnly.FromDateTime(p.PaidAtUtc.Value)).
+            Select(g => new RevenuePoint
+            {
+                Date = g.Key,
+                Amount = g.Sum(p => p.Amount)
+            }).ToListAsync(ct);
+
+        var revenueResult = Enumerable.
+            Range(0, 7).
+            Select(i =>
+            {
+                var date = today.AddDays(-6 + i);
+                var existing = revenueData
+                    .FirstOrDefault(x => x.Date == date);
+                return new RevenuePoint
+                {
+                    Date = date,
+                    Amount = existing?.Amount ?? 0
+                };
+            })
+            .ToList();
+
+        var attendanceData = await dbContext.Attendances.Where(a => DateOnly.FromDateTime(a.CheckInAtUtc) >= today.AddDays(-6)).
+            GroupBy(a => DateOnly.FromDateTime(a.CheckInAtUtc)).
+            Select(g => new AttendancePoint
+            {
+                Date = g.Key,
+                Count = g.Count()
+            }).ToListAsync(ct);
+
+        var attendanceResult = Enumerable
+            .Range(0, 7)
+            .Select(i =>
+            {
+                var date = today.AddDays(-6 + i);
+
+                var existing = attendanceData
+                    .FirstOrDefault(x => x.Date == date);
+
+                return new AttendancePoint
+                {
+                    Date = date,
+                    Count = existing?.Count ?? 0
+                };
+            })
+            .ToList();
+
+        var recentCheckIns = await dbContext.Attendances
+            .OrderByDescending(a => a.CheckInAtUtc)
+            .Take(5)
+            .Select(a => new RecentCheckIn
+            {
+                MemberId = a.MemberId,
+                MemberName = a.Member!.Person.FirstName + " " + a.Member!.Person.LastName,
+                CheckInAtUtc = a.CheckInAtUtc,
+                ImageUrl = a.Member!.Person.Image.ImageUrl,
+            })
+            .ToListAsync(ct);
+
         return new AdminDashboardResponse
         {
             TotalMembers = totalMembers,
@@ -153,6 +214,12 @@ public class GetAdminDashboardQueryHandler(IAppDbContext dbContext) : IRequestHa
             PendingPaymentsCount = pendingPaymentsCount,
 
             PaidPaymentsCount = paidPaymentsCount,
+
+            Revenue = revenueResult,
+
+            Attendance = attendanceResult,
+
+            RecentCheckIns = recentCheckIns,
         };
     }
 }

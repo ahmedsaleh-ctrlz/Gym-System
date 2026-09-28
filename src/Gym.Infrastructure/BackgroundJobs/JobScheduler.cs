@@ -24,5 +24,9 @@ public static class JobScheduler
             "unfreeze-subscriptions",
             job => job.UnfreezeSubscriptions(),
             Cron.Daily(0));
+
+        recurringJobs.AddOrUpdate<ImageJobs>(
+            "clean-temporary-images",
+            job => job.CleanupTemporaryImages(), Cron.Daily(0));
     }
 }

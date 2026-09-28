@@ -1,10 +1,12 @@
 ﻿using Gym.Application.Common.Errors;
 using Gym.Application.Common.Interfaces;
 using Gym.Domain.Common.Result;
+using Gym.Domain.Notifications.Enums;
 using Gym.Domain.Subscriptions.Enums;
 
 using MediatR;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 
@@ -12,7 +14,7 @@ namespace Gym.Application.Features.Subscriptions.Commands.UpdateSubscriptionStat
 
 public sealed class UpdateSubscriptionStatusCommandHandler(ILogger<Result<Updated>> logger,
     IAppDbContext context,
-    HybridCache cache)
+    HybridCache cache, INotificationService notificationService, IIdentityService identityService)
     : IRequestHandler<UpdateSubscriptionStatusCommand, Result<Updated>>
 {
     public async Task<Result<Updated>> Handle(UpdateSubscriptionStatusCommand request, CancellationToken ct)
@@ -24,6 +26,9 @@ public sealed class UpdateSubscriptionStatusCommandHandler(ILogger<Result<Update
             logger.LogWarning("Subscription with Id {SubscriptionId} not found", request.SubscriptionId);
             return ApplicationErrors.SubscriptionNotFound;
         }
+
+        var member = await context.Members.Select(m => new { m.Id, m.PersonId }).AsNoTracking().FirstOrDefaultAsync(m => m.Id == subscription.MemberId);
+        var userId = await identityService.GetUserIdByPersonIdAsync(member!.PersonId);
 
         switch (request.NewStatus)
         {
@@ -58,10 +63,28 @@ public sealed class UpdateSubscriptionStatusCommandHandler(ILogger<Result<Update
                 break;
         }
 
+        var message = subscription.Status switch
+        {
+            SubscriptionStatus.Active =>
+                "Your subscription is now active.",
+
+            SubscriptionStatus.Frozen =>
+                "Your subscription has been frozen.",
+
+            SubscriptionStatus.Expired =>
+                "Your subscription has expired.",
+
+            SubscriptionStatus.Cancelled =>
+                "Your subscription has been cancelled.",
+
+            _ => "Your subscription status has been updated."
+        };
+
         logger.LogInformation("Subscription with Id {SubscriptionId} status updated to {NewStatus}", request.SubscriptionId, request.NewStatus);
         await cache.RemoveByTagAsync("Subscriptions", ct);
         await cache.RemoveByTagAsync("AdminDashboard", ct);
         await context.SaveChangesAsync(ct);
+        await notificationService.SendNotificationAsync(userId.Value, "Subscription Status Updated", $"Your subscription status has been changed to {subscription.Status}.", NotificationType.SubscriptionStatusChanged, cancellationToken: ct);
 
         return Result.Updated;
     }

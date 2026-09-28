@@ -23,4 +23,12 @@ public interface IIdentityService
     Task<Result<string>> GenerateEmailConfirmationUrlAsync(string userId);
     Task<Result<Updated>> ConfirmEmailAsync(string userId, string token);
     Task<Result<string>> GenerateEmailConfirmationUrlByEmailAsync(string email);
+    Task<Result<string>> GenerateResetTokenAsync(string email);
+    Task<Result<Updated>> ResetPasswordAsync(string email, string resetToken, string newPassword);
+    Task<Result<string>> GetUserIdByPersonIdAsync(int personId, CancellationToken cancellationToken = default);
+    Task<Result<IEnumerable<string>>> GetUsersIdsByPersonIdsAsync(IEnumerable<int> personIds, CancellationToken cancellationToken = default);
+    Task<Result<IEnumerable<string>>> GetUsersIdsByRoleAsync(
+        Role role,
+        CancellationToken cancellationToken = default);
+    Task<Result<IEnumerable<string>>> GetEmailsByPersonIdsAsync(IEnumerable<int> personIds, CancellationToken cancellationToken = default);
 }

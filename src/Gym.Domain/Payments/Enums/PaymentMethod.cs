@@ -8,8 +8,7 @@ public enum PaymentMethod
 {
     Cash,
     Visa,
-    VodafoneCash,
-    OrangeCash,
-    EtisalatCash,
+    EWallet,
+    InstaPay,
     Fawry
 }

@@ -29,7 +29,7 @@ public class SubscriptionMapperTests
         Assert.Equal(12, result.MemberId);
         Assert.Equal("Huda Maher", result.MemberName);
         Assert.Equal(subscription.Plan!.Title, result.PlanName);
-        Assert.Equal(700m, result.PriceSnapshot);
+        Assert.Equal(700m, result.Price);
         Assert.Equal(subscription.StartDate, result.StartDate);
         Assert.Equal(subscription.EndDate, result.EndDate);
         Assert.Equal(subscription.Status.ToString(), result.Status);

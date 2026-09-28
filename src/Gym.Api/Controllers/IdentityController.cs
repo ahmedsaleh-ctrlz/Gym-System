@@ -3,6 +3,8 @@
 using Gym.Api.Contracts.Identity;
 using Gym.Api.Contracts.Members;
 using Gym.Application.Features.Identity.Commands.ConfirmEmail;
+using Gym.Application.Features.Identity.Commands.ForgetPassword;
+using Gym.Application.Features.Identity.Commands.Logout;
 using Gym.Application.Features.Identity.Commands.RegisterMember;
 using Gym.Application.Features.Identity.Commands.ResendConfirmationEmail;
 using Gym.Application.Features.Identity.Dtos;
@@ -16,6 +18,7 @@ using MediatR;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Gym.Api.Controllers
 {
@@ -33,6 +36,7 @@ namespace Gym.Api.Controllers
         [EndpointDescription("Authenticates a user using provided credentials and returns a JWT token pair.")]
         [EndpointName("GenerateToken")]
         [MapToApiVersion("1.0")]
+        [EnableRateLimiting("LoginRateLimiter")]
         public async Task<ActionResult<TokenResponse>> GenerateToken([FromBody] GenerateTokenRequest request, CancellationToken ct)
         {
             var result = await sender.Send(new GenerateTokenQuery(request.Email, request.Password), ct);
@@ -51,6 +55,7 @@ namespace Gym.Api.Controllers
         [EndpointName("RefreshToken")]
         [MapToApiVersion("1.0")]
         [ProducesResponseType(typeof(TokenResponse), StatusCodes.Status200OK)]
+        [EnableRateLimiting("LoginRateLimiter")]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request, CancellationToken ct)
         {
             var result = await sender.Send(new RefreshTokenQuery(request.RefreshToken, request.ExpiredAccessToken), ct);
@@ -67,6 +72,7 @@ namespace Gym.Api.Controllers
         [EndpointDescription("Registers a new member and returns the new route.")]
         [EndpointName("RegisterMemberV1")]
         [MapToApiVersion("1.0")]
+        [EnableRateLimiting("LoginRateLimiter")]
         public async Task<IActionResult> Register([FromBody] CreateMemberRequest request)
         {
             var result = await sender.Send(new CreateMemberCommand(
@@ -85,6 +91,23 @@ namespace Gym.Api.Controllers
                 Problem);
         }
 
+        [HttpPost("logout")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        [EndpointSummary("Logout.")]
+        [EndpointDescription("Revoke user refresh token")]
+        [EndpointName("Logout")]
+        [MapToApiVersion("1.0")]
+        public async Task<IActionResult> Logout([FromBody] LogoutRequest request, CancellationToken ct)
+        {
+            var result = await sender.Send(new RevokeRefreshTokenCommand(request.RefreshToken), ct);
+            return result.Match(
+                _ => Created(),
+                Problem);
+        }
+
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -93,6 +116,7 @@ namespace Gym.Api.Controllers
         [EndpointDescription("Registers a new member and returns the new route.")]
         [EndpointName("RegisterMemberV2")]
         [MapToApiVersion("2.0")]
+        [EnableRateLimiting("LoginRateLimiter")]
         public async Task<IActionResult> RegisterV2([FromBody] RegisterMemberRequest request)
         {
             var result = await sender.Send(new RegisterMemberCommand(
@@ -106,6 +130,43 @@ namespace Gym.Api.Controllers
 
             return result.Match(
                 _ => Created(),
+                Problem);
+        }
+
+        [HttpPost("forget-password")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        [EndpointSummary("Generate reset password token")]
+        [EndpointDescription("Generate reset password token and send it in Email")]
+        [EndpointName("ForgetPassword")]
+        [MapToApiVersion("1.0")]
+        [EnableRateLimiting("resend-email")]
+        public async Task<IActionResult> SendResetPaswword([FromBody] ForgetPasswordRequest request, CancellationToken ct)
+        {
+            var result = await sender.Send(new SendResetTokenCommand(request.Email));
+
+            return result.Match(
+                _ => Created(),
+                Problem);
+        }
+
+        [HttpPost("reset-password")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        [EndpointSummary("Reset password")]
+        [EndpointDescription("Reset password")]
+        [EndpointName("ResetPassword")]
+        [MapToApiVersion("1.0")]
+        public async Task<IActionResult> ResetPaswword([FromBody] ResetPasswordRequest request, CancellationToken ct)
+        {
+            var result = await sender.Send(new ResetPasswordCommand(request.Email, request.ResetToken, request.NewPassword));
+
+            return result.Match(
+                _ => NoContent(),
                 Problem);
         }
 
@@ -141,7 +202,7 @@ namespace Gym.Api.Controllers
         [EndpointSummary("Confirms a user's email.")]
         [EndpointDescription("Confirms a user's email using the confirmation token.")]
         [EndpointName("ConfirmEmail")]
-        public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token,CancellationToken ct)
+        public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token, CancellationToken ct)
         {
             var result = await sender.Send(
                 new ConfirmEmailCommand(userId, token),
@@ -164,6 +225,7 @@ namespace Gym.Api.Controllers
         [EndpointSummary("Resends the email confirmation link.")]
         [EndpointDescription("Resends the email confirmation link to the user's email address.")]
         [EndpointName("ResendConfirmationEmail")]
+        [EnableRateLimiting("resend-email")]
         public async Task<IActionResult> ResendConfirmationEmail([FromBody] ResendConfirmationRequest request)
         {
             var result = await sender.Send(new ResendConfirmationCommand(request.Email));

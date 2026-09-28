@@ -18,6 +18,7 @@ public static class PaymentMapper
             PlanName = payment.Subscription.Plan!.Title,
             Amount = payment.Amount,
             PaymentMethod = payment.PaymentMethod.ToString(),
+            PaymentReference = payment.PaymentReference ?? null,
             Status = payment.Status.ToString(),
             PaidAtUtc = payment.PaidAtUtc
         };

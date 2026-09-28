@@ -60,7 +60,7 @@ public sealed class CheckInMemberCommandHandler(
         if (attendanceResult.IsError)
         {
             logger.LogWarning("Failed to create attendance for Member ID {MemberId}. Errors: {Errors}", command.MemberId, attendanceResult.Errors);
-            return attendanceResult.Errors;
+            return attendanceResult.TopError;
         }
 
         var attendance = attendanceResult.Value;

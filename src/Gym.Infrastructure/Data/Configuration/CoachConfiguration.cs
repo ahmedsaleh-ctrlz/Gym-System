@@ -17,7 +17,7 @@ namespace Gym.Infrastructure.Data.Configuration
 
             builder.HasOne(e => e.Person)
                 .WithOne()
-                .HasForeignKey<Coach>(c => c.PersonId);
+                .HasForeignKey<Coach>(c => c.PersonId).OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

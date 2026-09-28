@@ -99,7 +99,8 @@ public sealed class TestIdentityService : IIdentityService
     {
         _emailsByPersonId[personId] = email;
     }
-    #region Dummy Test Implementations 
+
+    #region Dummy Test Implementations
     public Task<Result<Updated>> UpdatePasswordAsync(
     int memberId,
     string currentPassword,
@@ -126,6 +127,45 @@ public sealed class TestIdentityService : IIdentityService
     {
         return Task.FromResult<Result<string>>(
             $"https://localhost/api/v2/identity/confirm-email?userId=test-user-id&token=test-token");
+    }
+
+    public Task<Result<string>> GenerateResetTokenAsync(string email)
+    {
+        return Task.FromResult<Result<string>>("success");
+    }
+
+    public Task<Result<Updated>> ResetPasswordAsync(string email, string resetToken, string newPassword)
+    {
+        return Task.FromResult<Result<Updated>>(Result.Updated);
+    }
+
+    public Task<Result<string>> GetUserIdByPersonIdAsync(int personId, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<Result<string>>("success");
+    }
+
+    public Task<Result<IEnumerable<string>>> GetUsersIdsByPersonIdsAsync(List<int> personIds, CancellationToken cancellationToken = default)
+    {
+        IEnumerable<string> list = new List<string>();
+        return Task.FromResult<Result<IEnumerable<string>>>(list.ToList());
+    }
+
+    public Task<Result<IEnumerable<string>>> GetUsersIdsByRoleAsync(Role role, CancellationToken cancellationToken = default)
+    {
+        IEnumerable<string> list = new List<string>();
+        return Task.FromResult<Result<IEnumerable<string>>>(list.ToList());
+    }
+
+    public Task<Result<IEnumerable<string>>> GetUsersIdsByPersonIdsAsync(IEnumerable<int> personIds, CancellationToken cancellationToken = default)
+    {
+        IEnumerable<string> list = new List<string>();
+        return Task.FromResult<Result<IEnumerable<string>>>(list.ToList());
+    }
+
+    public Task<Result<IEnumerable<string>>> GetEmailsByPersonIdsAsync(IEnumerable<int> personIds, CancellationToken cancellationToken = default)
+    {
+        IEnumerable<string> list = new List<string>();
+        return Task.FromResult<Result<IEnumerable<string>>>(list.ToList());
     }
     #endregion
 }

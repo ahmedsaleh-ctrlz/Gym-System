@@ -49,13 +49,19 @@ public sealed class UpdateMemberCommandHandler(IAppDbContext context,
         return Result.Updated;
     }
 
-    public class UpdateMemberImageCommandHandler(IAppDbContext context, ILogger<UpdateMemberImageCommandHandler> logger, HybridCache cache) : IRequestHandler<UpdateMemberImageCommand, Result<Updated>>
+    public class UpdateMemberImageCommandHandler(
+        IAppDbContext context,
+        ILogger<UpdateMemberImageCommandHandler> logger,
+        HybridCache cache,
+        IImageStorage imageStorage) : IRequestHandler<UpdateMemberImageCommand, Result<Updated>>
     {
         public async Task<Result<Updated>> Handle(UpdateMemberImageCommand command, CancellationToken ct)
         {
             logger.LogTrace("Handling Update Member Image command for Member ID {MemberId}.", command.MemberId);
 
-            var memberResult = await context.Members.Include(m => m.Person).
+            var memberResult = await context.Members
+                .Include(m => m.Person)
+                .ThenInclude(p => p.Image).
                 FirstOrDefaultAsync(m => m.Id == command.MemberId, ct);
 
             if (memberResult is null)
@@ -64,15 +70,39 @@ public sealed class UpdateMemberCommandHandler(IAppDbContext context,
                 return ApplicationErrors.MemberNotFound;
             }
 
-            var updateResult = memberResult.UpdateImage(command.ImageUrl);
+            var oldImageUrl = memberResult.Person.Image.ImageUrl;
+            var promotedImageUrl = await imageStorage.PromoteTemporaryAsync(command.ImageUrl, ct);
+            var updateResult = memberResult.UpdateImage(promotedImageUrl);
 
             if (updateResult.IsError)
             {
+                if (!string.Equals(promotedImageUrl, command.ImageUrl, StringComparison.OrdinalIgnoreCase))
+                {
+                    await imageStorage.DeleteAsync(promotedImageUrl, ct);
+                }
+
                 logger.LogWarning("Failed to update image for Member ID {MemberId}. Errors: {Errors}", command.MemberId, string.Join(", ", updateResult.Errors.Select(e => e.Description)));
                 return updateResult.Errors;
             }
 
-            await context.SaveChangesAsync(ct);
+            try
+            {
+                await context.SaveChangesAsync(ct);
+            }
+            catch
+            {
+                if (!string.Equals(promotedImageUrl, command.ImageUrl, StringComparison.OrdinalIgnoreCase))
+                {
+                    await imageStorage.DeleteAsync(promotedImageUrl, ct);
+                }
+
+                throw;
+            }
+
+            if (!string.Equals(oldImageUrl, promotedImageUrl, StringComparison.OrdinalIgnoreCase))
+            {
+                await imageStorage.DeleteAsync(oldImageUrl, ct);
+            }
 
             await cache.RemoveByTagAsync("Member", ct);
 

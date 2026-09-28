@@ -1,12 +1,16 @@
 using System.Text;
 
 using Gym.Application.Common.Interfaces;
+using Gym.Application.Common.Interfaces.BackgroundJobsServices;
 using Gym.Infrastructure.BackgroundJobs;
 using Gym.Infrastructure.Data;
 using Gym.Infrastructure.Data.Interceptors;
 using Gym.Infrastructure.Email;
+using Gym.Infrastructure.Email.NewFolder;
+using Gym.Infrastructure.Files;
 using Gym.Infrastructure.Identity;
 using Gym.Infrastructure.Identity.Policies;
+using Gym.Infrastructure.Notifications;
 using Gym.Infrastructure.Payments.Stripe;
 using Gym.Infrastructure.Settings;
 
@@ -35,7 +39,12 @@ public static class DependencyInjection
         services.AddSingleton(TimeProvider.System);
         services.Configure<EmailSettings>(
         configuration.GetSection(EmailSettings.SectionName));
+        services.Configure<AppSettings>(configuration.GetSection(AppSettings.SectionName));
         services.AddHttpClient<IEmailSender, BrevoEmailSender>();
+        services.AddScoped<IImageStorage, LocalImageStorage>();
+        services.AddScoped<INotificationService, NotificaitonService>();
+        services.AddScoped<INotificationBackgroundJobs, NotificationBackgroundJobs>();
+        services.AddSignalR();
 
         services.AddScoped<AppDbContextInitailiser>();
         services.AddDbContext<AppDbContext>((sp, options) =>
@@ -47,11 +56,12 @@ public static class DependencyInjection
         services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
         services.AddScoped<IStripePaymentService, StripePaymentService>();
         services.AddScoped<ITokenProvider, TokenProvider>();
+        services.AddScoped<IInvoicePdfGenerator, InvoicePdfGenerator>();
 
         services.AddScoped<IAuthorizationHandler, SameCoachHandler>();
         services.AddScoped<IAuthorizationHandler, SameMemberOrAdminRequirementHandler>();
         services.AddScoped<IAuthorizationHandler, SameMemberOrCoachOrAdminRequirementHandler>();
-
+        services.AddScoped<IEmailBackgroundJobs, EmailBackgroundJobs>();
         services.AddIdentityCore<AppUser>(options =>
         {
             options.Password.RequireDigit = false;
@@ -92,6 +102,20 @@ public static class DependencyInjection
                 ValidAudience = jwtSettings["Audience"],
                 IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(jwtSettings["Secret"]!)),
+            };
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    var accessToken = context.Request.Query["access_token"];
+                    var path = context.HttpContext.Request.Path;
+                    if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs/notifications"))
+                    {
+                        context.Token = accessToken;
+                    }
+
+                    return Task.CompletedTask;
+                }
             };
         });
 

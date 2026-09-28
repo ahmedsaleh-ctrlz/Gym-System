@@ -11,7 +11,7 @@ public sealed class SubscriptionConfiguration : IEntityTypeConfiguration<Subscri
     {
         builder.ToTable("Subscriptions");
 
-        builder.Property(s => s.PriceSnapshot)
+        builder.Property(s => s.Price)
             .HasPrecision(18, 2)
             .IsRequired();
     }

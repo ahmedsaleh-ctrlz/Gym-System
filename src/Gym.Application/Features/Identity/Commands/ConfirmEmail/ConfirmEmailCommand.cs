@@ -1,5 +1,6 @@
 ﻿using Gym.Application.Common.Interfaces;
 using Gym.Domain.Common.Result;
+using Gym.Domain.Notifications.Enums;
 
 using MediatR;
 
@@ -16,7 +17,7 @@ public sealed record ConfirmEmailCommand(
 public sealed class ConfirmEmailCommandHandler(
     IIdentityService identityService,
     HybridCache cache,
-    ILogger<ConfirmEmailCommandHandler> logger)
+    ILogger<ConfirmEmailCommandHandler> logger, INotificationService notificationService)
     : IRequestHandler<ConfirmEmailCommand, Result<Updated>>
 {
     public async Task<Result<Updated>> Handle(
@@ -36,6 +37,7 @@ public sealed class ConfirmEmailCommandHandler(
             return result.Errors;
         }
 
+        await notificationService.SendNotificationAsync(request.UserId, "Email Confirmed Successfully", "Thanks for confirm your email. Get started with us now!", NotificationType.General, cancellationToken: ct);
         await cache.RemoveByTagAsync("Member", ct);
         await cache.RemoveByTagAsync("AdminDashboard", ct);
 

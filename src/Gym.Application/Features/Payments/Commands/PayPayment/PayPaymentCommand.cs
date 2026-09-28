@@ -5,4 +5,4 @@ using MediatR;
 
 namespace Gym.Application.Features.Payments.Commands.PayPayment;
 
-public sealed record PayPaymentCommand(int PaymentId, PaymentMethod PaymentMethod) : IRequest<Result<Updated>>;
+public sealed record PayPaymentCommand(int PaymentId, PaymentMethod? PaymentMethod, string? PaymentReference = null, int? PromoCodeId = null) : IRequest<Result<Updated>>;

@@ -5,5 +5,6 @@ using MediatR;
 namespace Gym.Application.Features.Payments.Commands.ProcessStripePayment;
 
 public sealed record ProcessStripePaymentCommand(
-    string PaymentIntentId)
-    : IRequest<Result<Updated>>;
+    string PaymentIntentId,
+    int? PromoCodeId
+) : IRequest<Result<Updated>>;

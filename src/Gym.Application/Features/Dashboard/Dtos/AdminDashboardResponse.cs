@@ -42,4 +42,9 @@ public sealed class AdminDashboardResponse
     public int PendingPaymentsCount { get; init; }
 
     public int PaidPaymentsCount { get; init; }
+
+    // Revenue
+    public List<RevenuePoint> Revenue { get; init; } = [];
+    public List<RecentCheckIn> RecentCheckIns { get; init; } = [];
+    public List<AttendancePoint> Attendance { get; init; } = [];
 }

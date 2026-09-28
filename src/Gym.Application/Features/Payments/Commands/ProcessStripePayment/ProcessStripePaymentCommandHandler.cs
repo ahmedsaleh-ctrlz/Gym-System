@@ -38,7 +38,9 @@ public sealed class ProcessStripePaymentCommandHandler(
         var result = await sender.Send(
             new PayPaymentCommand(
                 payment.Id,
-                PaymentMethod.Visa),
+                PaymentMethod.Visa,
+                null,
+                request.PromoCodeId),
             ct);
 
         if (result.IsError)

@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 
 using Asp.Versioning;
 
@@ -12,6 +13,7 @@ using Gym.Infrastructure.Settings;
 
 using Hangfire;
 
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.FileProviders;
 
 using Serilog;
@@ -25,6 +27,7 @@ public static class DependencyInjection
         .AddControllerWithJsonConfiguration()
         .AddConfiguredCors(configuration)
         .AddCustomProblemDetails()
+        .AddCustomeRateLimiting()
         .AddCustomApiVersioning()
         .AddCustomerExceptionHandling()
         .AddApiDocumentation()
@@ -37,12 +40,13 @@ public static class DependencyInjection
     {
         services.AddCors(options =>
         {
-            options.AddPolicy("AllowAll", policy =>
+            var allowedOrigins = configuration.GetSection("AppSettings:AllowedOrigins").Get<string[]>();
+            options.AddPolicy("Gym", policy =>
             {
-                policy
-                    .AllowAnyOrigin()
-                    .AllowAnyHeader()
-                    .AllowAnyMethod();
+                policy.WithOrigins(allowedOrigins!)
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
             });
         });
 
@@ -94,6 +98,35 @@ public static class DependencyInjection
         return services;
     }
 
+    public static IServiceCollection AddCustomeRateLimiting(this IServiceCollection services)
+    {
+        services.AddRateLimiter(options =>
+        {
+            options.AddTokenBucketLimiter("resend-email", options =>
+            {
+                options.TokenLimit = 1;
+                options.TokensPerPeriod = 1;
+                options.ReplenishmentPeriod = TimeSpan.FromSeconds(60);
+                options.AutoReplenishment = true;
+                options.QueueLimit = 0;
+            });
+            options.AddPolicy("LoginRateLimiter", httpContext =>
+            {
+                var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknow";
+
+                return RateLimitPartition.GetSlidingWindowLimiter(ip, options => new SlidingWindowRateLimiterOptions
+                {
+                    PermitLimit = 5,
+                    Window = TimeSpan.FromMinutes(1),
+                    SegmentsPerWindow = 6,
+                    QueueLimit = 0
+                });
+            });
+        });
+
+        return services;
+    }
+
     public static IServiceCollection AddIdentityInfrastructure(this IServiceCollection services)
     {
         services.AddScoped<IUser, CurrentUser>();
@@ -106,7 +139,8 @@ public static class DependencyInjection
         app.UseExceptionHandler();
         app.UseStatusCodePages();
         app.UseHttpsRedirection();
-        app.UseCors("AllowAll");
+        app.UseCors("Gym");
+        app.UseStaticFiles();
         app.UseAuthentication();
         app.UseAuthorization();
         app.UseBackgroundJobs();

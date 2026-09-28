@@ -59,6 +59,12 @@ public sealed class RefreshTokenQueryHandler(
             return ApplicationErrors.RefreshTokenExpired;
         }
 
+        if (refreshToken.RevokedOnUtc is not null)
+        {
+            logger.LogError("Refresh Token for userId:{userId} already revoked in {revokedTime}", refreshToken.UserId, refreshToken.RevokedOnUtc);
+            return ApplicationErrors.RefreshTokenRevoked;
+        }
+
         // Create Another JWT TOKENS
         var generateTokenResult = await tokenProvider.GenerateJwtTokenAsync(userResult.Value, ct);
 

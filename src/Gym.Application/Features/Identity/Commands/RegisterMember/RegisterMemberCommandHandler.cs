@@ -2,19 +2,16 @@ using Gym.Application.Common.Interfaces;
 using Gym.Domain.Common.Result;
 using Gym.Domain.Identity;
 using Gym.Domain.Members;
-
 using MediatR;
-
-using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
-
 namespace Gym.Application.Features.Identity.Commands.RegisterMember;
 
 public sealed class RegisterMemberCommandHandler(
     ILogger<RegisterMemberCommandHandler> logger,
     IAppDbContext context,
     IIdentityService identityService,
-    IEmailSender emailSender)
+    IEmailSender emailSender,
+    IImageStorage imageStorage)
     : IRequestHandler<RegisterMemberCommand, Result<Created>>
 {
     public async Task<Result<Created>> Handle(
@@ -27,11 +24,13 @@ public sealed class RegisterMemberCommandHandler(
 
         await using var transaction =
             await context.Database.BeginTransactionAsync(ct);
-
         string? userId = null;
         int? personId = null;
         Member? member = null;
         string? confirmationUrl = null;
+        string? promotedImageUrl = null;
+        const string DefaultImageUrl = "/images/default-image.png";
+        var imageUrl = string.IsNullOrWhiteSpace(request.ImageUrl) ? DefaultImageUrl : request.ImageUrl;
 
         try
         {
@@ -40,7 +39,7 @@ public sealed class RegisterMemberCommandHandler(
                 request.LastName,
                 request.DateOfBirth,
                 request.PhoneNumber,
-                request.ImageUrl,
+                imageUrl,
                 DateTime.UtcNow,
                 null);
 
@@ -92,11 +91,32 @@ public sealed class RegisterMemberCommandHandler(
 
             confirmationUrl = confirmationUrlResult.Value;
 
+            promotedImageUrl = await imageStorage.PromoteTemporaryAsync(imageUrl, ct);
+            var imageUpdateResult = member.UpdateImage(promotedImageUrl);
+
+            if (imageUpdateResult.IsError)
+            {
+                await transaction.RollbackAsync(ct);
+
+                if (!string.Equals(promotedImageUrl, imageUrl, StringComparison.OrdinalIgnoreCase))
+                {
+                    await imageStorage.DeleteAsync(promotedImageUrl, ct);
+                }
+
+                return imageUpdateResult.Errors;
+            }
+
+            await context.SaveChangesAsync(ct);
             await transaction.CommitAsync(ct);
         }
         catch (Exception ex)
         {
             await transaction.RollbackAsync(ct);
+            if (!string.IsNullOrWhiteSpace(promotedImageUrl) &&
+                !string.Equals(promotedImageUrl, imageUrl, StringComparison.OrdinalIgnoreCase))
+            {
+                await imageStorage.DeleteAsync(promotedImageUrl, ct);
+            }
 
             if (userId is not null)
             {

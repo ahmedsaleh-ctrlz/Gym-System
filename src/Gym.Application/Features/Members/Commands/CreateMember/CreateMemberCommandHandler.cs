@@ -9,19 +9,21 @@ using MediatR;
 
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Abstractions;
 
 namespace Gym.Application.Features.Members.Commands.CreateMember;
 
 public class CreateMemberCommandHandler(IAppDbContext context,
     ILogger<CreateMemberCommandHandler> logger,
     HybridCache cache,
-    IIdentityService identityService) : IRequestHandler<CreateMemberCommand, Result<MemberResponse>>
+    IIdentityService identityService,
+    IImageStorage imageStorage) : IRequestHandler<CreateMemberCommand, Result<MemberResponse>>
 {
     private readonly IAppDbContext _context = context;
     private readonly ILogger<CreateMemberCommandHandler> _logger = logger;
     private readonly HybridCache _cache = cache;
     private readonly IIdentityService _identityService = identityService;
-
+    private readonly IImageStorage _imageStorage = imageStorage;
     public async Task<Result<MemberResponse>> Handle(CreateMemberCommand command, CancellationToken ct)
     {
         _logger.LogTrace("Creating Member for email: {Email}", command.Email);
@@ -29,6 +31,9 @@ public class CreateMemberCommandHandler(IAppDbContext context,
         await using var transaction = await _context.Database.BeginTransactionAsync(ct);
         string? userId = null;
         int? personId = null;
+        string DefaultImageUrl = "images/default-image.png";
+        string? promotedImageUrl = null;
+        string? imageUrl = string.IsNullOrEmpty(command.ImageUrl) ? DefaultImageUrl : command.ImageUrl;
         Member? member = null;
         try
         {
@@ -37,7 +42,7 @@ public class CreateMemberCommandHandler(IAppDbContext context,
                 command.LastName,
                 command.DateOfBirth,
                 command.PhoneNumber,
-                command.ImageUrl,
+                imageUrl,
                 command.JoinDate,
                 command.Notes);
 
@@ -62,17 +67,38 @@ public class CreateMemberCommandHandler(IAppDbContext context,
 
             if (userResult.IsError)
             {
-                _logger.LogError("Failed to create user for Member with email: {Email}. Errors: {Errors}", command.Email, userResult.Errors);
+                await transaction.RollbackAsync(ct);
                 return userResult.Errors;
             }
 
             userId = userResult.Value;
 
+            promotedImageUrl = await _imageStorage.PromoteTemporaryAsync(imageUrl, ct);
+            var wasPromoted = !string.Equals(promotedImageUrl, imageUrl, StringComparison.OrdinalIgnoreCase);
+            var imageUpdateResult = member.UpdateImage(promotedImageUrl);
+
+            if (imageUpdateResult.IsError)
+            {
+                await transaction.RollbackAsync(ct);
+                if (wasPromoted)
+                {
+                    await _imageStorage.DeleteAsync(promotedImageUrl, ct);
+                }
+
+                return imageUpdateResult.Errors;
+            }
+
+            await _context.SaveChangesAsync(ct);
             await transaction.CommitAsync(ct);
         }
         catch (Exception ex)
         {
             await transaction.RollbackAsync(ct);
+            if (!string.IsNullOrWhiteSpace(promotedImageUrl) &&
+                !string.Equals(promotedImageUrl, imageUrl, StringComparison.OrdinalIgnoreCase))
+            {
+                await _imageStorage.DeleteAsync(promotedImageUrl, ct);
+            }
 
             if (userId is not null)
             {

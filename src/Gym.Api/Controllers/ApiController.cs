@@ -30,11 +30,24 @@ public class ApiController : ControllerBase
             ErrorType.Conflict => StatusCodes.Status409Conflict,
             ErrorType.Validation => StatusCodes.Status400BadRequest,
             ErrorType.NotFound => StatusCodes.Status404NotFound,
-            ErrorType.Unauthorized => StatusCodes.Status403Forbidden,
+            ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
+            ErrorType.Forbidden => StatusCodes.Status403Forbidden,
             _ => StatusCodes.Status500InternalServerError,
         };
 
-        return Problem(statusCode: statusCode, title: error.Description);
+        var problem = new ProblemDetails
+        {
+            Status = statusCode,
+            Title = error.Description,
+            Type = error.Type.ToString()
+        };
+
+        problem.Extensions.Add("code", error.Code);
+
+        return new ObjectResult(problem)
+        {
+            StatusCode = statusCode
+        };
     }
 
     private ActionResult ValidationProblem(List<Error> errors)

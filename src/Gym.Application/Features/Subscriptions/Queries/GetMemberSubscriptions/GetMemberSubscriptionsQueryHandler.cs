@@ -16,14 +16,15 @@ namespace Gym.Application.Features.Subscriptions.Queries.GetMemberSubscriptions
     {
         public async Task<Result<List<SubscriptionResponse>>> Handle(GetMemberSubscriptionsQuery request, CancellationToken cancellationToken)
         {
-            var subscriptions = await dbContext.Subscriptions.AsNoTracking().OrderByDescending(x => x.EndDate).Where(s => s.MemberId == request.MemberId)
+            var subscriptions = await dbContext.Subscriptions.AsNoTracking().OrderByDescending(x => x.StartDate).Where(s => s.MemberId == request.MemberId)
                 .Select(s => new SubscriptionResponse
                 {
                     SubscriptionId = s.Id,
                     MemberId = request.MemberId,
                     MemberName = s.Member.Person.FirstName + " " + s.Member.Person.LastName,
+                    PlanId = s.PlanId,
                     PlanName = s.Plan!.Title,
-                    PriceSnapshot = s.PriceSnapshot,
+                    Price = s.Price,
                     StartDate = s.StartDate,
                     EndDate = s.EndDate,
                     FreezeCountUsed = s.FreezeCountUsed,

@@ -42,7 +42,7 @@ public class SubscriptionTests
         var subscription = SubscriptionFactory.CreateSubscription(memberId: 7, startDate: today, planCost: 600m, durationInDays: 30).Value;
 
         Assert.Equal(7, subscription.MemberId);
-        Assert.Equal(600m, subscription.PriceSnapshot);
+        Assert.Equal(600m, subscription.Price);
         Assert.Equal(today, subscription.StartDate);
         Assert.Equal(today.AddDays(30), subscription.EndDate);
         Assert.Equal(SubscriptionStatus.Pending, subscription.Status);

@@ -32,7 +32,7 @@ public static class PaymentFactory
             return paymentResult;
         }
 
-        var payResult = paymentResult.Value.Pay(paymentMethod ?? PaymentMethod.Cash);
+        var payResult = paymentResult.Value.Pay(paymentMethod ?? PaymentMethod.Cash, null);
         if (payResult.IsError)
         {
             return payResult.Errors;

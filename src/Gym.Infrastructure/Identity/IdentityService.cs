@@ -1,17 +1,20 @@
-﻿using System.Net;
+﻿using System.Collections;
+using System.Net;
 
 using Gym.Application.Common.Helpers;
 using Gym.Application.Common.Interfaces;
 using Gym.Application.Features.Identity.Dtos;
 using Gym.Domain.Common.Result;
 using Gym.Domain.Identity;
+using Gym.Infrastructure.Settings;
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Gym.Infrastructure.Identity;
 
-public class IdentityService(UserManager<AppUser> userManager) : IIdentityService
+public class IdentityService(UserManager<AppUser> userManager, IOptions<AppSettings> appSettings) : IIdentityService
 {
     public async Task<Result<string?>> CreateUserAsync(string email, string password, Role role, int personId, CancellationToken ct)
     {
@@ -19,7 +22,7 @@ public class IdentityService(UserManager<AppUser> userManager) : IIdentityServic
 
         if (existingUser is not null)
         {
-            return Error.Conflict("UserAlreadyExists", $"A user with the email '{Utility.MaskEmail(email)}' already exists.");
+            return Error.Conflict("UserAlreadyExists", $"A user with the email '{email}' already exists.");
         }
 
         var user = new AppUser
@@ -100,7 +103,7 @@ public class IdentityService(UserManager<AppUser> userManager) : IIdentityServic
 
         if (user is null)
         {
-            return Error.NotFound("User_Not_Found", $"User with email {Utility.MaskEmail(email)} not found");
+            return Error.NotFound("User_Not_Found", $"User not found");
         }
 
         if (!await userManager.CheckPasswordAsync(user, password))
@@ -108,7 +111,7 @@ public class IdentityService(UserManager<AppUser> userManager) : IIdentityServic
             return Error.Conflict("Invalid_Login_Attempt", "Email / Password are incorrect");
         }
 
-        if(!user.EmailConfirmed)
+        if (!user.EmailConfirmed)
         {
             return Error.Conflict("Email_Not_Confirmed", "Email is not confirmed , please confirm your email before logging in");
         }
@@ -152,56 +155,56 @@ public class IdentityService(UserManager<AppUser> userManager) : IIdentityServic
     }
 
     public async Task<Result<string>> GenerateEmailConfirmationUrlAsync(string userId)
-{
-    var user = await userManager.FindByIdAsync(userId);
-
-    if (user is null)
     {
-        return Error.NotFound(
-            "User_Not_Found",
-            $"User with ID '{userId}' was not found.");
+        var user = await userManager.FindByIdAsync(userId);
+
+        if (user is null)
+        {
+            return Error.NotFound(
+                "User_Not_Found",
+                $"User with ID '{userId}' was not found.");
+        }
+
+        if (user.EmailConfirmed == true)
+        {
+            return Error.Conflict("Email_Already_Confirmed", $"Email is already confirmed");
+        }
+
+        var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+        var encodedToken = WebUtility.UrlEncode(token);
+
+        var confirmationUrl =
+            $"{appSettings.Value.BaseUrl}/api/v2/identity/confirm-email" +
+            $"?userId={user.Id}&token={encodedToken}";
+
+        return confirmationUrl;
     }
-
-    if (user.EmailConfirmed == true)
-    {
-        return Error.Conflict("Email_Already_Confirmed", $"Email is already confirmed");
-    }
-
-    var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-    var encodedToken = WebUtility.UrlEncode(token);
-
-    var confirmationUrl =
-        $"http://localhost:8080/api/v2/identity/confirm-email" +
-        $"?userId={user.Id}&token={encodedToken}";
-
-    return confirmationUrl;
-}
 
     public async Task<Result<string>> GenerateEmailConfirmationUrlByEmailAsync(string email)
-{
-    var user = await userManager.FindByEmailAsync(email);
-
-    if (user is null)
     {
-        return Error.NotFound(
-            "User_Not_Found",
-            $"User with email '{email}' was not found.");
+        var user = await userManager.FindByEmailAsync(email);
+
+        if (user is null)
+        {
+            return Error.NotFound(
+                "User_Not_Found",
+                $"User with email '{email}' was not found.");
+        }
+
+        if (user.EmailConfirmed == true)
+        {
+            return Error.Conflict("Email_Already_Confirmed", $"Email is already confirmed");
+        }
+
+        var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+        var encodedToken = WebUtility.UrlEncode(token);
+
+        var confirmationUrl =
+            $"{appSettings.Value.BaseUrl}/api/v2/identity/confirm-email" +
+            $"?userId={user.Id}&token={encodedToken}";
+
+        return confirmationUrl;
     }
-
-    if (user.EmailConfirmed == true)
-    {
-        return Error.Conflict("Email_Already_Confirmed", $"Email is already confirmed");
-    }
-
-    var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-    var encodedToken = WebUtility.UrlEncode(token);
-
-    var confirmationUrl =
-        $"http://localhost:8080/api/v2/identity/confirm-email" +
-        $"?userId={user.Id}&token={encodedToken}";
-
-    return confirmationUrl;
-}
 
     public async Task<Result<Updated>> ConfirmEmailAsync(
     string userId,
@@ -231,5 +234,73 @@ public class IdentityService(UserManager<AppUser> userManager) : IIdentityServic
         }
 
         return Result.Updated;
+    }
+
+    public async Task<Result<string>> GenerateResetTokenAsync(string email)
+    {
+        var user = await userManager.FindByEmailAsync(email);
+        if (user is null)
+        {
+            return Error.NotFound("User_Not_Found", $"User with {email} not exist");
+        }
+
+        return await userManager.GeneratePasswordResetTokenAsync(user);
+    }
+
+    public async Task<Result<Updated>> ResetPasswordAsync(string email, string resetToken, string newPassword)
+    {
+        var user = await userManager.FindByEmailAsync(email);
+        if (user is null)
+        {
+            return Error.NotFound("User_Not_Found", $"User with {email} not exist");
+        }
+
+        var resetReult = await userManager.ResetPasswordAsync(user, resetToken, newPassword);
+        if (!resetReult.Succeeded)
+        {
+            return Error.Conflict(description: resetReult.ToString());
+        }
+
+        return Result.Updated;
+    }
+
+    public async Task<Result<string>> GetUserIdByPersonIdAsync(int personId, CancellationToken cancellationToken = default)
+    {
+        var user = await userManager.Users.FirstOrDefaultAsync(u => u.PersonId == personId);
+        if (user is null)
+        {
+            return Error.NotFound(
+                "User_Not_Found",
+                $"User not found.");
+        }
+
+        return user!.Id;
+    }
+
+    public async Task<Result<IEnumerable<string>>> GetUsersIdsByPersonIdsAsync(IEnumerable<int> personIds, CancellationToken cancellationToken = default)
+    {
+        var usersIds = await userManager.Users
+        .Where(u => personIds.Contains(u.PersonId!.Value))
+        .Select(u => u.Id)
+        .ToListAsync(cancellationToken);
+        return usersIds;
+    }
+
+    public async Task<Result<IEnumerable<string>>> GetUsersIdsByRoleAsync(
+    Role role,
+    CancellationToken cancellationToken = default)
+    {
+        var users = await userManager.GetUsersInRoleAsync(role.ToString());
+        var userIds = users.Select(u => u.Id).ToList();
+        return userIds;
+    }
+
+    public async Task<Result<IEnumerable<string>>> GetEmailsByPersonIdsAsync(IEnumerable<int> personIds, CancellationToken cancellationToken = default)
+    {
+        var emails = await userManager.Users
+        .Where(u => personIds.Contains(u.PersonId!.Value))
+        .Select(u => u.Email)
+        .ToListAsync(cancellationToken);
+        return emails!;
     }
 }

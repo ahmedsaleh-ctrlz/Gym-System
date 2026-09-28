@@ -20,7 +20,7 @@ public class PaymentFeatureTests
         var subscription = await TestDataSeeder.AddSubscriptionAsync(context, member, plan);
         var payment = await TestDataSeeder.AddPaymentAsync(context, subscription);
 
-        var result = await context.Mediator.Send(new PayPaymentCommand(payment.Id, PaymentMethod.Cash));
+        var result = await context.Mediator.Send(new PayPaymentCommand(payment.Id, PaymentMethod.Cash, "000000000", null));
 
         Assert.True(result.IsSuccess);
         Assert.Equal(PaymentStatus.Paid, context.DbContext.Payments.First().Status);

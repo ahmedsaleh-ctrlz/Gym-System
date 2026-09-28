@@ -4,6 +4,7 @@ using Gym.Application.Common.Behaviors;
 using Gym.Application.Features.Members.Commands.CreateMember;
 using Gym.Infrastructure;
 using Gym.Infrastructure.Data;
+using Gym.Infrastructure.Hubs;
 
 using Scalar.AspNetCore;
 
@@ -45,6 +46,7 @@ else
 app.UseCoreMiddlewares(builder.Configuration);
 
 app.MapControllers();
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 app.MapGet("/", () => "Api Is Running");
 

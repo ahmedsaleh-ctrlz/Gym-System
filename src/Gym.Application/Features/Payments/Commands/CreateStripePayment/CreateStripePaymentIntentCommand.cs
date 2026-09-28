@@ -6,5 +6,6 @@ using MediatR;
 namespace Gym.Application.Features.Payments.Commands.CreateStripePayment;
 
 public sealed record CreateStripePaymentIntentCommand(
-    int PaymentId)
+    int PaymentId,
+    int? PromoCodeId)
     : IRequest<Result<StripePaymentIntentResult>>;

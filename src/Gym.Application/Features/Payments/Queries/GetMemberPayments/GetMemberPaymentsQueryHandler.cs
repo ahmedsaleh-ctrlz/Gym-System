@@ -16,7 +16,7 @@ namespace Gym.Application.Features.Payments.Queries.GetMemberPayments
         {
             var payments = await dbContext.Payments.AsNoTracking().Include(p => p.Subscription)
                 .Where(p => p.Subscription.MemberId == request.MemberId)
-                .OrderByDescending(p => p.PaidAtUtc)
+                .OrderByDescending(p => p.Id)
                 .Select(p => new PaymentResponse
                 {
                     PaymentId = p.Id,

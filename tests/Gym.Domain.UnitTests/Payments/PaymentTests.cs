@@ -51,7 +51,7 @@ public class PaymentTests
 
         Assert.True(result.IsSuccess);
         Assert.Equal(subscription, result.Value.Subscription);
-        Assert.Equal(subscription.PriceSnapshot, result.Value.Amount);
+        Assert.Equal(subscription.Price, result.Value.Amount);
         Assert.Equal(PaymentStatus.Pending, result.Value.Status);
         Assert.Null(result.Value.PaymentMethod);
         Assert.Null(result.Value.PaidAtUtc);

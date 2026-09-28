@@ -1,6 +1,7 @@
 ﻿using Gym.Application.Common.Errors;
 using Gym.Application.Common.Interfaces;
 using Gym.Domain.Common.Result;
+using Gym.Domain.Notifications.Enums;
 using Gym.Domain.Payments;
 using Gym.Domain.Subscriptions;
 using Gym.Domain.Subscriptions.Enums;
@@ -13,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Gym.Application.Features.Subscriptions.Commands.CreateSubscription;
 
-public sealed class CreateSubscriptionCommandHandler(ILogger<Result<Subscription>> logger, IAppDbContext dbContext, HybridCache cache) : IRequestHandler<CreateSubscriptionCommand, Result<Subscription>>
+public sealed class CreateSubscriptionCommandHandler(ILogger<Result<Subscription>> logger, IAppDbContext dbContext, HybridCache cache, INotificationService notificationService, IIdentityService identityService) : IRequestHandler<CreateSubscriptionCommand, Result<Subscription>>
 {
     public async Task<Result<Subscription>> Handle(CreateSubscriptionCommand request, CancellationToken ct)
     {
@@ -64,13 +65,16 @@ public sealed class CreateSubscriptionCommandHandler(ILogger<Result<Subscription
             return paymentResult.Errors;
         }
 
+        var userId = await identityService.GetUserIdByPersonIdAsync(member.PersonId);
+
         await dbContext.Subscriptions.AddAsync(subscriptionResult.Value, ct);
         await dbContext.Payments.AddAsync(paymentResult.Value, ct);
+        await dbContext.SaveChangesAsync(ct);
         await cache.RemoveByTagAsync("Subscriptions", ct);
         await cache.RemoveByTagAsync("Payments", ct);
         await cache.RemoveByTagAsync("AdminDashboard", ct);
-        await dbContext.SaveChangesAsync(ct);
 
+        await notificationService.SendNotificationAsync(userId.Value, "Subscription Created", $"Your {plan.Title} subscription has been created successfully. You have a pending payment.", NotificationType.Payment, cancellationToken: ct);
         logger.LogInformation("Successfully created subscription with id {SubscriptionId} for member {MemberId} with plan {PlanId}.", subscriptionResult.Value.Id, request.MemberId, request.PlanId);
 
         return subscriptionResult.Value;

@@ -103,8 +103,8 @@ public sealed class GetPaymentsQueryHandler(IAppDbContext context)
                 : query.OrderBy(p => p.Status),
 
             _ => isDesc
-                ? query.OrderByDescending(p => p.PaidAtUtc)
-                : query.OrderBy(p => p.PaidAtUtc)
+                ? query.OrderByDescending(p => p.Id)
+                : query.OrderBy(p => p.Id)
         };
     }
 }
