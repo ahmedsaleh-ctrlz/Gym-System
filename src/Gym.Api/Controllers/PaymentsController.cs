@@ -2,11 +2,14 @@ using Asp.Versioning;
 
 using Gym.Api.Contracts.Payments;
 using Gym.Application.Common.Models;
+using Gym.Application.Features.Payments.Commands.ApprovePayment;
 using Gym.Application.Features.Payments.Commands.CancelPayment;
 using Gym.Application.Features.Payments.Commands.CreateStripePayment;
 using Gym.Application.Features.Payments.Commands.PayPayment;
 using Gym.Application.Features.Payments.Commands.ProcessStripePayment;
 using Gym.Application.Features.Payments.Commands.RefundPayment;
+using Gym.Application.Features.Payments.Commands.RejectPayment;
+using Gym.Application.Features.Payments.Commands.SubmitPaymentForReview;
 using Gym.Application.Features.Payments.Dtos;
 using Gym.Application.Features.Payments.Queries.GetMemberPayments;
 using Gym.Application.Features.Payments.Queries.GetPaymentById;
@@ -110,7 +113,7 @@ public sealed class PaymentsController(ISender sender, IOptions<StripeSettings> 
     }
 
     [HttpPost("Pay")]
-    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
@@ -174,6 +177,82 @@ public sealed class PaymentsController(ISender sender, IOptions<StripeSettings> 
             Problem);
     }
 
+    [HttpPost("SubmitForReview")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [EndpointSummary("Submit a payment for review.")]
+    [EndpointDescription("Submits a manual payment made through E-Wallet or InstaPay for admin review.")]
+    [EndpointName("SubmitPaymentForReview")]
+    [MapToApiVersion("1.0")]
+    [Authorize(Roles = nameof(Role.Member))]
+    public async Task<IActionResult> SubmitForReview(
+    [FromBody] SubmitPaymentForReviewRequest request,
+    CancellationToken ct)
+    {
+        var result = await sender.Send(
+            new SubmitPaymentForReviewCommand(
+                request.PaymentId,
+                request.PaymentMethod,
+                request.PaymentReference,
+                request.PromoCodeId),
+            ct);
+
+        return result.Match(
+            _ => NoContent(),
+            Problem);
+    }
+
+    [HttpPost("{paymentId:int}/Approve")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [EndpointSummary("Approve a payment.")]
+    [EndpointDescription("Approves a payment that is currently under review.")]
+    [EndpointName("ApprovePayment")]
+    [MapToApiVersion("1.0")]
+    [Authorize(Roles = nameof(Role.Admin))]
+    public async Task<IActionResult> Approve(
+    int paymentId,
+    CancellationToken ct)
+    {
+        var result = await sender.Send(
+            new ApprovePaymentCommand(paymentId),
+            ct);
+
+        return result.Match(
+            _ => NoContent(),
+            Problem);
+    }
+
+    [HttpPost("{paymentId:int}/Reject")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [EndpointSummary("Reject a payment.")]
+    [EndpointDescription("Rejects a payment that is currently under review.")]
+    [EndpointName("RejectPayment")]
+    [MapToApiVersion("1.0")]
+    [Authorize(Roles = nameof(Role.Admin))]
+    public async Task<IActionResult> Reject(
+    int paymentId,
+    CancellationToken ct)
+    {
+        var result = await sender.Send(
+            new RejectPaymentCommand(paymentId),
+            ct);
+
+        return result.Match(
+            _ => NoContent(),
+            Problem);
+    }
+
     [HttpPost("{paymentId:int}/stripe-intent")]
     [ProducesResponseType(typeof(StripePaymentIntentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -210,9 +289,6 @@ public sealed class PaymentsController(ISender sender, IOptions<StripeSettings> 
             json,
             Request.Headers["Stripe-Signature"],
             stripeSettings.WebhookSecret);
-
-        Console.WriteLine($"Stripe Event: {stripeEvent.Type}");
-        Console.WriteLine($"Stripe Event Id: {stripeEvent.Id}");
 
         if (stripeEvent.Type == "payment_intent.succeeded")
         {

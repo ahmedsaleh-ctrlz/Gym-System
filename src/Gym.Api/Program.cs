@@ -6,11 +6,14 @@ using Gym.Infrastructure;
 using Gym.Infrastructure.Data;
 using Gym.Infrastructure.Hubs;
 
+using QuestPDF.Infrastructure;
+
 using Scalar.AspNetCore;
 
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+QuestPDF.Settings.License = LicenseType.Evaluation;
 
 builder.Services.AddApi(builder.Configuration)
     .AddApplicaiton()

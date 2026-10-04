@@ -48,7 +48,7 @@ public class MemberFeatureTests
         var result = await context.Mediator.Send(new UpdateMemberImageCommand(member.Id, "/images/updated-member.jpg"));
 
         Assert.True(result.IsSuccess);
-        Assert.Equal("/images/updated-member.jpg", context.DbContext.Members.First().Person.Image.ImageUrl);
+        Assert.Equal("Uploads/updated-member.jpg", context.DbContext.Members.First().Person.Image.ImageUrl);
     }
 
     [Fact]

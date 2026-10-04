@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <Compile Remove="Common\NewFolder1\**" />
     <EmbeddedResource Remove="Common\NewFolder1\**" />

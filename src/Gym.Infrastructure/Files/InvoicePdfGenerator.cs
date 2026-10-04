@@ -1,6 +1,8 @@
 ﻿using Gym.Application.Common.Interfaces;
 using Gym.Domain.Payments.Invoices;
 
+using System.Globalization;
+
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -36,7 +38,7 @@ public sealed class InvoicePdfGenerator : IInvoicePdfGenerator
 
                 page.DefaultTextStyle(
                     TextStyle.Default
-                        .FontFamily("Arial")
+                        .FontFamily("Lato")
                         .FontSize(10)
                         .FontColor(TextPrimary));
 
@@ -177,8 +179,12 @@ public sealed class InvoicePdfGenerator : IInvoicePdfGenerator
                                     cardColumn.Item()
                                         .PaddingTop(7)
                                         .Text(
-                                            $"{invoice.SubscriptionStartDate:dd MMM yyyy}  →  " +
-                                            $"{invoice.SubscriptionEndDate:dd MMM yyyy}")
+                                            $"{invoice.SubscriptionStartDate.ToString(
+                                                "dd MMM yyyy",
+                                                CultureInfo.InvariantCulture)}  →  " +
+                                            $"{invoice.SubscriptionEndDate.ToString(
+                                                "dd MMM yyyy",
+                                                CultureInfo.InvariantCulture)}")
                                         .FontSize(9)
                                         .FontColor(TextSecondary);
                                 });
@@ -216,8 +222,9 @@ public sealed class InvoicePdfGenerator : IInvoicePdfGenerator
                     column.Item()
                         .PaddingTop(3)
                         .Text(
-                            invoice.IssuedAt.ToString(
-                                "dd MMM yyyy, HH:mm"))
+                        invoice.IssuedAt.ToString(
+                            "dd MMM yyyy, HH:mm",
+                            CultureInfo.InvariantCulture))
                         .FontSize(10)
                         .SemiBold();
                 });

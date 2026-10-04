@@ -21,7 +21,7 @@ public sealed class GetInvoicePdfQueryHandler(
     {
         var invoice = await dbContext.Invoices
             .FirstOrDefaultAsync(
-                x => x.Id == request.PaymentId,
+                x => x.PaymentId == request.PaymentId,
                 ct);
 
         if (invoice is null)

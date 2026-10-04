@@ -53,4 +53,10 @@ public static class PaymentErrors
 
     public static Error PromoCodeNotApplied => Error.Conflict("Payment.Conflict", "Promo Code Not Applied");
 
+    public static Error OnlyUnderReviewPaymentsCanBeRejected =>
+    Error.Validation(
+        "Payments.Validation",
+        "Only payments under review can be rejected.");
+    public static Error InvalidPaymentMethodForReview =>
+        Error.Validation("Payment.InvalidSubscription", "Payment must be linked to a valid subscription.");
 }

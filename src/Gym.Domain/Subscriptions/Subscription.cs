@@ -50,7 +50,7 @@ public class Subscription : AuditableEntity
 
     public Result<Updated> Activate()
     {
-        if (!(Status != SubscriptionStatus.Scheduled && Status != SubscriptionStatus.Frozen))
+        if (Status != SubscriptionStatus.Scheduled && Status != SubscriptionStatus.Frozen && Status != SubscriptionStatus.Pending)
         {
             return SubscriptionErrors.InvalidStatusCannotActivate;
         }

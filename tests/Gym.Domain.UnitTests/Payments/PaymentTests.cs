@@ -21,7 +21,7 @@ public class PaymentTests
     public void Create_ShouldReturnError_WhenSubscriptionIsNotPending()
     {
         var subscription = SubscriptionFactory.CreateSubscription().Value;
-        subscription.Activate();
+        subscription.Scheduled();
 
         var result = Payment.Create(subscription);
 

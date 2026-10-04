@@ -55,12 +55,14 @@ public static class TestDataSeeder
         switch (status)
         {
             case SubscriptionStatus.Active:
+                subscription.Scheduled();
                 subscription.Activate();
                 break;
             case SubscriptionStatus.Scheduled:
                 subscription.Scheduled();
                 break;
             case SubscriptionStatus.Frozen:
+                subscription.Scheduled();
                 subscription.Activate();
                 subscription.Freeze(0);
                 break;
@@ -68,6 +70,7 @@ public static class TestDataSeeder
                 subscription.Cancel();
                 break;
             case SubscriptionStatus.Expired:
+                subscription.Scheduled();
                 subscription.Activate();
                 ReflectionTestHelper.SetProperty(subscription, "EndDate", DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)));
                 subscription.Expire();

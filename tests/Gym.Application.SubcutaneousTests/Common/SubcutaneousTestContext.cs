@@ -1,6 +1,9 @@
 using Gym.Application;
 using Gym.Application.Common.Interfaces;
+using Gym.Application.Common.Interfaces.BackgroundJobsServices;
 using Gym.Infrastructure.Data;
+
+using Hangfire;
 
 using MediatR;
 
@@ -51,6 +54,18 @@ public sealed class SubcutaneousTestContext : IAsyncDisposable
         services.AddSingleton<IIdentityService>(sp => sp.GetRequiredService<TestIdentityService>());
         services.AddSingleton<TestTokenProvider>();
         services.AddSingleton<ITokenProvider>(sp => sp.GetRequiredService<TestTokenProvider>());
+        services.AddSingleton<TestImageStorage>();
+        services.AddSingleton<IImageStorage>(
+            sp => sp.GetRequiredService<TestImageStorage>());
+        services.AddSingleton<TestBackgroundJobClient>();
+        services.AddSingleton<IBackgroundJobClient>(
+            sp => sp.GetRequiredService<TestBackgroundJobClient>());
+        services.AddSingleton<TestNotificationBackgroundJobs>();
+        services.AddSingleton<INotificationBackgroundJobs>(
+            sp => sp.GetRequiredService<TestNotificationBackgroundJobs>());
+        services.AddSingleton<TestNotificationService>();
+        services.AddSingleton<INotificationService>(
+            sp => sp.GetRequiredService<TestNotificationService>());
 
         services.AddDbContext<AppDbContext>(options => options.UseSqlite(connection));
         services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());

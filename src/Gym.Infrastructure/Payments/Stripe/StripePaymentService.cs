@@ -54,6 +54,7 @@ public sealed class StripePaymentService(IOptions<StripeSettings> stripeOptions)
     Dictionary<string, string>? metadata,
     CancellationToken ct)
     {
+        StripeConfiguration.ApiKey = stripeOptions.Value.SecretKey;
         var service = new PaymentIntentService();
 
         var options = new PaymentIntentUpdateOptions

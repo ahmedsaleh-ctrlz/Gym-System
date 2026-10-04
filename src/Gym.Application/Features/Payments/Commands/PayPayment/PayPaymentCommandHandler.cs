@@ -219,6 +219,7 @@ public sealed class PayPaymentCommandHandler(
 
         return null;
     }
+
     private async Task SendNotificationToUser(Payment payment, CancellationToken ct )
     {
         var personId = await dbContext.Members
@@ -244,6 +245,7 @@ public sealed class PayPaymentCommandHandler(
                 cancellationToken: ct);
         }
     }
+
     private async Task RemoveCaches(CancellationToken ct)
     {
         await cache.RemoveByTagAsync("Subscriptions", ct);

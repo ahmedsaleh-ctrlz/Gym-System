@@ -6,5 +6,7 @@ public enum PaymentStatus
     Failed,
     Pending,
     Refunded,
-    Cancelled
+    Cancelled,
+    UnderReview,
+    Rejected,
 }

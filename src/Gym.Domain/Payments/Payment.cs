@@ -115,6 +115,71 @@ public sealed class Payment : AuditableEntity
         return Result.Updated;
     }
 
+    public Result<Updated> SubmitForReview(
+    PaymentMethod paymentMethod,
+    PromoCode? promoCode,
+    string paymentReference)
+{
+    if (Status != PaymentStatus.Pending)
+    {
+        return PaymentErrors.InvalidPaymentStatus;
+    }
+
+    if (paymentMethod is not
+        (Enums.PaymentMethod.EWallet or Enums.PaymentMethod.InstaPay))
+    {
+        return PaymentErrors.InvalidPaymentMethodForReview;
+    }
+
+    if (string.IsNullOrWhiteSpace(paymentReference))
+    {
+        return PaymentErrors.PaymentReferenceRequired;
+    }
+
+    if (promoCode is not null)
+    {
+        ApplyPromoCode(promoCode);
+    }
+
+    if (Amount <= 0)
+    {
+        return PaymentErrors.PaymentAmountMustBeGreaterThanZero;
+    }
+
+    PaymentMethod = paymentMethod;
+    PaymentReference = paymentReference;
+
+    Status = PaymentStatus.UnderReview;
+
+    return Result.Updated;
+}
+
+    public Result<Updated> Approve()
+    {
+        if (Status != PaymentStatus.UnderReview)
+        {
+            return PaymentErrors.InvalidPaymentStatus;
+        }
+
+        Status = PaymentStatus.Paid;
+        PaidAtUtc = DateTime.UtcNow;
+
+        return Result.Updated;
+    }
+
+    public Result<Updated> Reject()
+    {
+        if (Status != PaymentStatus.UnderReview)
+        {
+            return PaymentErrors.OnlyUnderReviewPaymentsCanBeRejected;
+        }
+
+        Status = PaymentStatus.Cancelled;
+        Subscription.Cancel();
+
+        return Result.Updated;
+    }
+
     public Result<Updated> Cancel()
     {
         if (Status != PaymentStatus.Pending)

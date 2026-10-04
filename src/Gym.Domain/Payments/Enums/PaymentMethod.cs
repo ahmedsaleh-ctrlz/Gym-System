@@ -9,6 +9,5 @@ public enum PaymentMethod
     Cash,
     Visa,
     EWallet,
-    InstaPay,
-    Fawry
+    InstaPay
 }
