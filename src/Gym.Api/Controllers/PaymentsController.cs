@@ -122,7 +122,7 @@ public sealed class PaymentsController(ISender sender, IOptions<StripeSettings> 
     [EndpointDescription("Records a successful or failed payment for a subscription.")]
     [EndpointName("PayPayment")]
     [MapToApiVersion("1.0")]
-    [Authorize(Roles = nameof(Role.Admin))]
+    [Authorize]
     public async Task<IActionResult> Create([FromBody] PayPaymentRequest request, CancellationToken ct)
     {
         var result = await sender.Send(

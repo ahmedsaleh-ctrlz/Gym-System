@@ -71,11 +71,6 @@ public sealed class Payment : AuditableEntity
             ApplyPromoCode(promoCode);
         }
 
-        if (Amount <= 0)
-        {
-            return PaymentErrors.PaymentAmountMustBeGreaterThanZero;
-        }
-
         if (RequiresPaymentReference(paymentMethod) &&
             string.IsNullOrWhiteSpace(paymentReference))
         {

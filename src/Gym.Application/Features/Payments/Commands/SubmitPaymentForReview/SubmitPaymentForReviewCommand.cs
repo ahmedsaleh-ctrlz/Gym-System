@@ -29,10 +29,10 @@ namespace Gym.Application.Features.Payments.Commands.SubmitPaymentForReview
     {
         public async Task<Result<Updated>> Handle(SubmitPaymentForReviewCommand request, CancellationToken ct)
         {
-            var payment = await dbContext.Payments.FirstOrDefaultAsync(p => p.Id == request.PaymentId);
+            var payment = await dbContext.Payments.Include(p => p.Subscription).FirstOrDefaultAsync(p => p.Id == request.PaymentId);
             if (payment is null)
             {
-                logger.LogInformation("Payment with Id {PaymentId} Not Found",request.PaymentId);
+                logger.LogInformation("Payment with Id {PaymentId} Not Found", request.PaymentId);
                 return ApplicationErrors.PaymentNotFound;
             }
 
@@ -70,13 +70,11 @@ namespace Gym.Application.Features.Payments.Commands.SubmitPaymentForReview
 
         private async Task<Result<PromoCode>> ValidatePromoCode(
             Payment payment,
-            int promoCodeId,
-            CancellationToken ct)
+            int promoCodeId, CancellationToken ct)
         {
             var promoCode = await dbContext.PromoCodes
                 .FirstOrDefaultAsync(
-                    p => p.Id == promoCodeId,
-                    ct);
+                    p => p.Id == promoCodeId);
 
             if (promoCode is null)
             {

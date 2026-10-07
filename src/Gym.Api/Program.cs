@@ -1,3 +1,5 @@
+using DotNetEnv;
+
 using Gym.Api;
 using Gym.Application;
 using Gym.Application.Common.Behaviors;
@@ -12,6 +14,7 @@ using Scalar.AspNetCore;
 
 using Serilog;
 
+Env.Load("../../.env");
 var builder = WebApplication.CreateBuilder(args);
 QuestPDF.Settings.License = LicenseType.Evaluation;
 
