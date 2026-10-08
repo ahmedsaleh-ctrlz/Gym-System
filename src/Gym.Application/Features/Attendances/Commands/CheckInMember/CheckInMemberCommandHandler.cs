@@ -69,7 +69,9 @@ public sealed class CheckInMemberCommandHandler(
         await context.SaveChangesAsync(ct);
 
         await cache.RemoveByTagAsync("Attendance", ct);
-        await cache.RemoveByTagAsync("AdminDashboard", ct);
+        await cache.RemoveByTagAsync("AdminDashboard:AttendanceSummary", ct);
+        await cache.RemoveByTagAsync("AdminDashboard:RecentCheckIns", ct);
+        await cache.RemoveByTagAsync("AdminDashboard:Overview", ct);
         logger.LogInformation("Attendance with ID {AttendanceId} created for Member ID {MemberId}.", attendance.Id, command.MemberId);
 
         return new AttendanceResponse

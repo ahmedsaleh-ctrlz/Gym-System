@@ -54,6 +54,10 @@ public sealed record CancelPaymentCommandHandler(
 
         await Cache.RemoveByTagAsync("Payments", cancellationToken);
         await Cache.RemoveByTagAsync("Subscriptions", cancellationToken);
+        await Cache.RemoveByTagAsync("AdminDashboard:PaymentsSummary", cancellationToken);
+        await Cache.RemoveByTagAsync("AdminDashboard:RevenueSummary", cancellationToken);
+        await Cache.RemoveByTagAsync("AdminDashboard:SubscriptionsSummary", cancellationToken);
+        await Cache.RemoveByTagAsync("AdminDashboard:Overview", cancellationToken);
 
         var personId = await DbContext.Members
             .Where(m => m.Id == payment.Subscription.MemberId)

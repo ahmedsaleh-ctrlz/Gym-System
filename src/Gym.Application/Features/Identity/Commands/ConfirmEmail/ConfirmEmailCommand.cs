@@ -39,7 +39,8 @@ public sealed class ConfirmEmailCommandHandler(
 
         await notificationService.SendNotificationAsync(request.UserId, "Email Confirmed Successfully", "Thanks for confirm your email. Get started with us now!", NotificationType.General, cancellationToken: ct);
         await cache.RemoveByTagAsync("Member", ct);
-        await cache.RemoveByTagAsync("AdminDashboard", ct);
+        await cache.RemoveByTagAsync("AdminDashboard:Overview", ct);
+        await cache.RemoveByTagAsync("AdminDashboard:MembersSummary", ct);
 
         logger.LogInformation(
             "Email confirmed successfully for user {UserId}",

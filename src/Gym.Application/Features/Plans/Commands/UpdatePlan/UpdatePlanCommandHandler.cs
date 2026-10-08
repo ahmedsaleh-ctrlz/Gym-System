@@ -35,6 +35,8 @@ public sealed class UpdatePlanCommandHandler(
 
         await context.SaveChangesAsync(ct);
         await cache.RemoveByTagAsync("Plan", ct);
+        await cache.RemoveByTagAsync("AdminDashboard:PlansSummary", ct);
+        await cache.RemoveByTagAsync("AdminDashboard:Overview", ct);
 
         logger.LogInformation("Plan with ID {PlanId} updated successfully.", command.PlanId);
 

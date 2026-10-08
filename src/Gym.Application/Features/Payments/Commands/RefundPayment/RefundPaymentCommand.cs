@@ -37,6 +37,10 @@ namespace Gym.Application.Features.Payments.Commands.RefundPayment
             await cache.RemoveByTagAsync("Attendance", ct);
             await cache.RemoveByTagAsync("AdminDashboard", ct);
             await cache.RemoveByTagAsync("Payments", ct);
+            await cache.RemoveByTagAsync("AdminDashboard:PaymentsSummary", ct);
+            await cache.RemoveByTagAsync("AdminDashboard:RevenueSummary", ct);
+            await cache.RemoveByTagAsync("AdminDashboard:SubscriptionsSummary", ct);
+            await cache.RemoveByTagAsync("AdminDashboard:Overview", ct);
             await dbContext.SaveChangesAsync(ct);
             return Result.Updated;
         }

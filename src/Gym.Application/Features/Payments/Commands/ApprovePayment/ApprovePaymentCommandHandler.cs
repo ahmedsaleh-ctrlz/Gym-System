@@ -198,7 +198,11 @@ public sealed class ApprovePaymentCommandHandler(
     {
         await cache.RemoveByTagAsync("Subscriptions", ct);
         await cache.RemoveByTagAsync("Attendance", ct);
-        await cache.RemoveByTagAsync("AdminDashboard", ct);
+        await cache.RemoveByTagAsync("AdminDashboard:Overview", ct);
+        await cache.RemoveByTagAsync("AdminDashboard:SubscriptionsSummary", ct);
+        await cache.RemoveByTagAsync("AdminDashboard:PaymentsSummary", ct);
+        await cache.RemoveByTagAsync("AdminDashboard:RevenuesSummary", ct);
+        await cache.RemoveByTagAsync("AdminDashboard:RevenueSummary", ct);
         await cache.RemoveByTagAsync("Payments", ct);
         await cache.RemoveByTagAsync("PromoCodes", ct);
     }

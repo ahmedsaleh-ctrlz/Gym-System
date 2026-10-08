@@ -82,7 +82,9 @@ public sealed class UpdateSubscriptionStatusCommandHandler(ILogger<Result<Update
 
         logger.LogInformation("Subscription with Id {SubscriptionId} status updated to {NewStatus}", request.SubscriptionId, request.NewStatus);
         await cache.RemoveByTagAsync("Subscriptions", ct);
-        await cache.RemoveByTagAsync("AdminDashboard", ct);
+        await cache.RemoveByTagAsync("AdminDashboard:PlansSummary", ct);
+        await cache.RemoveByTagAsync("AdminDashboard:SubscriptionsSummary", ct);
+        await cache.RemoveByTagAsync("AdminDashboard:Overview", ct);
         await context.SaveChangesAsync(ct);
         await notificationService.SendNotificationAsync(userId.Value, "Subscription Status Updated", $"Your subscription status has been changed to {subscription.Status}.", NotificationType.SubscriptionStatusChanged, cancellationToken: ct);
 

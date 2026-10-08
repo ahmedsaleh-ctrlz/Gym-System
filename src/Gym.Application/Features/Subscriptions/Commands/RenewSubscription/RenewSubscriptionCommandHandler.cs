@@ -72,7 +72,12 @@ public sealed class RenewSubscriptionCommandHandler(ILogger<Result<Created>> log
         await dbContext.Payments.AddAsync(paymentResult.Value, ct);
         await cache.RemoveByTagAsync("Subscriptions", ct);
         await cache.RemoveByTagAsync("Payments", ct);
-        await cache.RemoveByTagAsync("AdminDashboard", ct);
+        await cache.RemoveByTagAsync("AdminDashboard:Overview", ct);
+        await cache.RemoveByTagAsync("AdminDashboard:PlansSummary", ct);
+        await cache.RemoveByTagAsync("AdminDashboard:SubscriptionsSummary", ct);
+        await cache.RemoveByTagAsync("AdminDashboard:PaymentsSummary", ct);
+        await cache.RemoveByTagAsync("AdminDashboard:RevenuesSummary", ct);
+        await cache.RemoveByTagAsync("AdminDashboard:RevenueSummary", ct);
         await dbContext.SaveChangesAsync(ct);
         await notificationService.SendNotificationAsync(userId.Value, "Subscription Created", $"Your {plan.Title} subscription has been created successfully. You have a pending payment.", NotificationType.Payment, cancellationToken: ct);
 

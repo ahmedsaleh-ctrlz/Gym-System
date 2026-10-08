@@ -56,7 +56,8 @@ public sealed class DeleteMemberCommandHandler(IAppDbContext context,
         }
 
         logger.LogInformation("Removing cache with tag: Member");
-        await cache.RemoveByTagAsync("AdminDashboard", cancellationToken);
+        await cache.RemoveByTagAsync("AdminDashboard:Overview", cancellationToken);
+        await cache.RemoveByTagAsync("AdminDashboard:MembersSummary", cancellationToken);
         await cache.RemoveByTagAsync("Member", cancellationToken);
 
         logger.LogInformation("Member with id {MemberId} deleted successfully.", command.MemberId);
