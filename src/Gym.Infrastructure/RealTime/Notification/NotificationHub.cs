@@ -13,9 +13,6 @@ namespace Gym.Infrastructure.Hubs
         {
             var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            Console.WriteLine($"Connected User: {userId}");
-            Console.WriteLine($"SignalR UserIdentifier: {Context.UserIdentifier}");
-
             await base.OnConnectedAsync();
         }
     }

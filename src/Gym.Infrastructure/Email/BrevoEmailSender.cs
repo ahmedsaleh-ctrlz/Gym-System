@@ -377,14 +377,19 @@ public sealed class BrevoEmailSender(
                 },
                 Subject = subject,
                 HtmlContent = htmlBody,
-                To = new List<BrevoRecipient>
-            {
-                new()
-                {
-                    Email = email
-                }
-            }
+                To =
+                [
+                    new BrevoRecipient
+                    {
+                        Email = email
+                    }
+                ]
             };
+
+            _httpClient.DefaultRequestHeaders.Clear();
+            _httpClient.DefaultRequestHeaders.Add(
+                "api-key",
+                _emailSettings.ApiKey);
 
             var response = await _httpClient.PostAsJsonAsync(
                 "https://api.brevo.com/v3/smtp/email",

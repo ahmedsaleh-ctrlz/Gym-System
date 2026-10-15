@@ -1,6 +1,7 @@
 ﻿using Asp.Versioning;
 
 using Gym.Application.Features.Dashboard.Dtos;
+using Gym.Application.Features.Dashboard.Queries.GetAdminAiInsight;
 using Gym.Application.Features.Dashboard.Queries.GetAdminDashboard.AttendanceSummary;
 using Gym.Application.Features.Dashboard.Queries.GetAdminDashboard.MembersSummary;
 using Gym.Application.Features.Dashboard.Queries.GetAdminDashboard.Overview;
@@ -197,6 +198,21 @@ public class DashBoardController(ISender sender) : ApiController
             await sender.Send(
                 new GetAdminRecentCheckInsQuery(),
                 ct);
+
+        return result.Match(
+            response => Ok(response),
+            Problem);
+    }
+
+    [HttpGet("ai-insights")]
+    [ProducesResponseType(typeof(AdminAiInsightsResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetAiInsights(CancellationToken ct)
+    {
+        var result = await sender.Send(
+            new GetAdminAiInsightsQuery(),
+            ct);
 
         return result.Match(
             response => Ok(response),

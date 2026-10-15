@@ -14,6 +14,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" />
     <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="OpenAI" />
     <PackageReference Include="QuestPDF" />
     <PackageReference Include="Stripe.net" />
   </ItemGroup>

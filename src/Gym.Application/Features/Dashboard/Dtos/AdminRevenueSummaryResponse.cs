@@ -6,4 +6,5 @@ public sealed record AdminRevenueSummaryResponse(
     decimal CurrentPeriodRevenue,
     decimal PreviousPeriodRevenue,
     decimal GrowthPercentage,
-    IReadOnlyList<RevenuePoint> Data);
+    IReadOnlyList<RevenuePoint> Data,
+    IReadOnlyList<RevenuePoint> PreviousPeriodData);

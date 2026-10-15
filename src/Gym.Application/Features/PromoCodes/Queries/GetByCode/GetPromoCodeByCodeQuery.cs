@@ -7,6 +7,7 @@ using Gym.Application.Common.Interfaces;
 using Gym.Application.Features.PromoCodes.Dtos;
 using Gym.Application.PromoCodes;
 using Gym.Domain.Common.Result;
+using Gym.Domain.Payments.Enums;
 using Gym.Domain.PromoCodes.Enums;
 using Gym.Domain.Subscriptions.Enums;
 
@@ -48,7 +49,7 @@ namespace Gym.Application.Features.PromoCodes.Queries.GetByCode
 
             if(promoCode.Audience == PromoCodeAudience.NewMembers)
             {
-                if (await context.Subscriptions.AnyAsync(s => s.MemberId == request.MemberId && s.Status != SubscriptionStatus.Cancelled))
+                if (await context.Payments.Include(p => p.Subscription).AnyAsync(p => p.Subscription.MemberId == request.MemberId && p.Status == PaymentStatus.Paid))
                 {
                     return ApplicationErrors.PromoCodeOnlyForNewMembers;
                 }

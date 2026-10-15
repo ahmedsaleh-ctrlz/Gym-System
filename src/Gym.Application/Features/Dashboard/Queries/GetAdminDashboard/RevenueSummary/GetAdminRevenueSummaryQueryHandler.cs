@@ -30,70 +30,52 @@ public sealed class GetAdminRevenueSummaryQueryHandler(
             var startOfNextMonth = startOfMonth.AddMonths(1);
             var startOfPreviousMonth = startOfMonth.AddMonths(-1);
 
-            var currentRevenue =
-                await dbContext.Payments
-                    .Where(p =>
-                        p.Status == PaymentStatus.Paid &&
-                        p.PaidAtUtc.HasValue &&
-                        p.PaidAtUtc.Value >= startOfMonth &&
-                        p.PaidAtUtc.Value < startOfNextMonth)
-                    .SumAsync(
-                        p => (decimal?)p.Amount,
-                        ct) ?? 0m;
+            var isCurrentMonth =
+                year == now.Year && month == now.Month;
 
-            var previousRevenue =
-                await dbContext.Payments
-                    .Where(p =>
-                        p.Status == PaymentStatus.Paid &&
-                        p.PaidAtUtc.HasValue &&
-                        p.PaidAtUtc.Value >= startOfPreviousMonth &&
-                        p.PaidAtUtc.Value < startOfMonth)
-                    .SumAsync(
-                        p => (decimal?)p.Amount,
-                        ct) ?? 0m;
+            // Current month: include only dates up to today.
+            // Historical month: include the entire selected month.
+            var currentEndExclusive = isCurrentMonth
+                ? now.Date.AddDays(1)
+                : startOfNextMonth;
 
-            var dailyRevenue =
-                await dbContext.Payments
-                    .Where(p =>
-                        p.Status == PaymentStatus.Paid &&
-                        p.PaidAtUtc.HasValue &&
-                        p.PaidAtUtc.Value >= startOfMonth &&
-                        p.PaidAtUtc.Value < startOfNextMonth)
-                    .GroupBy(p =>
-                        DateOnly.FromDateTime(p.PaidAtUtc!.Value))
-                    .Select(g => new RevenuePoint
-                    {
-                        Date = g.Key,
-                        Amount = g.Sum(p => p.Amount)
-                    })
-                    .ToListAsync(ct);
+            var currentDays =
+                (currentEndExclusive.Date - startOfMonth.Date).Days;
 
-            var dailyRevenueByDate =
-                dailyRevenue.ToDictionary(
-                    x => x.Date,
-                    x => x.Amount);
+            // Compare the same elapsed day range when viewing
+            // the current month. For historical months, compare
+            // the complete calendar months.
+            var previousEndExclusive = isCurrentMonth
+                ? startOfPreviousMonth.AddDays(
+                    Math.Min(
+                        currentDays,
+                        DateTime.DaysInMonth(
+                            startOfPreviousMonth.Year,
+                            startOfPreviousMonth.Month)))
+                : startOfMonth;
 
-            var daysInMonth =
-                DateTime.DaysInMonth(year, month);
+            var currentDailyRevenue = await GetDailyRevenueAsync(
+                startOfMonth,
+                currentEndExclusive,
+                ct);
 
-            var dailyData =
-                Enumerable
-                    .Range(1, daysInMonth)
-                    .Select(day =>
-                    {
-                        var date = new DateOnly(
-                            year,
-                            month,
-                            day);
+            var previousDailyRevenue = await GetDailyRevenueAsync(
+                startOfPreviousMonth,
+                previousEndExclusive,
+                ct);
 
-                        return new RevenuePoint
-                        {
-                            Date = date,
-                            Amount = dailyRevenueByDate
-                                .GetValueOrDefault(date)
-                        };
-                    })
-                    .ToList();
+            var currentData = BuildDailyData(
+                startOfMonth,
+                currentEndExclusive,
+                currentDailyRevenue);
+
+            var previousData = BuildDailyData(
+                startOfPreviousMonth,
+                previousEndExclusive,
+                previousDailyRevenue);
+
+            var currentRevenue = currentData.Sum(x => x.Amount);
+            var previousRevenue = previousData.Sum(x => x.Amount);
 
             return new AdminRevenueSummaryResponse(
                 CurrentPeriodRevenue: currentRevenue,
@@ -101,85 +83,55 @@ public sealed class GetAdminRevenueSummaryQueryHandler(
                 GrowthPercentage: CalculateGrowth(
                     currentRevenue,
                     previousRevenue),
-                Data: dailyData);
+                Data: currentData,
+                PreviousPeriodData: previousData);
         }
 
-        var startOfYear =
-            new DateTime(year, 1, 1);
+        var startOfYear = new DateTime(year, 1, 1);
+        var startOfNextYear = startOfYear.AddYears(1);
+        var startOfPreviousYear = startOfYear.AddYears(-1);
 
-        var startOfNextYear =
-            startOfYear.AddYears(1);
+        var isCurrentYear = year == now.Year;
 
-        var startOfPreviousYear =
-            startOfYear.AddYears(-1);
+        // For the current year, compare year-to-date revenue
+        // with the same elapsed period in the previous year.
+        // For historical years, compare both complete years.
+        var currentComparisonEndExclusive = isCurrentYear
+            ? now.Date.AddDays(1)
+            : startOfNextYear;
 
-        var currentYearRevenue =
-            await dbContext.Payments
-                .Where(p =>
-                    p.Status == PaymentStatus.Paid &&
-                    p.PaidAtUtc.HasValue &&
-                    p.PaidAtUtc.Value >= startOfYear &&
-                    p.PaidAtUtc.Value < startOfNextYear)
-                .SumAsync(
-                    p => (decimal?)p.Amount,
-                    ct) ?? 0m;
+        var previousComparisonEndExclusive = isCurrentYear
+            ? GetSameDateInPreviousYear(now).AddDays(1)
+            : startOfYear;
 
-        var previousYearRevenue =
-            await dbContext.Payments
-                .Where(p =>
-                    p.Status == PaymentStatus.Paid &&
-                    p.PaidAtUtc.HasValue &&
-                    p.PaidAtUtc.Value >= startOfPreviousYear &&
-                    p.PaidAtUtc.Value < startOfYear)
-                .SumAsync(
-                    p => (decimal?)p.Amount,
-                    ct) ?? 0m;
+        var currentYearRevenue = await GetRevenueTotalAsync(
+            startOfYear,
+            currentComparisonEndExclusive,
+            ct);
 
-        var monthlyRevenue =
-            await dbContext.Payments
-                .Where(p =>
-                    p.Status == PaymentStatus.Paid &&
-                    p.PaidAtUtc.HasValue &&
-                    p.PaidAtUtc.Value >= startOfYear &&
-                    p.PaidAtUtc.Value < startOfNextYear)
-                .GroupBy(p => new
-                {
-                    p.PaidAtUtc!.Value.Year,
-                    p.PaidAtUtc.Value.Month
-                })
-                .Select(g => new RevenuePoint
-                {
-                    Date = new DateOnly(
-                        g.Key.Year,
-                        g.Key.Month,
-                        1),
-                    Amount = g.Sum(p => p.Amount)
-                })
-                .ToListAsync(ct);
+        var previousYearRevenue = await GetRevenueTotalAsync(
+            startOfPreviousYear,
+            previousComparisonEndExclusive,
+            ct);
 
-        var monthlyRevenueByDate =
-            monthlyRevenue.ToDictionary(
-                x => x.Date,
-                x => x.Amount);
+        // Both chart series always contain all 12 months.
+        var currentMonthlyRevenue = await GetMonthlyRevenueAsync(
+            startOfYear,
+            startOfNextYear,
+            ct);
 
-        var monthlyData =
-            Enumerable
-                .Range(1, 12)
-                .Select(monthNumber =>
-                {
-                    var date = new DateOnly(
-                        year,
-                        monthNumber,
-                        1);
+        var previousMonthlyRevenue = await GetMonthlyRevenueAsync(
+            startOfPreviousYear,
+            startOfYear,
+            ct);
 
-                    return new RevenuePoint
-                    {
-                        Date = date,
-                        Amount = monthlyRevenueByDate
-                            .GetValueOrDefault(date)
-                    };
-                })
-                .ToList();
+        var currentYearData = BuildMonthlyData(
+            year,
+            currentMonthlyRevenue);
+
+        var previousYearData = BuildMonthlyData(
+            year - 1,
+            previousMonthlyRevenue);
 
         return new AdminRevenueSummaryResponse(
             CurrentPeriodRevenue: currentYearRevenue,
@@ -187,7 +139,131 @@ public sealed class GetAdminRevenueSummaryQueryHandler(
             GrowthPercentage: CalculateGrowth(
                 currentYearRevenue,
                 previousYearRevenue),
-            Data: monthlyData);
+            Data: currentYearData,
+            PreviousPeriodData: previousYearData);
+    }
+
+    private async Task<Dictionary<DateOnly, decimal>> GetDailyRevenueAsync(
+        DateTime start,
+        DateTime endExclusive,
+        CancellationToken ct)
+    {
+        var rows = await dbContext.Payments
+            .Where(p =>
+                p.Status == PaymentStatus.Paid &&
+                p.PaidAtUtc.HasValue &&
+                p.PaidAtUtc.Value >= start &&
+                p.PaidAtUtc.Value < endExclusive)
+            .GroupBy(p => p.PaidAtUtc!.Value.Date)
+            .Select(g => new
+            {
+                Date = g.Key,
+                Amount = g.Sum(p => p.Amount)
+            })
+            .ToListAsync(ct);
+
+        return rows.ToDictionary(
+            x => DateOnly.FromDateTime(x.Date),
+            x => x.Amount);
+    }
+
+    private async Task<Dictionary<DateOnly, decimal>> GetMonthlyRevenueAsync(
+        DateTime start,
+        DateTime endExclusive,
+        CancellationToken ct)
+    {
+        var rows = await dbContext.Payments
+            .Where(p =>
+                p.Status == PaymentStatus.Paid &&
+                p.PaidAtUtc.HasValue &&
+                p.PaidAtUtc.Value >= start &&
+                p.PaidAtUtc.Value < endExclusive)
+            .GroupBy(p => new
+            {
+                p.PaidAtUtc!.Value.Year,
+                p.PaidAtUtc.Value.Month
+            })
+            .Select(g => new
+            {
+                g.Key.Year,
+                g.Key.Month,
+                Amount = g.Sum(p => p.Amount)
+            })
+            .ToListAsync(ct);
+
+        return rows.ToDictionary(
+            x => new DateOnly(x.Year, x.Month, 1),
+            x => x.Amount);
+    }
+
+    private async Task<decimal> GetRevenueTotalAsync(
+        DateTime start,
+        DateTime endExclusive,
+        CancellationToken ct)
+    {
+        return await dbContext.Payments
+            .Where(p =>
+                p.Status == PaymentStatus.Paid &&
+                p.PaidAtUtc.HasValue &&
+                p.PaidAtUtc.Value >= start &&
+                p.PaidAtUtc.Value < endExclusive)
+            .SumAsync(p => (decimal?)p.Amount, ct) ?? 0m;
+    }
+
+    private static List<RevenuePoint> BuildDailyData(
+        DateTime start,
+        DateTime endExclusive,
+        IReadOnlyDictionary<DateOnly, decimal> revenueByDate)
+    {
+        var daysCount =
+            (endExclusive.Date - start.Date).Days;
+
+        return Enumerable
+            .Range(0, daysCount)
+            .Select(offset =>
+            {
+                var date = DateOnly.FromDateTime(
+                    start.Date.AddDays(offset));
+
+                return new RevenuePoint
+                {
+                    Date = date,
+                    Amount = revenueByDate.GetValueOrDefault(date)
+                };
+            })
+            .ToList();
+    }
+
+    private static List<RevenuePoint> BuildMonthlyData(
+        int year,
+        IReadOnlyDictionary<DateOnly, decimal> revenueByMonth)
+    {
+        return Enumerable
+            .Range(1, 12)
+            .Select(month =>
+            {
+                var date = new DateOnly(year, month, 1);
+
+                return new RevenuePoint
+                {
+                    Date = date,
+                    Amount = revenueByMonth.GetValueOrDefault(date)
+                };
+            })
+            .ToList();
+    }
+
+    private static DateTime GetSameDateInPreviousYear(DateTime date)
+    {
+        var previousYear = date.Year - 1;
+        var day = Math.Min(
+            date.Day,
+            DateTime.DaysInMonth(previousYear, date.Month));
+
+        return new DateTime(
+            previousYear,
+            date.Month,
+            day);
     }
 
     private static decimal CalculateGrowth(
@@ -196,9 +272,7 @@ public sealed class GetAdminRevenueSummaryQueryHandler(
     {
         if (previous == 0)
         {
-            return current == 0
-                ? 0
-                : 100;
+            return current == 0 ? 0 : 100;
         }
 
         return Math.Round(

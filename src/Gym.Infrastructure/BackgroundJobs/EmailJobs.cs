@@ -17,17 +17,10 @@ namespace Gym.Infrastructure.BackgroundJobs
             string subject,
             string htmlBody)
         {
-            try
-            {
-                await emailSender.SendEmailsToUsersAsync(
-                emails,
-                subject,
-                htmlBody);
-            }
-            catch
-            {
-                throw new InvalidDataException();
-            }
+            await emailSender.SendEmailsToUsersAsync(
+               emails,
+               subject,
+               htmlBody);
         }
     }
 }

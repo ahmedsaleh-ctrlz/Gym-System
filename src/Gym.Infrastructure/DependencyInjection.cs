@@ -2,6 +2,7 @@ using System.Text;
 
 using Gym.Application.Common.Interfaces;
 using Gym.Application.Common.Interfaces.BackgroundJobsServices;
+using Gym.Infrastructure.AI;
 using Gym.Infrastructure.BackgroundJobs;
 using Gym.Infrastructure.Data;
 using Gym.Infrastructure.Data.Interceptors;
@@ -24,7 +25,10 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+
+using OpenAI.Responses;
 
 namespace Gym.Infrastructure;
 
@@ -40,6 +44,10 @@ public static class DependencyInjection
         services.Configure<EmailSettings>(
         configuration.GetSection(EmailSettings.SectionName));
         services.Configure<AppSettings>(configuration.GetSection(AppSettings.SectionName));
+        services.Configure<AiSettings>(
+            configuration.GetSection(AiSettings.SectionName));
+        services.AddScoped<IAiService, AiService>();
+
         services.AddHttpClient<IEmailSender, BrevoEmailSender>();
         services.AddScoped<IImageStorage, LocalImageStorage>();
         services.AddScoped<INotificationService, NotificaitonService>();
@@ -131,4 +139,5 @@ public static class DependencyInjection
 
         return services;
     }
+
 }

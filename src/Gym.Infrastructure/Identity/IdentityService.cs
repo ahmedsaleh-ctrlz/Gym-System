@@ -9,12 +9,14 @@ using Gym.Domain.Identity;
 using Gym.Infrastructure.Settings;
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Build.Framework;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Gym.Infrastructure.Identity;
 
-public class IdentityService(UserManager<AppUser> userManager, IOptions<AppSettings> appSettings) : IIdentityService
+public class IdentityService(UserManager<AppUser> userManager, IOptions<AppSettings> appSettings, ILogger<IdentityService> logger) : IIdentityService
 {
     public async Task<Result<string?>> CreateUserAsync(string email, string password, Role role, int personId, CancellationToken ct)
     {
@@ -225,7 +227,7 @@ public class IdentityService(UserManager<AppUser> userManager, IOptions<AppSetti
         {
             foreach (var error in result.Errors)
             {
-                Console.WriteLine($"{error.Code} - {error.Description}");
+                logger.LogWarning($"{error.Code} - {error.Description}");
             }
 
             return result.Errors
