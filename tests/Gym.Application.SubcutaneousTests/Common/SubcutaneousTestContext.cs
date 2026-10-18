@@ -66,6 +66,9 @@ public sealed class SubcutaneousTestContext : IAsyncDisposable
         services.AddSingleton<TestNotificationService>();
         services.AddSingleton<INotificationService>(
             sp => sp.GetRequiredService<TestNotificationService>());
+        services.AddSingleton<TestEmailBackgroundJobs>();
+        services.AddSingleton<IEmailBackgroundJobs>(
+            sp => sp.GetRequiredService<TestEmailBackgroundJobs>());
 
         services.AddDbContext<AppDbContext>(options => options.UseSqlite(connection));
         services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());

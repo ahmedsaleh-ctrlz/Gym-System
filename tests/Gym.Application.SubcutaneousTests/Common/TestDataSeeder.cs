@@ -134,4 +134,47 @@ public static class TestDataSeeder
     {
         return new AppUserDto(userId, personId, email, [role], [new Claim(ClaimTypes.NameIdentifier, userId)]);
     }
+
+    public static async Task<Gym.Domain.PromoCodes.PromoCode> AddPromoCodeAsync(
+        SubcutaneousTestContext context,
+        Plan plan,
+        string code = "WELCOME20",
+        Gym.Domain.PromoCodes.Enums.DiscountType discountType = Gym.Domain.PromoCodes.Enums.DiscountType.Percentage,
+        decimal discountValue = 20m,
+        decimal? maxDiscount = 50m,
+        decimal? minPurchase = 100m)
+    {
+        var promo = Gym.Domain.PromoCodes.PromoCode.Create(
+            code,
+            plan.Id,
+            discountType,
+            discountValue,
+            maxDiscount,
+            minPurchase,
+            Gym.Domain.PromoCodes.Enums.PromoCodeAudience.Everyone,
+            10,
+            DateTime.UtcNow.AddDays(30)).Value;
+
+        await context.DbContext.PromoCodes.AddAsync(promo);
+        await context.DbContext.SaveChangesAsync();
+        return promo;
+    }
+
+    public static async Task<Gym.Domain.Notifications.Notification> AddNotificationAsync(
+        SubcutaneousTestContext context,
+        string userId,
+        string title = "Notice",
+        string message = "Test notification",
+        Gym.Domain.Notifications.Enums.NotificationType type = Gym.Domain.Notifications.Enums.NotificationType.General)
+    {
+        var notification = Gym.Domain.Notifications.Notification.Create(
+            userId,
+            title,
+            message,
+            type).Value;
+
+        await context.DbContext.Notifications.AddAsync(notification);
+        await context.DbContext.SaveChangesAsync();
+        return notification;
+    }
 }

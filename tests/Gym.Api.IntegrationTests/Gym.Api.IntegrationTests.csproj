@@ -4,6 +4,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="NSubstitute" />
     <PackageReference Include="coverlet.collector" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit" />
@@ -15,6 +18,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Gym.Api\Gym.Api.csproj" />
+    <ProjectReference Include="..\..\src\Gym.Application\Gym.Application.csproj" />
+    <ProjectReference Include="..\..\src\Gym.Infrastructure\Gym.Infrastructure.csproj" />
     <ProjectReference Include="..\Gym.Tests.Common\Gym.Tests.Common.csproj" />
   </ItemGroup>
 </Project>
