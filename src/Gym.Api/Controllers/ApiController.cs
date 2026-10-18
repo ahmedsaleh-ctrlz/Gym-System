@@ -8,7 +8,7 @@ namespace Gym.Api.Controllers;
 [ApiController]
 public class ApiController : ControllerBase
 {
-    protected ActionResult Problem(List<Error> errors)
+    protected ActionResult Problem(List<Domain.Common.Result.Error> errors)
     {
         if (errors.Count is 0)
         {
@@ -23,7 +23,7 @@ public class ApiController : ControllerBase
         return Problem(errors[0]);
     }
 
-    private ObjectResult Problem(Error error)
+    private ObjectResult Problem(Domain.Common.Result.Error error)
     {
         var statusCode = error.Type switch
         {
@@ -50,7 +50,7 @@ public class ApiController : ControllerBase
         };
     }
 
-    private ActionResult ValidationProblem(List<Error> errors)
+    private ActionResult ValidationProblem(List<Domain.Common.Result.Error> errors)
     {
         var modelStateDictionary = new ModelStateDictionary();
 

@@ -52,6 +52,7 @@ else
 app.UseCoreMiddlewares(builder.Configuration);
 
 app.MapControllers();
+app.MapGraphQL("/graphql");
 app.MapHub<NotificationHub>("/hubs/notifications");
 
 app.MapGet("/", () => "Api Is Running");

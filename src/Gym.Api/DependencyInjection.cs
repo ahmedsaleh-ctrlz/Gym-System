@@ -4,6 +4,7 @@ using System.Threading.RateLimiting;
 
 using Asp.Versioning;
 
+using Gym.Api.GraphQL;
 using Gym.Api.Infrastructure;
 using Gym.Api.OpenApi;
 using Gym.Api.Services;
@@ -32,6 +33,11 @@ public static class DependencyInjection
         .AddCustomerExceptionHandling()
         .AddApiDocumentation()
         .AddIdentityInfrastructure();
+        services
+        .AddGraphQLServer()
+        .AddAuthorization()
+        .AddQueryType<Query>();
+
         services.Configure<StripeSettings>(configuration.GetSection("Stripe"));
         return services;
     }
@@ -186,7 +192,7 @@ public static class DependencyInjection
     public static IApplicationBuilder UseCustomStaticFiles(
     this IApplicationBuilder app)
     {
-        var uploadsPath = Path.Combine(
+        var uploadsPath = System.IO.Path.Combine(
             Directory.GetCurrentDirectory(),
             "Uploads");
 
