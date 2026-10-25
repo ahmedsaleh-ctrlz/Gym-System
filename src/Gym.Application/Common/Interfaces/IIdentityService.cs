@@ -10,11 +10,20 @@ namespace Gym.Application.Common.Interfaces;
 public interface IIdentityService
 {
     Task<Result<string?>> CreateUserAsync(string email, string password, Role role, int personId, CancellationToken ct);
+
+    Task<Result<string>> CreateExternalUserAsync(
+    string email, Role role, int personId, CancellationToken ct);
     Task<Result<Deleted>> DeleteUserAsync(int personId, CancellationToken ct);
 
     Task<string?> GetUserNameByIdAsync(string userId, CancellationToken ct);
 
     Task<Result<AppUserDto>> AuthenticateAsync(string email, string password, CancellationToken ct);
+
+    Task<AppUserDto?> FindByExternalLoginAsync(string loginProvider, string providerKey, CancellationToken ct);
+
+    Task<AppUserDto?> FindUserByEmailAsync(string email, CancellationToken ct);
+
+    Task<Result<AppUserDto>> LinkExternalLoginAsync(string userId, string loginProvider, string providerKey, bool emailVerified, CancellationToken ct);
 
     Task<Result<AppUserDto>> GetUserByIdAsync(string userId);
 

@@ -31,7 +31,7 @@ public class Subscription : AuditableEntity
         PlanId = plan.Id;
         Price = plan.Cost;
         StartDate = startDate;
-        EndDate = StartDate.AddDays(Plan!.DurationInDays);
+        EndDate = StartDate.AddDays(Plan!.DurationInDays - 1);
         Status = SubscriptionStatus.Pending;
         FreezeCountUsed = 0;
         TotalFreezeDaysUsed = 0;

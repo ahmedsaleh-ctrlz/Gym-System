@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using System.Security.Claims;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
@@ -14,6 +15,8 @@ using Gym.Infrastructure.Settings;
 
 using Hangfire;
 
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.FileProviders;
 
@@ -39,6 +42,29 @@ public static class DependencyInjection
         .AddQueryType<Query>();
 
         services.Configure<StripeSettings>(configuration.GetSection("Stripe"));
+
+        services
+            .AddAuthentication()
+            .AddCookie(IdentityConstants.ExternalScheme, options =>
+            {
+                options.Cookie.Name = "Gym.External";
+                options.Cookie.HttpOnly = true;
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+                options.SlidingExpiration = false;
+                options.Cookie.SameSite = SameSiteMode.None;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            })
+            .AddGoogle("Google", options =>
+            {
+                options.ClientId = configuration["Authentication:Google:ClientId"]!;
+                options.ClientSecret = configuration["Authentication:Google:ClientSecret"]!;
+                options.SignInScheme = IdentityConstants.ExternalScheme;
+                options.CallbackPath = "/signin-google";
+                options.ClaimActions.MapJsonKey(
+                "email_verified",
+                "email_verified",
+                ClaimValueTypes.Boolean);
+            });
         return services;
     }
 

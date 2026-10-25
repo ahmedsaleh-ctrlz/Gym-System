@@ -61,6 +61,49 @@ public class IdentityService(UserManager<AppUser> userManager, IOptions<AppSetti
         return user.Id;
     }
 
+    public async Task<Result<string>> CreateExternalUserAsync(string email, Role role, int personId, CancellationToken ct)
+    {
+        var existingUser = await userManager.FindByEmailAsync(email);
+
+        if (existingUser is not null)
+        {
+            return Error.Conflict(
+                "UserAlreadyExists",
+                $"A user with the email '{email}' already exists.");
+        }
+
+        var user = new AppUser
+        {
+            UserName = email,
+            Email = email,
+            PersonId = personId
+        };
+
+        var createResult = await userManager.CreateAsync(user);
+
+        if (!createResult.Succeeded)
+        {
+            return createResult.Errors
+                .Select(e => Error.Validation(e.Code, e.Description))
+                .ToList();
+        }
+
+        var roleResult = await userManager.AddToRoleAsync(
+            user,
+            role.ToString());
+
+        if (!roleResult.Succeeded)
+        {
+            await userManager.DeleteAsync(user);
+
+            return roleResult.Errors
+                .Select(e => Error.Validation(e.Code, e.Description))
+                .ToList();
+        }
+
+        return user.Id;
+    }
+
     public async Task<Result<Deleted>> DeleteUserAsync(int PersonId, CancellationToken ct)
     {
         var user = await userManager.Users.FirstOrDefaultAsync(u => u.PersonId == PersonId, ct);
@@ -119,6 +162,130 @@ public class IdentityService(UserManager<AppUser> userManager, IOptions<AppSetti
         }
 
         return new AppUserDto(user.Id, user.PersonId, user.Email!, await userManager.GetRolesAsync(user), await userManager.GetClaimsAsync(user));
+    }
+    public async Task<AppUserDto?> FindByExternalLoginAsync(string loginProvider, string providerKey, CancellationToken ct)
+    {
+        var user = await userManager.FindByLoginAsync(
+            loginProvider,
+            providerKey);
+
+        if (user is null)
+        {
+            return null;
+        }
+
+        var roles = await userManager.GetRolesAsync(user);
+        var claims = await userManager.GetClaimsAsync(user);
+
+        return new AppUserDto(
+            user.Id,
+            user.PersonId,
+            user.Email!,
+            roles,
+            claims);
+    }
+
+    public async Task<AppUserDto?> FindUserByEmailAsync(
+    string email,
+    CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        var user = await userManager.FindByEmailAsync(email);
+
+        if (user is null)
+            return null;
+
+        var roles = await userManager.GetRolesAsync(user);
+        var claims = await userManager.GetClaimsAsync(user);
+
+        return new AppUserDto(
+            user.Id,
+            user.PersonId,
+            user.Email!,
+            roles,
+            claims);
+    }
+
+    public async Task<Result<AppUserDto>> LinkExternalLoginAsync(
+        string userId,
+        string loginProvider,
+        string providerKey,
+        bool emailVerified,
+        CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        if (!emailVerified)
+        {
+            return Error.Validation(
+                "Email_Not_Verified",
+                "The external provider has not verified the email.");
+        }
+
+        var user = await userManager.FindByIdAsync(userId);
+
+        if (user is null)
+        {
+            return Error.NotFound(
+                "User_Not_Found",
+                "The Identity user was not found.");
+        }
+
+        var linkedUser = await userManager.FindByLoginAsync(
+            loginProvider,
+            providerKey);
+
+        if (linkedUser is not null && linkedUser.Id != user.Id)
+        {
+            return Error.Conflict(
+                "External_Login_Already_Linked",
+                "This external login is linked to another account.");
+        }
+
+        if (!user.EmailConfirmed)
+        {
+            user.EmailConfirmed = true;
+
+            var updateResult = await userManager.UpdateAsync(user);
+
+            if (!updateResult.Succeeded)
+            {
+                return updateResult.Errors
+                    .Select(e => Error.Conflict(e.Code, e.Description))
+                    .ToList();
+            }
+        }
+
+        var logins = await userManager.GetLoginsAsync(user);
+
+        var alreadyLinked = logins.Any(login =>
+            login.LoginProvider == loginProvider &&
+            login.ProviderKey == providerKey);
+
+        if (!alreadyLinked)
+        {
+            var linkResult = await userManager.AddLoginAsync(
+                user,
+                new UserLoginInfo(loginProvider, providerKey, loginProvider));
+
+            if (!linkResult.Succeeded)
+            {
+                return linkResult.Errors
+                    .Select(e => Error.Conflict(e.Code, e.Description))
+                    .ToList();
+            }
+        }
+
+        var roles = await userManager.GetRolesAsync(user);
+        var claims = await userManager.GetClaimsAsync(user);
+
+        return new AppUserDto(
+            user.Id,
+            user.PersonId,
+            user.Email!,
+            roles,
+            claims);
     }
 
     public async Task<Result<string>> GetEmailByPersonIdAsync(int personId, CancellationToken ct)

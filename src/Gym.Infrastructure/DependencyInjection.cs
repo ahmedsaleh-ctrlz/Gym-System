@@ -80,7 +80,8 @@ public static class DependencyInjection
         })
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<AppDbContext>()
-            .AddDefaultTokenProviders();
+            .AddDefaultTokenProviders()
+            .AddSignInManager();
 
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddDataProtection();
@@ -139,5 +140,4 @@ public static class DependencyInjection
 
         return services;
     }
-
 }
