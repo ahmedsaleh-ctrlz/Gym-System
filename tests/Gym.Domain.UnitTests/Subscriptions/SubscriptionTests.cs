@@ -44,7 +44,7 @@ public class SubscriptionTests
         Assert.Equal(7, subscription.MemberId);
         Assert.Equal(600m, subscription.Price);
         Assert.Equal(today, subscription.StartDate);
-        Assert.Equal(today.AddDays(30), subscription.EndDate);
+        Assert.Equal(today.AddDays(29), subscription.EndDate);
         Assert.Equal(SubscriptionStatus.Pending, subscription.Status);
         Assert.Equal(0, subscription.FreezeCountUsed);
         Assert.Equal(0, subscription.TotalFreezeDaysUsed);

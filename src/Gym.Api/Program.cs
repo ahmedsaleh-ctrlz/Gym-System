@@ -58,3 +58,9 @@ app.MapHub<NotificationHub>("/hubs/notifications");
 app.MapGet("/", () => "Api Is Running");
 
 app.Run();
+public partial class Program
+{
+    protected Program()
+    {
+    }
+}

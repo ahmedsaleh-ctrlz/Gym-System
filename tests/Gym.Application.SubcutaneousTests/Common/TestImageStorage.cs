@@ -1,4 +1,4 @@
-﻿using Gym.Application.Common.Interfaces;
+using Gym.Application.Common.Interfaces;
 
 namespace Gym.Application.SubcutaneousTests.Common;
 
@@ -26,7 +26,9 @@ public sealed class TestImageStorage : IImageStorage
         ct.ThrowIfCancellationRequested();
 
         if (string.IsNullOrWhiteSpace(imageUrl))
+        {
             return Task.FromResult(imageUrl);
+        }
 
         var fileName = Path.GetFileName(imageUrl);
 
