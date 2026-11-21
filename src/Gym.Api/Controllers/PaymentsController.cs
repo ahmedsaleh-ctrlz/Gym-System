@@ -23,6 +23,7 @@ using MediatR;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 
 using Stripe;
@@ -33,7 +34,11 @@ namespace Gym.Api.Controllers;
 [Route("api/v{version:apiVersion}/payments")]
 [ApiVersion("1.0")]
 [Authorize]
-public sealed class PaymentsController(ISender sender, IOptions<StripeSettings> stripeOptions) : ApiController
+[EnableRateLimiting("GlobalLimiter")]
+public sealed class PaymentsController(
+    ISender sender,
+    IOptions<StripeSettings> stripeOptions,
+    ILogger<PaymentsController> logger) : ApiController
 {
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedList<PaymentResponse>), StatusCodes.Status200OK)]
@@ -84,7 +89,7 @@ public sealed class PaymentsController(ISender sender, IOptions<StripeSettings> 
     [EndpointName("GetMemberPaymentsHistory")]
     [MapToApiVersion("1.0")]
     [ProducesDefaultResponseType]
-    [Authorize(Policy = Policies.SameMemberOrCoachOrAdmin)]
+    [Authorize(Policy = Policies.SameMemberOrAdmin)]
 
     public async Task<IActionResult> GetMemberPaymentsHistory(int Id, CancellationToken ct)
     {
@@ -122,7 +127,7 @@ public sealed class PaymentsController(ISender sender, IOptions<StripeSettings> 
     [EndpointDescription("Records a successful or failed payment for a subscription.")]
     [EndpointName("PayPayment")]
     [MapToApiVersion("1.0")]
-    [Authorize]
+    [Authorize(Roles = nameof(Role.Admin))]
     public async Task<IActionResult> Create([FromBody] PayPaymentRequest request, CancellationToken ct)
     {
         var result = await sender.Send(
@@ -166,6 +171,7 @@ public sealed class PaymentsController(ISender sender, IOptions<StripeSettings> 
     [EndpointDescription("Cancels a pending payment for a subscription.")]
     [EndpointName("CancelPayment")]
     [MapToApiVersion("1.0")]
+    [Authorize(Roles = $"{nameof(Role.Admin)},{nameof(Role.Member)}")]
     public async Task<IActionResult> Cancel([FromBody] CancelPaymentRequest request, CancellationToken ct)
     {
         var result = await sender.Send(
@@ -263,12 +269,15 @@ public sealed class PaymentsController(ISender sender, IOptions<StripeSettings> 
     [EndpointDescription("Creates a Stripe payment intent for the specified pending payment and returns the client secret required for checkout.")]
     [EndpointName("CreateStripePaymentIntent")]
     [MapToApiVersion("1.0")]
+    [Authorize(Roles = $"{nameof(Role.Admin)},{nameof(Role.Member)}")]
+    [EnableRateLimiting("HeavyOperations")]
     public async Task<IActionResult> CreateStripePaymentIntent(
-        CreateStripePaymentIntentRequest request,
+        int paymentId,
+        [FromBody] CreateStripePaymentIntentRequest request,
         CancellationToken ct)
     {
         var result = await sender.Send(
-            new CreateStripePaymentIntentCommand(request.PaymentId, request.PromoCodeId),
+            new CreateStripePaymentIntentCommand(paymentId, request.PromoCodeId),
             ct);
 
         return result.Match(
@@ -278,6 +287,7 @@ public sealed class PaymentsController(ISender sender, IOptions<StripeSettings> 
 
     [AllowAnonymous]
     [HttpPost("webhook")]
+    [DisableRateLimiting]
     public async Task<IActionResult> Webhook()
     {
         var stripeSettings = stripeOptions.Value;
@@ -285,10 +295,24 @@ public sealed class PaymentsController(ISender sender, IOptions<StripeSettings> 
         var json = await new StreamReader(Request.Body)
             .ReadToEndAsync();
 
-        var stripeEvent = EventUtility.ConstructEvent(
-            json,
-            Request.Headers["Stripe-Signature"],
-            stripeSettings.WebhookSecret);
+        Event stripeEvent;
+        try
+        {
+            stripeEvent = EventUtility.ConstructEvent(
+                json,
+                Request.Headers["Stripe-Signature"],
+                stripeSettings.WebhookSecret);
+        }
+        catch (StripeException ex)
+        {
+            logger.LogWarning(ex, "Stripe webhook signature verification failed.");
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Invalid Stripe Signature",
+                Detail = ex.Message,
+                Status = StatusCodes.Status400BadRequest
+            });
+        }
 
         if (stripeEvent.Type == "payment_intent.succeeded")
         {

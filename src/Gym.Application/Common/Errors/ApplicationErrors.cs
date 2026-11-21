@@ -77,4 +77,5 @@ public class ApplicationErrors
 
     public static Error InvoiceNotFound => Error.NotFound("Invoice.NotFound", "Invoice with the specified ID was not found.");
 
+    public static Error Forbidden => Error.Forbidden("Auth.Forbidden", "You are not authorized to perform this action.");
 }

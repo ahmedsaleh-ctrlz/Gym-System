@@ -16,6 +16,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Gym.Api.Controllers;
 
@@ -23,6 +24,7 @@ namespace Gym.Api.Controllers;
 [Route("api/v{version:apiVersion}/plans")]
 [ApiVersion("1.0")]
 [Authorize]
+[EnableRateLimiting("GlobalLimiter")]
 public sealed class PlansController(ISender sender) : ApiController
 {
     [HttpGet]

@@ -16,6 +16,7 @@ namespace Gym.Application.Features.Payments.Commands.CreateStripePayment;
 public sealed class CreateStripePaymentIntentCommandHandler(
     IAppDbContext dbContext,
     IStripePaymentService stripePaymentService,
+    IUser user,
     ILogger<CreateStripePaymentIntentCommandHandler> logger)
     : IRequestHandler<
         CreateStripePaymentIntentCommand,
@@ -27,6 +28,7 @@ public sealed class CreateStripePaymentIntentCommandHandler(
     {
         var payment = await dbContext.Payments
             .Include(p => p.Subscription)
+                .ThenInclude(s => s.Member)
             .FirstOrDefaultAsync(
                 p => p.Id == request.PaymentId,
                 ct);
@@ -38,6 +40,17 @@ public sealed class CreateStripePaymentIntentCommandHandler(
                 request.PaymentId);
 
             return ApplicationErrors.PaymentNotFound;
+        }
+
+        if (!string.Equals(user.Role, "Admin", StringComparison.OrdinalIgnoreCase))
+        {
+            if (string.IsNullOrWhiteSpace(user.PersonId) ||
+                !int.TryParse(user.PersonId, out var callerPersonId) ||
+                payment.Subscription?.Member?.PersonId != callerPersonId)
+            {
+                logger.LogWarning("Forbidden attempt to create Stripe payment intent for PaymentId {PaymentId} by PersonId {PersonId}.", request.PaymentId, user.PersonId);
+                return ApplicationErrors.InvalidPaymentOwner;
+            }
         }
 
         if (payment.Status != PaymentStatus.Pending)

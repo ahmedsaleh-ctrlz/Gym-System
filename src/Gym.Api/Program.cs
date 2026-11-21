@@ -14,9 +14,8 @@ using Scalar.AspNetCore;
 
 using Serilog;
 
-Env.Load("../../.env");
 var builder = WebApplication.CreateBuilder(args);
-QuestPDF.Settings.License = LicenseType.Evaluation;
+QuestPDF.Settings.License = LicenseType.Community;
 
 builder.Services.AddApi(builder.Configuration)
     .AddApplicaiton()
@@ -52,10 +51,11 @@ else
 app.UseCoreMiddlewares(builder.Configuration);
 
 app.MapControllers();
-app.MapGraphQL("/graphql");
-app.MapHub<NotificationHub>("/hubs/notifications");
+app.MapGraphQL("/graphql").RequireRateLimiting("GlobalLimiter");
+app.MapHub<NotificationHub>("/hubs/notifications").RequireRateLimiting("GlobalLimiter");
 
-app.MapGet("/", () => "Api Is Running");
+app.MapGet("/", () => "Api Is Running").DisableRateLimiting();
+app.MapHealthChecks("/health").DisableRateLimiting();
 
 app.Run();
 public partial class Program

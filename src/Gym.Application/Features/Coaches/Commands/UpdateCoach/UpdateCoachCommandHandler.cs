@@ -49,7 +49,11 @@ public sealed class UpdateCoachCommandHandler(IAppDbContext context,
         return Result.Updated;
     }
 
-    public class UpdateCoachImageCommandHandler(IAppDbContext context, ILogger<UpdateCoachImageCommandHandler> logger, HybridCache cache) : IRequestHandler<UpdateCoachImageCommand, Result<Updated>>
+    public class UpdateCoachImageCommandHandler(
+        IAppDbContext context,
+        ILogger<UpdateCoachImageCommandHandler> logger,
+        HybridCache cache,
+        IImageStorage imageStorage) : IRequestHandler<UpdateCoachImageCommand, Result<Updated>>
     {
         public async Task<Result<Updated>> Handle(UpdateCoachImageCommand command, CancellationToken ct)
         {
@@ -61,19 +65,31 @@ public sealed class UpdateCoachCommandHandler(IAppDbContext context,
 
             if (coach is null)
             {
-                logger.LogWarning("coach with ID {coachId} not found for image update.", command.CoachId);
-                return ApplicationErrors.MemberNotFound;
+                logger.LogWarning("Coach with ID {CoachId} not found for image update.", command.CoachId);
+                return ApplicationErrors.CoachNotFound;
             }
 
-            var updateResult = coach.UpdateImage(command.ImageUrl);
+            var oldImageUrl = coach.Person.Image?.ImageUrl;
+            var promotedImageUrl = await imageStorage.PromoteTemporaryAsync(command.ImageUrl, ct);
+            var updateResult = coach.UpdateImage(promotedImageUrl);
 
             if (updateResult.IsError)
             {
+                if (!string.Equals(promotedImageUrl, command.ImageUrl, StringComparison.OrdinalIgnoreCase))
+                {
+                    await imageStorage.DeleteAsync(promotedImageUrl, ct);
+                }
+
                 logger.LogWarning("Failed to update image for coach ID {coachId}. Errors: {Errors}", command.CoachId, string.Join(", ", updateResult.Errors.Select(e => e.Description)));
                 return updateResult.Errors;
             }
 
             await context.SaveChangesAsync(ct);
+
+            if (!string.IsNullOrWhiteSpace(oldImageUrl) && !string.Equals(oldImageUrl, promotedImageUrl, StringComparison.OrdinalIgnoreCase))
+            {
+                await imageStorage.DeleteAsync(oldImageUrl, ct);
+            }
 
             await cache.RemoveByTagAsync("Coaches", ct);
 

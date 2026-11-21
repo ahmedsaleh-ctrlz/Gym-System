@@ -178,16 +178,7 @@ public sealed class BrevoEmailSender(
                 </html>
                 """
         };
-        _httpClient.DefaultRequestHeaders.Clear();
-        _httpClient.DefaultRequestHeaders.Add(
-            "api-key",
-            _emailSettings.ApiKey);
-        var response = await _httpClient.PostAsJsonAsync(
-            "https://api.brevo.com/v3/smtp/email",
-            request,
-            ct);
-
-        response.EnsureSuccessStatusCode();
+        await SendBrevoEmailAsync(request, ct);
     }
 
     public async Task SendResetPasswordEmailAsync(
@@ -349,15 +340,7 @@ public sealed class BrevoEmailSender(
                 </html>
                 """
         };
-        _httpClient.DefaultRequestHeaders.Clear();
-        _httpClient.DefaultRequestHeaders.Add(
-            "api-key",
-            _emailSettings.ApiKey);
-        var response = await _httpClient.PostAsJsonAsync(
-            "https://api.brevo.com/v3/smtp/email",
-            request,
-            ct);
-        response.EnsureSuccessStatusCode();
+        await SendBrevoEmailAsync(request, ct);
     }
 
     public async Task SendEmailsToUsersAsync(
@@ -386,17 +369,22 @@ public sealed class BrevoEmailSender(
                 ]
             };
 
-            _httpClient.DefaultRequestHeaders.Clear();
-            _httpClient.DefaultRequestHeaders.Add(
-                "api-key",
-                _emailSettings.ApiKey);
-
-            var response = await _httpClient.PostAsJsonAsync(
-                "https://api.brevo.com/v3/smtp/email",
-                request,
-                ct);
-
-            response.EnsureSuccessStatusCode();
+            await SendBrevoEmailAsync(request, ct);
         }
+    }
+
+    private async Task SendBrevoEmailAsync(BrevoEmailRequest request, CancellationToken ct)
+    {
+        using var httpRequest = new HttpRequestMessage(
+            HttpMethod.Post,
+            "https://api.brevo.com/v3/smtp/email")
+        {
+            Content = JsonContent.Create(request)
+        };
+
+        httpRequest.Headers.Add("api-key", _emailSettings.ApiKey);
+
+        var response = await _httpClient.SendAsync(httpRequest, ct);
+        response.EnsureSuccessStatusCode();
     }
 }

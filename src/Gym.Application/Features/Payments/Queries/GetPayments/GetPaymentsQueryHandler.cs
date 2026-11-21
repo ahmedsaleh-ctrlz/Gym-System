@@ -24,14 +24,17 @@ public sealed class GetPaymentsQueryHandler(IAppDbContext context)
                 .ThenInclude(s => s.Plan)
             .AsQueryable();
 
+        var pageNumber = Math.Max(1, query.PageNumber);
+        var pageSize = Math.Clamp(query.PageSize, 1, 100);
+
         paymentsQuery = ApplyFilters(paymentsQuery, query);
         paymentsQuery = ApplySorting(paymentsQuery, query.SortBy, query.SortDirection);
 
         var count = await paymentsQuery.CountAsync(ct);
 
         var items = await paymentsQuery
-            .Skip((query.PageNumber - 1) * query.PageSize)
-            .Take(query.PageSize)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .Select(p => new PaymentResponse
             {
                 PaymentId = p.Id,
@@ -49,8 +52,8 @@ public sealed class GetPaymentsQueryHandler(IAppDbContext context)
         return new PaginatedList<PaymentResponse>
         {
             Items = items,
-            PageNumber = query.PageNumber,
-            PageSize = query.PageSize,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
             TotalCount = count
         };
     }

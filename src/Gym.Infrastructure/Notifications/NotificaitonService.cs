@@ -23,6 +23,9 @@ namespace Gym.Infrastructure.Notifications
     {
         public async Task<Result<PaginatedList<NotificationResponse>>> GetNotificationsAsync(string userId, int pageNumber, int pageSize, bool? isRead, CancellationToken cancellationToken = default)
         {
+            var clampedPageNumber = Math.Max(1, pageNumber);
+            var clampedPageSize = Math.Clamp(pageSize, 1, 100);
+
             var notificaionsQuery = dbContext.Notifications.AsNoTracking().Where(n => n.UserId == userId);
             if (isRead.HasValue)
             {
@@ -33,13 +36,13 @@ namespace Gym.Infrastructure.Notifications
 
             var notifications = await notificaionsQuery
             .OrderByDescending(n => n.CreatedAt)
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
+            .Skip((clampedPageNumber - 1) * clampedPageSize)
+            .Take(clampedPageSize)
             .Select(NotificationMapper.ToResponse()).ToListAsync(cancellationToken);
             return new PaginatedList<NotificationResponse>
             {
-                PageNumber = pageNumber,
-                PageSize = pageSize,
+                PageNumber = clampedPageNumber,
+                PageSize = clampedPageSize,
                 Items = notifications,
                 TotalCount = totalCount
             };

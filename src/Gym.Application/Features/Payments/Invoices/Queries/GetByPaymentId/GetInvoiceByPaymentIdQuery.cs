@@ -17,6 +17,7 @@ public sealed record GetInvoiceByPaymentIdQuery(
 
 public sealed class GetInvoiceByPaymentIdQueryHandler(
     IAppDbContext dbContext,
+    IUser user,
     ILogger<GetInvoiceByPaymentIdQueryHandler> logger)
     : IRequestHandler<
         GetInvoiceByPaymentIdQuery,
@@ -27,6 +28,9 @@ public sealed class GetInvoiceByPaymentIdQueryHandler(
         CancellationToken ct)
     {
         var invoice = await dbContext.Invoices
+            .Include(x => x.Payment)
+                .ThenInclude(p => p.Subscription)
+                    .ThenInclude(s => s.Member)
             .FirstOrDefaultAsync(
                 x => x.PaymentId == request.PaymentId,
                 ct);
@@ -38,6 +42,21 @@ public sealed class GetInvoiceByPaymentIdQueryHandler(
                 request.PaymentId);
 
             return ApplicationErrors.InvoiceNotFound;
+        }
+
+        if (!string.Equals(user.Role, "Admin", StringComparison.OrdinalIgnoreCase))
+        {
+            if (string.IsNullOrWhiteSpace(user.PersonId) ||
+                !int.TryParse(user.PersonId, out var callerPersonId) ||
+                invoice.Payment?.Subscription?.Member?.PersonId != callerPersonId)
+            {
+                logger.LogWarning(
+                    "Forbidden access to invoice details for PaymentId {PaymentId} by PersonId {PersonId}.",
+                    request.PaymentId,
+                    user.PersonId);
+
+                return ApplicationErrors.InvalidPaymentOwner;
+            }
         }
 
         return invoice.ToResponse();

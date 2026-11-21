@@ -14,7 +14,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Gym.Application.Features.Subscriptions.Commands.CreateSubscription;
 
-public sealed class CreateSubscriptionCommandHandler(ILogger<Result<Subscription>> logger, IAppDbContext dbContext, HybridCache cache, INotificationService notificationService, IIdentityService identityService) : IRequestHandler<CreateSubscriptionCommand, Result<Subscription>>
+public sealed class CreateSubscriptionCommandHandler(
+    ILogger<Result<Subscription>> logger,
+    IAppDbContext dbContext,
+    HybridCache cache,
+    INotificationService notificationService,
+    IIdentityService identityService,
+    IUser user) : IRequestHandler<CreateSubscriptionCommand, Result<Subscription>>
 {
     public async Task<Result<Subscription>> Handle(CreateSubscriptionCommand request, CancellationToken ct)
     {
@@ -36,6 +42,21 @@ public sealed class CreateSubscriptionCommandHandler(ILogger<Result<Subscription
         {
             logger.LogWarning("Member with id {MemberId} not found for subscription creation.", request.MemberId);
             return ApplicationErrors.MemberNotFound;
+        }
+
+        if (!string.Equals(user.Role, "Admin", StringComparison.OrdinalIgnoreCase))
+        {
+            if (string.IsNullOrWhiteSpace(user.PersonId) ||
+                !int.TryParse(user.PersonId, out var callerPersonId) ||
+                member.PersonId != callerPersonId)
+            {
+                logger.LogWarning(
+                    "Forbidden attempt to create subscription for MemberId {MemberId} by PersonId {PersonId}.",
+                    request.MemberId,
+                    user.PersonId);
+
+                return ApplicationErrors.Forbidden;
+            }
         }
 
         if (request.StartDate > DateOnly.FromDateTime(DateTime.UtcNow).AddDays(14))

@@ -5,12 +5,14 @@ using MediatR;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Gym.Api.Controllers;
 
 [Authorize]
 [ApiController]
 [Route("api/v1/[controller]")]
+[EnableRateLimiting("GlobalLimiter")]
 public class InvoicesController(ISender sender) : ApiController
 {
     [HttpGet("{id:int}", Name = "GetInvoiceByPaymentId")]
@@ -39,6 +41,7 @@ public class InvoicesController(ISender sender) : ApiController
     StatusCodes.Status200OK)]
     [ProducesResponseType(
     StatusCodes.Status404NotFound)]
+    [EnableRateLimiting("HeavyOperations")]
     public async Task<IActionResult> DownloadPdf(
     int id,
     CancellationToken ct)

@@ -5,6 +5,7 @@ using System.Text;
 using Gym.Application.Common.Errors;
 using Gym.Application.Common.Interfaces;
 using Gym.Domain.Common.Result;
+using Gym.Domain.Identity;
 
 using MediatR;
 
@@ -17,7 +18,10 @@ namespace Gym.Application.Features.Identity.Commands.Logout
     {
         public async Task<Result<Updated>> Handle(RevokeRefreshTokenCommand request, CancellationToken cancellationToken)
         {
-            var refreshToken = await dbContext.RefreshTokens.FirstOrDefaultAsync(r => r.Token == request.RefreshToken);
+            var hashedToken = RefreshToken.HashToken(request.RefreshToken);
+            var refreshToken = await dbContext.RefreshTokens.FirstOrDefaultAsync(
+                r => r.Token == hashedToken || r.Token == request.RefreshToken,
+                cancellationToken);
             if (refreshToken == null)
             {
                 return Error.NotFound("Refresh_Token_Not_Found", "Refresh Token Not Found");

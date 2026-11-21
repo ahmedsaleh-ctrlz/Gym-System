@@ -12,6 +12,7 @@ using Gym.Application.Features.Identity.Queries.GenerateToken;
 using Gym.Application.Features.Identity.Queries.RefreshToken;
 using Gym.Application.Features.Members.Commands.CreateMember;
 using Gym.Application.Features.Members.Commands.UpdatePassword;
+using Gym.Domain.Identity;
 using Gym.Infrastructure.Identity.Policies;
 
 using MediatR;
@@ -100,6 +101,7 @@ namespace Gym.Api.Controllers
         [EndpointDescription("Revoke user refresh token")]
         [EndpointName("Logout")]
         [MapToApiVersion("1.0")]
+        [EnableRateLimiting("LoginRateLimiter")]
         public async Task<IActionResult> Logout([FromBody] LogoutRequest request, CancellationToken ct)
         {
             var result = await sender.Send(new RevokeRefreshTokenCommand(request.RefreshToken), ct);
@@ -161,6 +163,7 @@ namespace Gym.Api.Controllers
         [EndpointDescription("Reset password")]
         [EndpointName("ResetPassword")]
         [MapToApiVersion("1.0")]
+        [EnableRateLimiting("LoginRateLimiter")]
         public async Task<IActionResult> ResetPaswword([FromBody] ResetPasswordRequest request, CancellationToken ct)
         {
             var result = await sender.Send(new ResetPasswordCommand(request.Email, request.ResetToken, request.NewPassword));
@@ -179,7 +182,8 @@ namespace Gym.Api.Controllers
         [EndpointDescription("Update a member's password.")]
         [EndpointName("UpdateMemberPassword")]
         [MapToApiVersion("1.0")]
-        [Authorize(Policy = Policies.SameMemberOrAdmin)]
+        [Authorize(Roles = $"{nameof(Role.Member)},{nameof(Role.Admin)}")]
+        [EnableRateLimiting("LoginRateLimiter")]
         public async Task<IActionResult> UpdatePassword([FromBody] UpdateMemberPasswordRequest request, CancellationToken ct)
         {
             var result = await sender.Send(
@@ -202,6 +206,7 @@ namespace Gym.Api.Controllers
         [EndpointSummary("Confirms a user's email.")]
         [EndpointDescription("Confirms a user's email using the confirmation token.")]
         [EndpointName("ConfirmEmail")]
+        [EnableRateLimiting("LoginRateLimiter")]
         public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token, CancellationToken ct)
         {
             var result = await sender.Send(

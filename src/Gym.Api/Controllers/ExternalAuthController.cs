@@ -23,12 +23,16 @@ namespace Gym.Api.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/auth/external")]
+[EnableRateLimiting("LoginRateLimiter")]
 public sealed class ExternalAuthController(
     SignInManager<AppUser> signInManager,
-    ISender sender) : ApiController
+    ISender sender,
+    IConfiguration configuration) : ApiController
 {
-    private const string FrontendCallbackUrl =
-        "https://localhost:4200/oauth-google";
+    private readonly string _frontendCallbackUrl =
+        configuration["Authentication:Google:FrontendCallbackUrl"]
+        ?? configuration["Google:FrontendCallbackUrl"]
+        ?? "https://localhost:4200/oauth-google";
 
     [HttpGet("google")]
     [AllowAnonymous]
@@ -57,7 +61,7 @@ public sealed class ExternalAuthController(
         {
             return Redirect(
                 QueryHelpers.AddQueryString(
-                    FrontendCallbackUrl,
+                    _frontendCallbackUrl,
                     "error",
                     "google_auth_failed"));
         }
@@ -68,22 +72,20 @@ public sealed class ExternalAuthController(
         {
             return Redirect(
                 QueryHelpers.AddQueryString(
-                    FrontendCallbackUrl,
+                    _frontendCallbackUrl,
                     "error",
                     "external_login_info_missing"));
         }
 
         return Redirect(
             QueryHelpers.AddQueryString(
-                FrontendCallbackUrl,
+                _frontendCallbackUrl,
                 "status",
                 "complete_google_login"));
     }
 
-
     [HttpPost("google/complete")]
     [AllowAnonymous]
-    [EnableRateLimiting("LoginRateLimiter")]
     public async Task<IActionResult> CompleteGoogleLogin(
     CancellationToken ct)
     {

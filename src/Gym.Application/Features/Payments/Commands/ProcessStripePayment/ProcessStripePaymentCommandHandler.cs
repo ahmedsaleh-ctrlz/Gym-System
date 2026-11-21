@@ -35,6 +35,16 @@ public sealed class ProcessStripePaymentCommandHandler(
             return ApplicationErrors.PaymentNotFound;
         }
 
+        if (payment.Status == PaymentStatus.Paid)
+        {
+            logger.LogInformation(
+                "Payment with PaymentIntentId {PaymentIntentId} (PaymentId: {PaymentId}) is already marked as paid. Skipping duplicate processing.",
+                request.PaymentIntentId,
+                payment.Id);
+
+            return Result.Updated;
+        }
+
         var result = await sender.Send(
             new PayPaymentCommand(
                 payment.Id,

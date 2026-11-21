@@ -19,6 +19,7 @@ using Hangfire;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -46,9 +47,15 @@ public static class DependencyInjection
         services.Configure<AppSettings>(configuration.GetSection(AppSettings.SectionName));
         services.Configure<AiSettings>(
             configuration.GetSection(AiSettings.SectionName));
-        services.AddScoped<IAiService, AiService>();
+        services.AddHttpClient<IAiService, AiService>(client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(30);
+        });
 
-        services.AddHttpClient<IEmailSender, BrevoEmailSender>();
+        services.AddHttpClient<IEmailSender, BrevoEmailSender>(client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(30);
+        });
         services.AddScoped<IImageStorage, LocalImageStorage>();
         services.AddScoped<INotificationService, NotificaitonService>();
         services.AddScoped<INotificationBackgroundJobs, NotificationBackgroundJobs>();
@@ -58,7 +65,13 @@ public static class DependencyInjection
         services.AddDbContext<AppDbContext>((sp, options) =>
         {
             options.AddInterceptors(sp.GetService<ISaveChangesInterceptor>()!);
-            options.UseSqlServer(connectionString);
+            options.UseSqlServer(connectionString, sqlOptions =>
+            {
+                sqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(10),
+                    errorNumbersToAdd: null);
+            });
         });
 
         services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
@@ -84,7 +97,13 @@ public static class DependencyInjection
             .AddSignInManager();
 
         services.AddScoped<IIdentityService, IdentityService>();
-        services.AddDataProtection();
+        var keysFolder = configuration["DataProtection:KeysPath"]
+            ?? Environment.GetEnvironmentVariable("DATA_PROTECTION_KEYS_PATH")
+            ?? Path.Combine(Directory.GetCurrentDirectory(), "Keys");
+        Directory.CreateDirectory(keysFolder);
+        services.AddDataProtection()
+            .PersistKeysToFileSystem(new DirectoryInfo(keysFolder))
+            .SetApplicationName("GymApp");
 
         services.AddHybridCache(options => options.DefaultEntryOptions = new HybridCacheEntryOptions
         {

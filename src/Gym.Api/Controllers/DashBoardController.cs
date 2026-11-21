@@ -16,12 +16,14 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Gym.Api.Controllers;
 
 [ApiVersion("1.0")]
 [Authorize]
 [Route("api/v{version:apiVersion}/dashboard")]
+[EnableRateLimiting("GlobalLimiter")]
 public class DashBoardController(ISender sender) : ApiController
 {
     [HttpGet("stats")]
@@ -208,6 +210,7 @@ public class DashBoardController(ISender sender) : ApiController
     [ProducesResponseType(typeof(AdminAiInsightsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = "Admin")]
+    [EnableRateLimiting("HeavyOperations")]
     public async Task<IActionResult> GetAiInsights(CancellationToken ct)
     {
         var result = await sender.Send(

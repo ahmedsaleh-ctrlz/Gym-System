@@ -43,11 +43,14 @@ public sealed class GetMemberAttendanceHistoryQueryHandler(IAppDbContext context
             ? attendanceQuery.OrderBy(a => a.CheckInAtUtc)
             : attendanceQuery.OrderByDescending(a => a.CheckInAtUtc);
 
+        var pageNumber = Math.Max(1, query.PageNumber);
+        var pageSize = Math.Clamp(query.PageSize, 1, 100);
+
         var count = await attendanceQuery.CountAsync(ct);
 
         var items = await attendanceQuery
-            .Skip((query.PageNumber - 1) * query.PageSize)
-            .Take(query.PageSize)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .Select(a => new AttendanceResponse
             {
                 AttendanceId = a.Id,
@@ -60,8 +63,8 @@ public sealed class GetMemberAttendanceHistoryQueryHandler(IAppDbContext context
         return new PaginatedList<AttendanceResponse>
         {
             Items = items,
-            PageNumber = query.PageNumber,
-            PageSize = query.PageSize,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
             TotalCount = count
         };
     }

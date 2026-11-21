@@ -24,13 +24,16 @@ public class GetSubscriptionsQueryHandler(IAppDbContext dbContext) : IRequestHan
             .Include(s => s.Plan)
             .AsQueryable();
 
+        var pageNumber = Math.Max(1, request.PageNumber);
+        var pageSize = Math.Clamp(request.PageSize, 1, 100);
+
         query = ApplyFilters(query, request);
         query = ApplySorting(query, request);
 
         var count = await query.CountAsync(cancellationToken);
         var items = await query
-            .Skip((request.PageNumber - 1) * request.PageSize)
-            .Take(request.PageSize)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .Select(s => s.ToDto())
             .ToListAsync(cancellationToken);
 
@@ -38,8 +41,8 @@ public class GetSubscriptionsQueryHandler(IAppDbContext dbContext) : IRequestHan
         {
             Items = items,
             TotalCount = count,
-            PageNumber = request.PageNumber,
-            PageSize = request.PageSize
+            PageNumber = pageNumber,
+            PageSize = pageSize
         };
     }
 

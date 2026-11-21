@@ -14,6 +14,9 @@ public class GetMembersQueryHandler(IAppDbContext context) : IRequestHandler<Get
 {
     public async Task<Result<PaginatedList<MemberResponse>>> Handle(GetMembersQuery query, CancellationToken ct)
     {
+        var pageNumber = Math.Max(1, query.PageNumber);
+        var pageSize = Math.Clamp(query.PageSize, 1, 100);
+
         var membersQuery = context.Members.AsNoTracking().AsQueryable();
         var memberQuery = ApplyFilters(membersQuery, query.SearchTerm);
 
@@ -22,8 +25,8 @@ public class GetMembersQueryHandler(IAppDbContext context) : IRequestHandler<Get
         var count = await memberQuery.CountAsync(ct);
 
         var items = await memberQuery
-            .Skip((query.PageNumber - 1) * query.PageSize)
-            .Take(query.PageSize)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .Select(m => new MemberResponse
             {
                 MemberId = m.Id,
@@ -40,8 +43,8 @@ public class GetMembersQueryHandler(IAppDbContext context) : IRequestHandler<Get
         return new PaginatedList<MemberResponse>
         {
             Items = items,
-            PageNumber = query.PageNumber,
-            PageSize = query.PageSize,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
             TotalCount = count,
         };
     }

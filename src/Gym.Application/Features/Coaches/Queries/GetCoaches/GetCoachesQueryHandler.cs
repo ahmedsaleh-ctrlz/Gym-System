@@ -14,6 +14,9 @@ public class GetCoachesQueryHandler(IAppDbContext context) : IRequestHandler<Get
 {
     public async Task<Result<PaginatedList<CoachResponse>>> Handle(GetCoachesQuery query, CancellationToken ct)
     {
+        var pageNumber = Math.Max(1, query.PageNumber);
+        var pageSize = Math.Clamp(query.PageSize, 1, 100);
+
         var coachQuery = context.Coaches.AsNoTracking().AsQueryable();
 
         coachQuery = ApplyFilters(coachQuery, query.SearchTerm);
@@ -22,8 +25,8 @@ public class GetCoachesQueryHandler(IAppDbContext context) : IRequestHandler<Get
         var count = await coachQuery.CountAsync(ct);
 
         var items = await coachQuery
-            .Skip((query.PageNumber - 1) * query.PageSize)
-            .Take(query.PageSize)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .Select(m => new CoachResponse
             {
                 CoachId = m.Id,
@@ -39,8 +42,8 @@ public class GetCoachesQueryHandler(IAppDbContext context) : IRequestHandler<Get
         return new PaginatedList<CoachResponse>
         {
             Items = items,
-            PageNumber = query.PageNumber,
-            PageSize = query.PageSize,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
             TotalCount = count,
         };
     }

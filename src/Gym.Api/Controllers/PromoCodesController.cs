@@ -1,4 +1,4 @@
-﻿using Asp.Versioning;
+using Asp.Versioning;
 
 using Gym.Api.Contracts.PromoCodes;
 using Gym.Application.Common.Interfaces;
@@ -16,6 +16,7 @@ using MediatR;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Gym.Api.Controllers;
@@ -24,6 +25,7 @@ namespace Gym.Api.Controllers;
 [Route("api/v{version:apiVersion}/promo-codes")]
 [ApiVersion("1.0")]
 [Authorize]
+[EnableRateLimiting("GlobalLimiter")]
 public sealed class PromoCodesController(
     ISender sender) : ApiController
 {
@@ -35,6 +37,7 @@ public sealed class PromoCodesController(
     [EndpointName("GetPromoCodes")]
     [MapToApiVersion("1.0")]
     [ProducesDefaultResponseType]
+    [Authorize(Roles = nameof(Role.Admin))]
     public async Task<IActionResult> GetPromoCodes(
         CancellationToken ct,
         [FromQuery] bool? isActive = null,
@@ -60,6 +63,7 @@ public sealed class PromoCodesController(
     [EndpointName("GetPromoCodeById")]
     [MapToApiVersion("1.0")]
     [ProducesDefaultResponseType]
+    [Authorize(Roles = nameof(Role.Admin))]
     public async Task<IActionResult> GetById(
         int id,
         CancellationToken ct)

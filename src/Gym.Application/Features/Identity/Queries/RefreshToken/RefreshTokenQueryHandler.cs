@@ -4,6 +4,7 @@ using Gym.Application.Common.Errors;
 using Gym.Application.Common.Interfaces;
 using Gym.Application.Features.Identity.Dtos;
 using Gym.Domain.Common.Result;
+using Gym.Domain.Identity;
 
 using MediatR;
 
@@ -50,7 +51,8 @@ public sealed class RefreshTokenQueryHandler(
         }
 
         // Check Is Valid Refresh Token For User
-        var refreshToken = context.RefreshTokens.FirstOrDefault(r => r.Token == request.RefreshToken && userId == r.UserId);
+        var hashedToken = Gym.Domain.Identity.RefreshToken.HashToken(request.RefreshToken);
+        var refreshToken = context.RefreshTokens.FirstOrDefault(r => (r.Token == hashedToken || r.Token == request.RefreshToken) && userId == r.UserId);
 
         if (refreshToken is null || refreshToken.ExpiresOnUtc < DateTime.UtcNow)
         {

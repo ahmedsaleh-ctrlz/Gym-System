@@ -16,7 +16,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Gym.Application.Features.Subscriptions.Commands.RenewSubscription;
 
-public sealed class RenewSubscriptionCommandHandler(ILogger<Result<Created>> logger, IAppDbContext dbContext, HybridCache cache, INotificationService notificationService, IIdentityService identityService) : IRequestHandler<RenewSubscriptionCommand, Result<Created>>
+public sealed class RenewSubscriptionCommandHandler(
+    ILogger<Result<Created>> logger,
+    IAppDbContext dbContext,
+    HybridCache cache,
+    INotificationService notificationService,
+    IIdentityService identityService,
+    IUser user) : IRequestHandler<RenewSubscriptionCommand, Result<Created>>
 {
     public async Task<Result<Created>> Handle(RenewSubscriptionCommand request, CancellationToken ct)
     {
@@ -38,6 +44,21 @@ public sealed class RenewSubscriptionCommandHandler(ILogger<Result<Created>> log
         {
             logger.LogWarning("Member with id {MemberId} not found for subscription creation.", request.MemberId);
             return ApplicationErrors.MemberNotFound;
+        }
+
+        if (!string.Equals(user.Role, "Admin", StringComparison.OrdinalIgnoreCase))
+        {
+            if (string.IsNullOrWhiteSpace(user.PersonId) ||
+                !int.TryParse(user.PersonId, out var callerPersonId) ||
+                member.PersonId != callerPersonId)
+            {
+                logger.LogWarning(
+                    "Forbidden attempt to renew subscription for MemberId {MemberId} by PersonId {PersonId}.",
+                    request.MemberId,
+                    user.PersonId);
+
+                return ApplicationErrors.Forbidden;
+            }
         }
 
         var existingSubscription = await dbContext.Subscriptions.Where(s => s.MemberId == request.MemberId && (s.Status == SubscriptionStatus.Active || s.Status == SubscriptionStatus.Scheduled || s.Status == SubscriptionStatus.Frozen)).OrderByDescending(s => s.EndDate).FirstOrDefaultAsync(ct);

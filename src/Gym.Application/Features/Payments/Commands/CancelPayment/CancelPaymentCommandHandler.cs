@@ -13,6 +13,7 @@ namespace Gym.Application.Features.Payments.Commands.CancelPayment;
 
 public sealed record CancelPaymentCommandHandler(
     IAppDbContext DbContext,
+    IUser User,
     ILogger<CancelPaymentCommand> Logger,
     HybridCache Cache,
     IIdentityService IdentityService,
@@ -25,6 +26,7 @@ public sealed record CancelPaymentCommandHandler(
     {
         var payment = await DbContext.Payments
             .Include(p => p.Subscription)
+                .ThenInclude(s => s.Member)
             .FirstOrDefaultAsync(
                 p => p.Id == request.PaymentId,
                 cancellationToken);
@@ -36,6 +38,17 @@ public sealed record CancelPaymentCommandHandler(
                 request.PaymentId);
 
             return ApplicationErrors.PaymentNotFound;
+        }
+
+        if (!string.Equals(User.Role, "Admin", StringComparison.OrdinalIgnoreCase))
+        {
+            if (string.IsNullOrWhiteSpace(User.PersonId) ||
+                !int.TryParse(User.PersonId, out var callerPersonId) ||
+                payment.Subscription?.Member?.PersonId != callerPersonId)
+            {
+                Logger.LogWarning("Forbidden attempt to cancel PaymentId {PaymentId} by PersonId {PersonId}.", request.PaymentId, User.PersonId);
+                return ApplicationErrors.InvalidPaymentOwner;
+            }
         }
 
         var result = payment.Cancel();

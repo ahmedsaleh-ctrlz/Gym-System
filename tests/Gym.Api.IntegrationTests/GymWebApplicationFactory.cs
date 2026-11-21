@@ -116,7 +116,7 @@ public class GymWebApplicationFactory : WebApplicationFactory<Program>
         {
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["ConnectionStrings:DefaultConnection"] = "DataSource=:memory:;",
+                ["ConnectionStrings:DefaultConnection"] = "Server = . ; Database = GymDB ; Trusted_Connection=True; MultipleActiveResultSets = true ; TrustServerCertificate = True;",
                 ["JwtSettings:Secret"] = "GymSystemSuperSecretIntegrationTestKey12345!",
                 ["JwtSettings:Issuer"] = "GymApi",
                 ["JwtSettings:Audience"] = "GymClient",
@@ -129,7 +129,8 @@ public class GymWebApplicationFactory : WebApplicationFactory<Program>
                 ["Email:FromEmail"] = "noreply@gymsystem.com",
                 ["Email:FromName"] = "Gym System",
                 ["Authentication:Google:ClientId"] = "test-google-client-id.apps.googleusercontent.com",
-                ["Authentication:Google:ClientSecret"] = "test-google-client-secret"
+                ["Authentication:Google:ClientSecret"] = "test-google-client-secret",
+                ["Serilog:WriteTo:1:Args:serverUrl"] = "http://localhost:5341"
             });
         });
 

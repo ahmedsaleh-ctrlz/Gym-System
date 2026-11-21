@@ -1,4 +1,5 @@
 using Gym.Application.Common.Interfaces;
+using Microsoft.Extensions.Configuration;
 
 namespace Gym.Infrastructure.Files;
 
@@ -10,11 +11,25 @@ public sealed class LocalImageStorage : IImageStorage
     private readonly string _uploadsRoot;
     private readonly string _tempRoot;
 
-    public LocalImageStorage()
+    public LocalImageStorage(IConfiguration? configuration = null)
     {
-        _uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), UploadsSegment);
+        var configuredPath = configuration?["Storage:UploadsPath"]
+            ?? Environment.GetEnvironmentVariable("UPLOADS_STORAGE_PATH");
+
+        _uploadsRoot = !string.IsNullOrWhiteSpace(configuredPath)
+            ? configuredPath
+            : Path.Combine(Directory.GetCurrentDirectory(), UploadsSegment);
+
         _tempRoot = Path.Combine(_uploadsRoot, TempSegment);
+
+        Directory.CreateDirectory(_uploadsRoot);
+        Directory.CreateDirectory(_tempRoot);
     }
+
+    private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".jpg", ".jpeg", ".png", ".webp"
+    };
 
     public async Task<string> SaveTemporaryAsync(
         Stream fileStream,
@@ -22,10 +37,15 @@ public sealed class LocalImageStorage : IImageStorage
         Uri requestBaseUri,
         CancellationToken ct)
     {
+        var extension = Path.GetExtension(fileName);
+        if (string.IsNullOrWhiteSpace(extension) || !AllowedExtensions.Contains(extension))
+        {
+            throw new ArgumentException("Unsupported image format. Allowed formats: .jpg, .jpeg, .png, .webp", nameof(fileName));
+        }
+
         Directory.CreateDirectory(_tempRoot);
 
-        var extension = Path.GetExtension(fileName);
-        var storedFileName = $"{Guid.NewGuid()}{extension}";
+        var storedFileName = $"{Guid.NewGuid()}{extension.ToLowerInvariant()}";
         var fullPath = Path.Combine(_tempRoot, storedFileName);
 
         await using var output = new FileStream(fullPath, FileMode.CreateNew);

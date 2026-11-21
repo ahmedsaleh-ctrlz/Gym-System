@@ -105,7 +105,10 @@ public class TokenProvider(IConfiguration configuration, IAppDbContext context) 
               .Where(rt => rt.UserId == user.UserId)
               .ExecuteDeleteAsync(ct);
 
-        var refreshTokenResult = RefreshToken.Create(GenerateRefreshToken(), user.UserId, DateTime.UtcNow.AddDays(7));
+        var rawRefreshToken = GenerateRefreshToken();
+        var hashedRefreshToken = RefreshToken.HashToken(rawRefreshToken);
+
+        var refreshTokenResult = RefreshToken.Create(hashedRefreshToken, user.UserId, DateTime.UtcNow.AddDays(7));
 
         if (refreshTokenResult.IsError)
         {
@@ -119,7 +122,7 @@ public class TokenProvider(IConfiguration configuration, IAppDbContext context) 
         return new TokenResponse
         {
             AccessToken = tokenHandler.WriteToken(securityToken),
-            RefreshToken = refreshTokenResult.Value.Token
+            RefreshToken = rawRefreshToken
         };
     }
 

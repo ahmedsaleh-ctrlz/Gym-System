@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 
 using Asp.Versioning;
 
@@ -17,6 +17,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Gym.Api.Controllers;
 
@@ -24,6 +25,7 @@ namespace Gym.Api.Controllers;
 [Route("api/v{version:apiVersion}/coaches")]
 [ApiVersion("1.0")]
 [Authorize]
+[EnableRateLimiting("GlobalLimiter")]
 public sealed class CoachesController(ISender sender) : ApiController
 {
     [HttpGet]
@@ -59,8 +61,6 @@ public sealed class CoachesController(ISender sender) : ApiController
     [EndpointDescription("Returns detailed information about the specified Coach if found.")]
     [EndpointName("GetCoachById")]
     [MapToApiVersion("1.0")]
-    [Authorize(Policy = Policies.SameCoach)]
-
     public async Task<IActionResult> GetCoachById(int id, CancellationToken ct)
     {
         var result = await sender.Send(new GetCoachByIdQuery(id), ct);

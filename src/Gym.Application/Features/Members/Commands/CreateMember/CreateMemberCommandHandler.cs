@@ -7,6 +7,7 @@ using Gym.Domain.Members;
 
 using MediatR;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Abstractions;
@@ -28,91 +29,95 @@ public class CreateMemberCommandHandler(IAppDbContext context,
     {
         _logger.LogTrace("Creating Member for email: {Email}", command.Email);
 
-        await using var transaction = await _context.Database.BeginTransactionAsync(ct);
-        string? userId = null;
-        int? personId = null;
-        string DefaultImageUrl = "images/default-image.png";
-        string? promotedImageUrl = null;
-        string? imageUrl = string.IsNullOrEmpty(command.ImageUrl) ? DefaultImageUrl : command.ImageUrl;
-        Member? member = null;
-        try
+        var strategy = _context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync<Result<MemberResponse>>(async () =>
         {
-            var memberResult = Member.Create(
-                command.FirstName,
-                command.LastName,
-                command.DateOfBirth,
-                command.PhoneNumber,
-                imageUrl,
-                command.JoinDate,
-                command.Notes);
-
-            if (memberResult.IsError)
+            await using var transaction = await _context.Database.BeginTransactionAsync(ct);
+            string? userId = null;
+            int? personId = null;
+            string DefaultImageUrl = "images/default-image.png";
+            string? promotedImageUrl = null;
+            string? imageUrl = string.IsNullOrEmpty(command.ImageUrl) ? DefaultImageUrl : command.ImageUrl;
+            Member? member = null;
+            try
             {
-                return memberResult.Errors;
+                var memberResult = Member.Create(
+                    command.FirstName,
+                    command.LastName,
+                    command.DateOfBirth,
+                    command.PhoneNumber,
+                    imageUrl,
+                    command.JoinDate,
+                    command.Notes);
+
+                if (memberResult.IsError)
+                {
+                    return memberResult.Errors;
+                }
+
+                member = memberResult.Value;
+
+                await _context.Members.AddAsync(member, ct);
+                await _context.SaveChangesAsync(ct);
+
+                personId = member.Person.Id;
+
+                var userResult = await _identityService.CreateUserAsync(
+                    command.Email,
+                    command.Password,
+                    Role.Member,
+                    personId.Value,
+                    ct);
+
+                if (userResult.IsError)
+                {
+                    await transaction.RollbackAsync(ct);
+                    return userResult.Errors;
+                }
+
+                userId = userResult.Value;
+
+                promotedImageUrl = await _imageStorage.PromoteTemporaryAsync(imageUrl, ct);
+                var wasPromoted = !string.Equals(promotedImageUrl, imageUrl, StringComparison.OrdinalIgnoreCase);
+                var imageUpdateResult = member.UpdateImage(promotedImageUrl);
+
+                if (imageUpdateResult.IsError)
+                {
+                    await transaction.RollbackAsync(ct);
+                    if (wasPromoted)
+                    {
+                        await _imageStorage.DeleteAsync(promotedImageUrl, ct);
+                    }
+
+                    return imageUpdateResult.Errors;
+                }
+
+                await _context.SaveChangesAsync(ct);
+                await transaction.CommitAsync(ct);
             }
-
-            member = memberResult.Value;
-
-            await _context.Members.AddAsync(member, ct);
-            await _context.SaveChangesAsync(ct);
-
-            personId = member.Person.Id;
-
-            var userResult = await _identityService.CreateUserAsync(
-                command.Email,
-                command.Password,
-                Role.Member,
-                personId.Value,
-                ct);
-
-            if (userResult.IsError)
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync(ct);
-                return userResult.Errors;
-            }
-
-            userId = userResult.Value;
-
-            promotedImageUrl = await _imageStorage.PromoteTemporaryAsync(imageUrl, ct);
-            var wasPromoted = !string.Equals(promotedImageUrl, imageUrl, StringComparison.OrdinalIgnoreCase);
-            var imageUpdateResult = member.UpdateImage(promotedImageUrl);
-
-            if (imageUpdateResult.IsError)
-            {
-                await transaction.RollbackAsync(ct);
-                if (wasPromoted)
+                if (!string.IsNullOrWhiteSpace(promotedImageUrl) &&
+                    !string.Equals(promotedImageUrl, imageUrl, StringComparison.OrdinalIgnoreCase))
                 {
                     await _imageStorage.DeleteAsync(promotedImageUrl, ct);
                 }
 
-                return imageUpdateResult.Errors;
+                if (userId is not null)
+                {
+                    await _identityService.DeleteUserAsync(personId!.Value, ct);
+                }
+
+                _logger.LogError(ex, "Error creating member for {Email}", command.Email);
+                throw;
             }
 
-            await _context.SaveChangesAsync(ct);
-            await transaction.CommitAsync(ct);
-        }
-        catch (Exception ex)
-        {
-            await transaction.RollbackAsync(ct);
-            if (!string.IsNullOrWhiteSpace(promotedImageUrl) &&
-                !string.Equals(promotedImageUrl, imageUrl, StringComparison.OrdinalIgnoreCase))
-            {
-                await _imageStorage.DeleteAsync(promotedImageUrl, ct);
-            }
-
-            if (userId is not null)
-            {
-                await _identityService.DeleteUserAsync(personId!.Value, ct);
-            }
-
-            _logger.LogError(ex, "Error creating member for {Email}", command.Email);
-            throw;
-        }
-
-        await _cache.RemoveByTagAsync("AdminDashboard:Overview", ct);
-        await _cache.RemoveByTagAsync("AdminDashboard:MembersSummary", ct);
-        await _cache.RemoveByTagAsync("Member", ct);
-        _logger.LogInformation("Successfully created Member with ID: {MemberId} and associated User ID: {UserId}", member.Id, userId);
-        return member.ToDto();
+            await _cache.RemoveByTagAsync("AdminDashboard:Overview", ct);
+            await _cache.RemoveByTagAsync("AdminDashboard:MembersSummary", ct);
+            await _cache.RemoveByTagAsync("Member", ct);
+            _logger.LogInformation("Successfully created Member with ID: {MemberId} and associated User ID: {UserId}", member.Id, userId);
+            return member.ToDto();
+        });
     }
 }

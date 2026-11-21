@@ -44,7 +44,7 @@ public class CoachFeatureTests
         var result = await context.Mediator.Send(new UpdateCoachImageCommand(coach.Id, "/images/coach-updated.jpg"));
 
         Assert.True(result.IsSuccess);
-        Assert.Equal("/images/coach-updated.jpg", context.DbContext.Coaches.First().Person.Image.ImageUrl);
+        Assert.Equal("Uploads/coach-updated.jpg", context.DbContext.Coaches.First().Person.Image.ImageUrl);
     }
 
     [Fact]

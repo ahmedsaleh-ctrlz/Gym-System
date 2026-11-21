@@ -11,9 +11,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Gym.Application.Features.Subscriptions.Commands.FreezeSubscription;
 
-public class FreezeSubscriptionCommandHandler(IAppDbContext context,
+public class FreezeSubscriptionCommandHandler(
+    IAppDbContext context,
     ILogger<Result<Updated>> logger,
-    HybridCache cache, IIdentityService identityService, INotificationService notificationService) : IRequestHandler<FreezeSubscriptionCommand, Result<Updated>>
+    HybridCache cache,
+    IIdentityService identityService,
+    INotificationService notificationService,
+    IUser user) : IRequestHandler<FreezeSubscriptionCommand, Result<Updated>>
 {
     public async Task<Result<Updated>> Handle(FreezeSubscriptionCommand request, CancellationToken cancellationToken)
     {
@@ -24,6 +28,27 @@ public class FreezeSubscriptionCommandHandler(IAppDbContext context,
             return ApplicationErrors.SubscriptionNotFound;
         }
 
+        var member = await context.Members.Select(m => new { m.Id, m.PersonId }).FirstOrDefaultAsync(m => m.Id == subscription.MemberId, cancellationToken);
+        if (member is null)
+        {
+            return ApplicationErrors.MemberNotFound;
+        }
+
+        if (!string.Equals(user.Role, "Admin", StringComparison.OrdinalIgnoreCase))
+        {
+            if (string.IsNullOrWhiteSpace(user.PersonId) ||
+                !int.TryParse(user.PersonId, out var callerPersonId) ||
+                member.PersonId != callerPersonId)
+            {
+                logger.LogWarning(
+                    "Forbidden attempt to freeze SubscriptionId {SubscriptionId} by PersonId {PersonId}.",
+                    request.SubscriptionId,
+                    user.PersonId);
+
+                return ApplicationErrors.Forbidden;
+            }
+        }
+
         var freezeResult = subscription.Freeze(request.FreezeDays);
         if (freezeResult.IsError)
         {
@@ -31,8 +56,7 @@ public class FreezeSubscriptionCommandHandler(IAppDbContext context,
             return freezeResult.Errors;
         }
 
-        var member = await context.Members.Select(m => new { m.Id, m.PersonId }).FirstOrDefaultAsync(m => m.Id == subscription.MemberId);
-        var userId = await identityService.GetUserIdByPersonIdAsync(member!.PersonId);
+        var userId = await identityService.GetUserIdByPersonIdAsync(member.PersonId);
 
         logger.LogInformation("Subscription with id {subscriptionId} frozen for {FreezeDays} days successfully", request.SubscriptionId, request.FreezeDays);
         await cache.RemoveByTagAsync($"Subscriptions", cancellationToken);

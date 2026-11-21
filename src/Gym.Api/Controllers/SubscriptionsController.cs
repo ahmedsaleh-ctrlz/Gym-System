@@ -18,6 +18,7 @@ using MediatR;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Gym.Api.Controllers;
 
@@ -25,6 +26,7 @@ namespace Gym.Api.Controllers;
 [Route("api/v{version:apiVersion}/subscriptions")]
 [ApiVersion("1.0")]
 [Authorize]
+[EnableRateLimiting("GlobalLimiter")]
 public sealed class SubscriptionsController(ISender sender) : ApiController
 {
     [HttpGet]
@@ -124,6 +126,7 @@ public sealed class SubscriptionsController(ISender sender) : ApiController
     [EndpointDescription("Add subscription and return the new route.")]
     [EndpointName("AddSubscription")]
     [MapToApiVersion("1.0")]
+    [Authorize(Roles = $"{nameof(Role.Admin)},{nameof(Role.Member)}")]
     public async Task<IActionResult> Create([FromBody] CreateSubscriptionRequest request, CancellationToken ct)
     {
         var result = await sender.Send(
@@ -143,6 +146,7 @@ public sealed class SubscriptionsController(ISender sender) : ApiController
     [EndpointDescription("Renew subscription and return the new route.")]
     [EndpointName("RenewSubscription")]
     [MapToApiVersion("1.0")]
+    [Authorize(Roles = $"{nameof(Role.Admin)},{nameof(Role.Member)}")]
 
     public async Task<IActionResult> Renew([FromBody] RenewSubscriptionRequest request, CancellationToken ct)
     {
@@ -233,6 +237,7 @@ public sealed class SubscriptionsController(ISender sender) : ApiController
     [EndpointDescription("Freezes a subscription for the requested number of days.")]
     [EndpointName("FreezeSubscription")]
     [MapToApiVersion("1.0")]
+    [Authorize(Roles = $"{nameof(Role.Admin)},{nameof(Role.Member)}")]
     public async Task<IActionResult> Freeze(
         int subscriptionId,
         [FromBody] FreezeSubscriptionRequest request,

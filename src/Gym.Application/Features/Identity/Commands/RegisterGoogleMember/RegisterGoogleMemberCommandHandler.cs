@@ -6,6 +6,7 @@ using Gym.Domain.Members;
 
 using MediatR;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 
@@ -87,8 +88,11 @@ public sealed class RegisterGoogleMemberCommandHandler(
         RegisterGoogleMemberCommand command,
         CancellationToken ct)
     {
-        await using var transaction =
-            await context.Database.BeginTransactionAsync(ct);
+        var strategy = context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync<Result<TokenResponse>>(async () =>
+        {
+            await using var transaction =
+                await context.Database.BeginTransactionAsync(ct);
 
         const string defaultImageUrl = "images/default-image.png";
 
@@ -218,5 +222,6 @@ public sealed class RegisterGoogleMemberCommandHandler(
 
             throw;
         }
+        });
     }
 }

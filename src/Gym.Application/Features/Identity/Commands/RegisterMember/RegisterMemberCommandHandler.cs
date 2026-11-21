@@ -3,6 +3,7 @@ using Gym.Domain.Common.Result;
 using Gym.Domain.Identity;
 using Gym.Domain.Members;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 namespace Gym.Application.Features.Identity.Commands.RegisterMember;
 
@@ -22,8 +23,11 @@ public sealed class RegisterMemberCommandHandler(
             "Registering new member with email: {Email}",
             request.Email);
 
-        await using var transaction =
-            await context.Database.BeginTransactionAsync(ct);
+        var strategy = context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync<Result<Created>>(async () =>
+        {
+            await using var transaction =
+                await context.Database.BeginTransactionAsync(ct);
         string? userId = null;
         int? personId = null;
         Member? member = null;
@@ -146,11 +150,12 @@ public sealed class RegisterMemberCommandHandler(
                 request.Email);
         }
 
-        logger.LogInformation(
-            "Successfully registered member {MemberId} with user {UserId}",
-            member!.Id,
-            userId);
+            logger.LogInformation(
+                "Successfully registered member {MemberId} with user {UserId}",
+                member!.Id,
+                userId);
 
-        return Result.Created;
+            return Result.Created;
+        });
     }
 }

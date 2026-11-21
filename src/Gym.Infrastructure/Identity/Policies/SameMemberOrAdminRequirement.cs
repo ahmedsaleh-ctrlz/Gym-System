@@ -26,7 +26,8 @@ public sealed class SameMemberOrAdminRequirementHandler(IAppDbContext dbContext,
             return;
         }
 
-        var routeValue = httpContext.HttpContext!.Request.RouteValues["id"]?.ToString();
+        var routeValue = httpContext.HttpContext?.Request.RouteValues["id"]?.ToString()
+            ?? httpContext.HttpContext?.Request.Query["id"].ToString();
 
         if (!int.TryParse(routeValue, out int requestedmemberId))
         {
@@ -42,9 +43,9 @@ public sealed class SameMemberOrAdminRequirementHandler(IAppDbContext dbContext,
             return;
         }
 
-        var isSameCoach = await dbContext.Members.AnyAsync(
+        var isSameMember = await dbContext.Members.AnyAsync(
             c => c.Id == requestedmemberId && c.PersonId == Convert.ToInt32(personId));
-        if (isSameCoach)
+        if (isSameMember)
         {
             context.Succeed(requirement);
         }

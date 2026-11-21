@@ -15,6 +15,9 @@ public sealed class GetAttendancesQueryHandler(IAppDbContext context)
 {
     public async Task<Result<PaginatedList<AttendanceResponse>>> Handle(GetAttendancesQuery query, CancellationToken ct)
     {
+        var pageNumber = Math.Max(1, query.PageNumber);
+        var pageSize = Math.Clamp(query.PageSize, 1, 100);
+
         var attendancesQuery = context.Attendances
             .AsNoTracking()
             .Include(a => a.Member)
@@ -27,8 +30,8 @@ public sealed class GetAttendancesQueryHandler(IAppDbContext context)
         var count = await attendancesQuery.CountAsync(ct);
 
         var items = await attendancesQuery
-            .Skip((query.PageNumber - 1) * query.PageSize)
-            .Take(query.PageSize)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .Select(a => new AttendanceResponse
             {
                 AttendanceId = a.Id,
@@ -41,8 +44,8 @@ public sealed class GetAttendancesQueryHandler(IAppDbContext context)
         return new PaginatedList<AttendanceResponse>
         {
             Items = items,
-            PageNumber = query.PageNumber,
-            PageSize = query.PageSize,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
             TotalCount = count
         };
     }

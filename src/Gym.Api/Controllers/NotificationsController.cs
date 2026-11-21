@@ -1,4 +1,4 @@
-﻿using Asp.Versioning;
+using Asp.Versioning;
 
 using Gym.Application.Common.Interfaces;
 using Gym.Application.Common.Models;
@@ -11,12 +11,14 @@ using Gym.Application.Features.Notifications.Queries.GetUnreadCountQuery;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 namespace Gym.Api.Controllers;
 
 [ApiController]
 [Route("api/v{version:apiVersion}/notifications")]
 [ApiVersion("1.0")]
 [Authorize]
+[EnableRateLimiting("GlobalLimiter")]
 public sealed class NotificationsController(
     ISender sender,
     IUser currentUser) : ApiController

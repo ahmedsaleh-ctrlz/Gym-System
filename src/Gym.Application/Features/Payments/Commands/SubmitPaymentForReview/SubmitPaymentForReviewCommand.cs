@@ -25,15 +25,34 @@ namespace Gym.Application.Features.Payments.Commands.SubmitPaymentForReview
     int? PromoCodeId)
     : IRequest<Result<Updated>>;
 
-    public class SubmitPaymentForReviewCommandHandler(IAppDbContext dbContext, ILogger<SubmitPaymentForReviewCommandHandler> logger, HybridCache cache) : IRequestHandler<SubmitPaymentForReviewCommand, Result<Updated>>
+    public class SubmitPaymentForReviewCommandHandler(
+        IAppDbContext dbContext,
+        IUser user,
+        ILogger<SubmitPaymentForReviewCommandHandler> logger,
+        HybridCache cache) : IRequestHandler<SubmitPaymentForReviewCommand, Result<Updated>>
     {
         public async Task<Result<Updated>> Handle(SubmitPaymentForReviewCommand request, CancellationToken ct)
         {
-            var payment = await dbContext.Payments.Include(p => p.Subscription).FirstOrDefaultAsync(p => p.Id == request.PaymentId);
+            var payment = await dbContext.Payments
+                .Include(p => p.Subscription)
+                    .ThenInclude(s => s.Member)
+                .FirstOrDefaultAsync(p => p.Id == request.PaymentId, ct);
+
             if (payment is null)
             {
                 logger.LogInformation("Payment with Id {PaymentId} Not Found", request.PaymentId);
                 return ApplicationErrors.PaymentNotFound;
+            }
+
+            if (!string.Equals(user.Role, "Admin", StringComparison.OrdinalIgnoreCase))
+            {
+                if (string.IsNullOrWhiteSpace(user.PersonId) ||
+                    !int.TryParse(user.PersonId, out var callerPersonId) ||
+                    payment.Subscription?.Member?.PersonId != callerPersonId)
+                {
+                    logger.LogWarning("Forbidden attempt to submit payment review for PaymentId {PaymentId} by PersonId {PersonId}.", request.PaymentId, user.PersonId);
+                    return ApplicationErrors.InvalidPaymentOwner;
+                }
             }
 
             PromoCode? promoCode = null;
